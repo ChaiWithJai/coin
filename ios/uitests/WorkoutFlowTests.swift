@@ -106,18 +106,30 @@ final class WorkoutFlowTests: XCTestCase {
         sourceDay.tap()
         app.buttons["start-workout"].tap()
         XCTAssertTrue(app.buttons["complete-manual-step"].waitForExistence(timeout: 5))
+        XCTAssertEqual(app.staticTexts["workout-source-title"].label, "Squat")
+        app.buttons["complete-manual-step"].tap()
+        XCTAssertFalse(app.buttons["recap-done"].exists)
+        XCTAssertEqual(app.staticTexts["workout-source-title"].label, "Pallof Press")
+        app.terminate()
+        app.launch()
+        app.buttons["start-workout"].tap()
+        XCTAssertEqual(app.staticTexts["workout-source-title"].label, "Pallof Press")
+        for expected in ["Hip Airplanes", "Scap Push-Up", "Depth Drop", "Kettlebell Swing", "Stretch Series", "Plyo Push-Up", "Inverted Row", "Dumbbell Overhead Walk (20 Steps Each)"] {
+            app.buttons["complete-manual-step"].tap()
+            XCTAssertEqual(app.staticTexts["workout-source-title"].label, expected)
+        }
         app.buttons["complete-manual-step"].tap()
         XCTAssertTrue(app.buttons["recap-done"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.staticTexts["WARM UP:"].exists)
+        XCTAssertTrue(app.staticTexts["Squat"].exists)
         XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "marked done by you")).firstMatch.exists)
         XCTAssertFalse(app.staticTexts["0 min"].exists)
         attach("manual-strength-complete-recap", app: app)
         let viewLog = app.buttons["recap-view-log"]
         reveal(viewLog, in: app)
         viewLog.tap()
-        XCTAssertTrue(app.staticTexts["WARM UP:"].waitForExistence(timeout: 3))
-        app.buttons["Original instructions"].tap()
-        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS[c] %@", "Pallof")).firstMatch.waitForExistence(timeout: 3))
+        XCTAssertTrue(app.staticTexts["Squat"].waitForExistence(timeout: 3))
+        app.buttons["Original instructions"].firstMatch.tap()
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS[c] %@", "3 SETS OF 10 REPS EACH EXERCISE")).firstMatch.waitForExistence(timeout: 3))
         attach("manual-strength-source-review", app: app)
         app.navigationBars.buttons.element(boundBy: 0).tap()
         app.buttons["recap-done"].tap()
@@ -133,7 +145,7 @@ final class WorkoutFlowTests: XCTestCase {
         let saved = app.buttons["saved-session-basic-w1-d6"]
         reveal(saved, in: app)
         saved.tap()
-        XCTAssertTrue(app.staticTexts["WARM UP:"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.staticTexts["Squat"].waitForExistence(timeout: 3))
     }
 
     func testFreestyleTimerFinishesSavesReflectionAndReopensReview() throws {

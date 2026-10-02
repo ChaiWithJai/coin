@@ -63,6 +63,16 @@ struct WorkoutLesson: Decodable, Identifiable {
     func template() -> TrainingTemplate {
         var roundNumber = 0
         let sessionBlocks = blocks.flatMap { source -> [SessionBlock] in
+            if let steps = source.manualSteps {
+                return steps.map { step in
+                    SessionBlock(kind: .exercise, minutes: 0, roundNumber: nil, drillID: source.drillID, restAfterMinutes: 0,
+                                 durationSeconds: 0, restAfterSeconds: 0,
+                                 sourceTitle: step.item.text, sourceInstructions: step.instructions,
+                                 sourceURL: source.sourceURL ?? sourceURL, sourceDemoURLs: step.item.demoURLs,
+                                 sourceBlockID: source.id, sourceItemID: step.item.id,
+                                 repetitionText: step.prescription, completionMode: .manual)
+                }
+            }
             let count = source.completion == .timed ? (source.rounds ?? 1) : 1
             return (0..<count).map { repetition in
                 if source.kind == .boxing { roundNumber += 1 }
@@ -108,4 +118,65 @@ struct WorkoutSourceBlock: Decodable, Identifiable {
     let sourceText: String?
     let sourceSectionIndex: Int?
     let sourceURL: String?
+    let sourceItems: [WorkoutSourceItem]?
+}
+
+struct WorkoutSourceItem: Decodable {
+    let id: String
+    let text: String
+    let demoURLs: [String]?
+}
+
+private extension WorkoutSourceBlock {
+    struct ManualStep {
+        let item: WorkoutSourceItem
+        let prescription: String
+        let instructions: String
+    }
+
+    /// Interpret only complete, explicit lists. Unknown lines retain the original
+    /// manual section rather than guessing an exercise, grouping, or duration.
+    var manualSteps: [ManualStep]? {
+        guard completion == .manual, let items = sourceItems, items.count > 1,
+              items.allSatisfy({ !$0.id.isEmpty && !$0.text.isEmpty }),
+              Set(items.map(\.id)).count == items.count,
+              items.map(\.text).joined(separator: "\n") == instructions else { return nil }
+        let comboHeading = "SHADOW BOXING: PRACTICE 5 TIMES EACH OF THE 12 COMBOS"
+        if items.first?.text == comboHeading {
+            guard items.count == 13, items.dropFirst().allSatisfy({ item in
+                !(item.demoURLs ?? []).isEmpty && !item.text.contains("\n")
+            }) else { return nil }
+            return items.dropFirst().map {
+                ManualStep(item: $0, prescription: comboHeading,
+                           instructions: comboHeading + "\n" + $0.text)
+            }
+        }
+
+        var preamble: [String] = []
+        var prescription: String?
+        var groupCount = 0
+        var steps: [ManualStep] = []
+        for item in items {
+            if matches("^[1-9][0-9]* SETS OF [1-9][0-9]*(?:-[1-9][0-9]*)? REPS EACH EXERCISE$", item.text) {
+                if prescription != nil && groupCount == 0 { return nil }
+                prescription = item.text
+                groupCount = 0
+            } else if let prescription {
+                guard !(item.demoURLs ?? []).isEmpty, item.text.count <= 80,
+                      !matches("[;:\\n.]|\\b(SETS?|REPS?|ROUNDS?|REST|MINUTES?|SECONDS?)\\b", item.text.uppercased()) else { return nil }
+                steps.append(ManualStep(item: item, prescription: prescription,
+                                        instructions: (preamble + [prescription, item.text]).joined(separator: "\n")))
+                groupCount += 1
+            } else {
+                guard item.text == "WARM UP:" || matches("^LIFT #[1-9][0-9]* WARM UP:$", item.text) else { return nil }
+                preamble.append(item.text)
+            }
+        }
+        guard groupCount > 0, steps.count > 1 else { return nil }
+        return steps
+    }
+
+    func matches(_ pattern: String, _ text: String) -> Bool {
+        text.range(of: pattern, options: .regularExpression) != nil
+    }
 }

@@ -340,6 +340,7 @@ struct SessionBlock: Codable, Identifiable, Hashable {
     var sourceDemoURLs: [String]? = nil
     var sourceActivityKey: String? = nil
     var sourceBlockID: String? = nil
+    var sourceItemID: String? = nil
     var repetitionText: String? = nil
     var completionMode: BlockCompletionMode? = nil
     var effectiveSeconds: Int { max(0, durationSeconds ?? minutes * 60) }

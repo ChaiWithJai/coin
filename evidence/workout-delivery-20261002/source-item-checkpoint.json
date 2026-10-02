@@ -1,0 +1,40 @@
+{
+  "checkpoint": "source-item-workout-progression",
+  "date_local": "2026-10-02 19:02 America/New_York",
+  "base_commit": "730deb0",
+  "app_bundle_id": "com.coinboxing.prototype",
+  "catalog_sha256": "39e5592bfb6fe1f635325c99c8fb2e67866da8eeb0119968bb96ed7aea5d3a2c",
+  "catalog_scope": {
+    "source_workouts": 70,
+    "explicit_sections_expanded": 22,
+    "manual_items_created": 218,
+    "all_other_sections": "original section behavior retained"
+  },
+  "behavior": "Each exact source item is a manual camera step with its own source item ID, parent section ID, group prescription, and demo links. Completion is user acknowledged, not recognized movement.",
+  "first_failed_test": {
+    "result": "/tmp/coin-workout-derived/Logs/Test/Test-Coin-2026.10.02_18-55-20--0400.xcresult",
+    "cause": "Three combination lists with plus signs were not expanded; unit URL assertion omitted the source section fragment; UI test selected one of several instruction controls ambiguously."
+  },
+  "verified_test": {
+    "result": "/tmp/coin-workout-derived/Logs/Test/Test-Coin-2026.10.02_18-59-02--0400.xcresult",
+    "unit_tests_passed": 46,
+    "ui_tests_passed": 5,
+    "day6_ui": "Ten source steps, Pallof Press resumes after relaunch, recap and saved progress verified"
+  },
+  "physical_install": {
+    "device": "Lakshmi iPhone 11 Pro",
+    "device_id": "DCB3F4A7-4528-5743-9F8B-DA1230DB95B6",
+    "signed_build": "/tmp/coin-source-steps-phone/Build/Products/Debug-iphoneos/Coin.app",
+    "bundle_install_path": "/private/var/containers/Bundle/Application/AA301A9D-3C01-478E-985B-0106074B4FB6/Coin.app/",
+    "launch_pid": 33887,
+    "result": "Installed and launched"
+  },
+  "mlflow": {
+    "development_usage_run": "486c5a2b252c4c3aa094813568b6e8c9",
+    "exposed_response_records": 1952,
+    "actual_billed_usd": null,
+    "estimate_usd": null,
+    "coverage": "Exposed usage records only; no hidden reasoning capture"
+  },
+  "remaining_validation": "A real physical-phone workout with normal camera placement, MediaPipe/Vision movement evidence, and coaching usefulness has not been verified. Original source instructions are English."
+}
