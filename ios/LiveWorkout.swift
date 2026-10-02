@@ -149,7 +149,11 @@ final class WorkoutCamera: NSObject, ObservableObject, AVCaptureVideoDataOutputS
     @Published var position: AVCaptureDevice.Position = .front
     @Published var videoSize: CGSize = .zero
     @Published var latestExchange: LabeledExchange?
+    @Published var latestEvidence: [EvidenceCard] = []
     private var tracker = ExchangeTracker()
+    let evidence = EvidenceRing()
+    private let ciContext = CIContext()
+    private var lastSnapshot = 0
     private let queue = DispatchQueue(label: "coin.workout.camera")
     private let frameQueue = DispatchQueue(label: "coin.workout.pose")
     private var landmarker: PoseLandmarker?
@@ -282,6 +286,14 @@ final class WorkoutCamera: NSObject, ObservableObject, AVCaptureVideoDataOutputS
                 DispatchQueue.main.async { self.videoSize = size }
             }
         }
+        if timestamp - lastSnapshot >= 250, let buffer = CMSampleBufferGetImageBuffer(sampleBuffer) {
+            // Low-resolution evidence frames (about 4 per second, last 5 s) so a fault can be shown after the round.
+            lastSnapshot = timestamp
+            let frame = CIImage(cvPixelBuffer: buffer)
+            let scale = 360 / max(frame.extent.width, 1)
+            let small = frame.transformed(by: CGAffineTransform(scaleX: scale, y: scale))
+            if let cg = ciContext.createCGImage(small, from: small.extent) { evidence.add(t: timestamp, image: cg) }
+        }
         guard let image = try? MPImage(sampleBuffer: sampleBuffer, orientation: .up) else { return }
         timingLock.lock()
         submittedAt[timestamp] = (receivedAt, epoch)
@@ -308,8 +320,14 @@ final class WorkoutCamera: NSObject, ObservableObject, AVCaptureVideoDataOutputS
         lastMotionFrame = (timestampInMilliseconds, joints)
         let exchangeEvents = error == nil ? tracker.feed(timeMs: timestampInMilliseconds, joints: joints) : []
         motionLock.unlock()
+        if !joints.isEmpty { evidence.setJoints(t: timestampInMilliseconds, joints: joints) }
         for case .exchange(let exchange) in exchangeEvents {
             DispatchQueue.main.async { self.latestExchange = exchange }
+            if !exchange.faults.isEmpty {
+                let language = UserDefaults.standard.string(forKey: "language") ?? "fr"
+                let cards = EvidenceRenderer.cards(for: exchange, ring: evidence, language: language, stance: "orthodox")
+                if !cards.isEmpty { DispatchQueue.main.async { self.latestEvidence = cards } }
+            }
         }
         let gap = timestampInMilliseconds - (previousFrame?.timestamp ?? timestampInMilliseconds)
         let wristTravel: Double?
@@ -554,6 +572,8 @@ struct LiveWorkoutView: View {
     @State private var cuePolicy = ExchangeCuePolicy()
     @State private var roundExchanges: [LabeledExchange] = []
     @State private var shadowTheme = -1
+    @State private var roundEvidence: [EvidenceCard] = []
+    @State private var lastEvidence: [EvidenceCard] = []
     @State private var segmentIndex = 0
     @State private var remaining = 0
     @State private var running = false
@@ -690,6 +710,18 @@ struct LiveWorkoutView: View {
                         } else {
                             Text(TrainingCopy.text("rest_instruction", language)).font(.subheadline)
                         }
+                        if !lastEvidence.isEmpty {
+                            // What the camera saw: one annotated frame per fault from the last round.
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 8) {
+                                    ForEach(lastEvidence) { card in
+                                        Image(uiImage: card.image).resizable().scaledToFit()
+                                            .frame(height: 170).clipShape(RoundedRectangle(cornerRadius: 6))
+                                            .accessibilityLabel(card.caption)
+                                    }
+                                }
+                            }
+                        }
                     }
                     HStack(spacing: 14) {
                         Button {
@@ -790,6 +822,10 @@ struct LiveWorkoutView: View {
             }
             if labeled.cue == nil { voice.exchangeSound(fault: !exchange.faults.isEmpty) }
             roundExchanges.append(labeled)
+        }
+        .onReceive(camera.$latestEvidence) { cards in
+            guard let current, current.block.kind == .boxing, !current.isRest else { return }
+            roundEvidence += cards
         }
         .onReceive(roundReports.$latest) { report in
             guard let report, let current, current.isRest else { return }
@@ -939,6 +975,7 @@ struct LiveWorkoutView: View {
         for exchange in camera.takeRoundExchanges() where byID[exchange.id] == nil { byID[exchange.id] = exchange }
         let exchanges = byID.values.sorted { $0.id < $1.id }
         roundExchanges = []; cuePolicy = ExchangeCuePolicy()
+        lastEvidence = roundEvidence; roundEvidence = []
         guard !exchanges.isEmpty else { return }
         roundReports.submit(RoundSummary(requestID: UUID().uuidString, language: language, stance: "orthodox",
                                          drillID: segment.block.drillID, round: segment.block.roundNumber ?? 0,

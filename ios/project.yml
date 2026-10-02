@@ -34,6 +34,7 @@ targets:
       - LiveWorkout.swift
       - ExchangeTracker.swift
       - RoundReport.swift
+      - EvidenceCapture.swift
       - path: LocalConfig.json
         optional: true
       - VoiceCues/en_cooldown_speech.mp3

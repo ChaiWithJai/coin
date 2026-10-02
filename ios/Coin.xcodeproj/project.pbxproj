@@ -12,7 +12,6 @@
 		0321A361EEABDD5D9273E6B2 /* en_squats_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = EAAD6AD111D4DAB730355015 /* en_squats_cue.mp3 */; };
 		0360296025155AB60C041A67 /* GuardFlowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 963A427486EDF99D2A80E2ED /* GuardFlowTests.swift */; };
 		0EED624B951048C4C4FD9C71 /* fr_shadowboxing_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 760BD32B3B99EC8C233B41EC /* fr_shadowboxing_cue.mp3 */; };
-		164DD488B792840E8C57B88F /* Pods_Coin.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB98B45A5150E1F51995BB2E /* Pods_Coin.framework */; };
 		1BF3D0D11E87EC39C41EEDC2 /* TrainingModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C62A92AA909C28AED6B0792B /* TrainingModelTests.swift */; };
 		2335D21491DE5C29B84675FC /* LocalConfig.json in Resources */ = {isa = PBXBuildFile; fileRef = A4CF5CB5BE3CF7EBF0A5BFB4 /* LocalConfig.json */; };
 		3217F6D07757B48E150E66FA /* CoachingClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B94EF50BCAC352618C6BDAF4 /* CoachingClient.swift */; };
@@ -23,6 +22,7 @@
 		450D4A0FC74BBB8027B3E762 /* fr_probe_late_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E0CD0D15FCB90CCE599A82F6 /* fr_probe_late_cue.mp3 */; };
 		4C99702E58F44CBEBFC92F9E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 10DA177B4E61D928C2B3804A /* Assets.xcassets */; };
 		4F2F2F79CE8D191594FBE96B /* en_guard_late_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 7C8674C36766F3CC7B88E58D /* en_guard_late_cue.mp3 */; };
+		5664EEE6733AA0550DE00190 /* EvidenceCaptureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FADE405EFDBDC088E797ADFA /* EvidenceCaptureTests.swift */; };
 		5915E0A19FAF3E66E403CA9C /* RoundReport.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4D99C2870BE73388DFB6554 /* RoundReport.swift */; };
 		6D5BAC01C91E873545C10A51 /* ReviewRequestStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0E0AEF89485FE5A96B94B5A /* ReviewRequestStore.swift */; };
 		7385C83E6DB58C4C3C3B3455 /* TrainingViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = C33E9193EFE38EE1F4D8EC54 /* TrainingViews.swift */; };
@@ -30,6 +30,7 @@
 		747449F8E11E7E413B585DFE /* en_free_late_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = CE1B2E2F38A6B6111DC40089 /* en_free_late_cue.mp3 */; };
 		7F50A11E6E8D372182EFB61A /* en_guard_round_speech.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = BACDD627F4BD3BC61620EC60 /* en_guard_round_speech.mp3 */; };
 		808FF29949245E024E7C3DB8 /* en_lunges_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = F10F4D2585E436427628683C /* en_lunges_cue.mp3 */; };
+		84BF4D7F6B7A0A1492461DA2 /* Pods_Coin.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED53207DC8BA55DD6B1515B4 /* Pods_Coin.framework */; };
 		877EE9E9E3E830BF085085F4 /* ExchangeTrackerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A042C8437AAA41B3E602A4B0 /* ExchangeTrackerTests.swift */; };
 		882E4DC572B096685B3320C1 /* fr_lunges_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 5BC2C2E172ABEC1B77F3987D /* fr_lunges_cue.mp3 */; };
 		8C2171F0D05FA949AC1A5CD0 /* CoachingCopy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67FF365A4ECD7E5586A2944E /* CoachingCopy.swift */; };
@@ -43,6 +44,7 @@
 		A1FD1A90528D6EEFB4F1306B /* en_mobility_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = AC8046F581E562F48CCE7FAC /* en_mobility_cue.mp3 */; };
 		A9411B5ED6FF34D923B8D62F /* en_guard_mid_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 2873053203FC8F43F4E02954 /* en_guard_mid_cue.mp3 */; };
 		A9B0E725F2417F603F7BF709 /* fr_guard_mid_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 17A654BF5AFE9AA1772B10F9 /* fr_guard_mid_cue.mp3 */; };
+		AA24DC3975150783D5EE96BF /* EvidenceCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9595BEC51BC87CA098E53F /* EvidenceCapture.swift */; };
 		B0F815C8484988C5FD322BE5 /* fr_guard_round_speech.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 70E879C52825C0C30781D2D3 /* fr_guard_round_speech.mp3 */; };
 		B2DFA140C3EB57A2A31AF1C0 /* PoseAnalysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCBF209919D815548051C13 /* PoseAnalysis.swift */; };
 		BC62D48B37D04547CB431641 /* fr_opening.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 3C725A1B8DC5BB37500EEA59 /* fr_opening.mp3 */; };
@@ -78,6 +80,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		06297B385453D2795A2D89C7 /* Pods-Coin.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Coin.debug.xcconfig"; path = "Target Support Files/Pods-Coin/Pods-Coin.debug.xcconfig"; sourceTree = "<group>"; };
 		10DA177B4E61D928C2B3804A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		167036E47C90AC6984873B68 /* fr_cooldown_speech.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = fr_cooldown_speech.mp3; sourceTree = "<group>"; };
 		17A654BF5AFE9AA1772B10F9 /* fr_guard_mid_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = fr_guard_mid_cue.mp3; sourceTree = "<group>"; };
@@ -97,11 +100,13 @@
 		68295785E6979ABC38B63141 /* fr_round_speech.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = fr_round_speech.mp3; sourceTree = "<group>"; };
 		694152EA177F711CF5BBC929 /* en_free_round_speech.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_free_round_speech.mp3; sourceTree = "<group>"; };
 		6B010D2F3B2E7A2EC5F03697 /* fr_probe_mid_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = fr_probe_mid_cue.mp3; sourceTree = "<group>"; };
+		6F2A00B128B95BB260B8E692 /* Pods-Coin.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Coin.release.xcconfig"; path = "Target Support Files/Pods-Coin/Pods-Coin.release.xcconfig"; sourceTree = "<group>"; };
 		70E879C52825C0C30781D2D3 /* fr_guard_round_speech.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = fr_guard_round_speech.mp3; sourceTree = "<group>"; };
 		739344F947F29F891BEB9B98 /* en_probe_mid_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_probe_mid_cue.mp3; sourceTree = "<group>"; };
 		760BD32B3B99EC8C233B41EC /* fr_shadowboxing_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = fr_shadowboxing_cue.mp3; sourceTree = "<group>"; };
 		78BA8330E77C72A23BB50801 /* fr_guard_late_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = fr_guard_late_cue.mp3; sourceTree = "<group>"; };
 		7C8674C36766F3CC7B88E58D /* en_guard_late_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_guard_late_cue.mp3; sourceTree = "<group>"; };
+		8E9595BEC51BC87CA098E53F /* EvidenceCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvidenceCapture.swift; sourceTree = "<group>"; };
 		91109AAD09019EEE3B0317B0 /* fr.lproj */ = {isa = PBXFileReference; path = fr.lproj; sourceTree = "<group>"; };
 		963A427486EDF99D2A80E2ED /* GuardFlowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuardFlowTests.swift; sourceTree = "<group>"; };
 		9A86E4068D498EF3A4C0D28E /* en_free_mid_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_free_mid_cue.mp3; sourceTree = "<group>"; };
@@ -110,7 +115,6 @@
 		A0E0AEF89485FE5A96B94B5A /* ReviewRequestStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewRequestStore.swift; sourceTree = "<group>"; };
 		A4CF5CB5BE3CF7EBF0A5BFB4 /* LocalConfig.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = LocalConfig.json; sourceTree = "<group>"; };
 		AA126C6A2CB87A5BF3D32E89 /* CoinTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = CoinTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		AB98B45A5150E1F51995BB2E /* Pods_Coin.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Coin.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AC8046F581E562F48CCE7FAC /* en_mobility_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_mobility_cue.mp3; sourceTree = "<group>"; };
 		B5CFD70A62D6B2F4E601D7CF /* en_opening.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_opening.mp3; sourceTree = "<group>"; };
 		B6E6C07A3DD5FCFEB9DE4935 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -121,7 +125,6 @@
 		C4D99C2870BE73388DFB6554 /* RoundReport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundReport.swift; sourceTree = "<group>"; };
 		C62A92AA909C28AED6B0792B /* TrainingModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingModelTests.swift; sourceTree = "<group>"; };
 		C76C22526372AA63A65A45E8 /* fr_free_late_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = fr_free_late_cue.mp3; sourceTree = "<group>"; };
-		C8542EFD708E9C022A9ABB32 /* Pods-Coin.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Coin.release.xcconfig"; path = "Target Support Files/Pods-Coin/Pods-Coin.release.xcconfig"; sourceTree = "<group>"; };
 		CCCBF209919D815548051C13 /* PoseAnalysis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseAnalysis.swift; sourceTree = "<group>"; };
 		CE1B2E2F38A6B6111DC40089 /* en_free_late_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_free_late_cue.mp3; sourceTree = "<group>"; };
 		D7C4DF8505FB0059289BD01C /* CoinApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinApp.swift; sourceTree = "<group>"; };
@@ -130,20 +133,21 @@
 		E0CD0D15FCB90CCE599A82F6 /* fr_probe_late_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = fr_probe_late_cue.mp3; sourceTree = "<group>"; };
 		E82AAB99EEEF87D8C7228B81 /* en_shadowboxing_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_shadowboxing_cue.mp3; sourceTree = "<group>"; };
 		EAAD6AD111D4DAB730355015 /* en_squats_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_squats_cue.mp3; sourceTree = "<group>"; };
+		ED53207DC8BA55DD6B1515B4 /* Pods_Coin.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Coin.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		EFB516E2BBE5ADF1979915F8 /* en_rest_speech.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_rest_speech.mp3; sourceTree = "<group>"; };
 		F10F4D2585E436427628683C /* en_lunges_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_lunges_cue.mp3; sourceTree = "<group>"; };
 		F126B44FADF979DB60876D00 /* fr_mobility_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = fr_mobility_cue.mp3; sourceTree = "<group>"; };
 		F42194BDBA060BCDE5C58843 /* en_round_speech.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_round_speech.mp3; sourceTree = "<group>"; };
-		F5DF4DEBB17D8202BF21664D /* Pods-Coin.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Coin.debug.xcconfig"; path = "Target Support Files/Pods-Coin/Pods-Coin.debug.xcconfig"; sourceTree = "<group>"; };
+		FADE405EFDBDC088E797ADFA /* EvidenceCaptureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvidenceCaptureTests.swift; sourceTree = "<group>"; };
 		FDC99EF8D21DF8D2E4369F8B /* ExchangeTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeTracker.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		1BE38B88AFB6E0085B654B2E /* Frameworks */ = {
+		9EE9103E2DD874C9797ACF3D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				164DD488B792840E8C57B88F /* Pods_Coin.framework in Frameworks */,
+				84BF4D7F6B7A0A1492461DA2 /* Pods_Coin.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -158,6 +162,7 @@
 				67FF365A4ECD7E5586A2944E /* CoachingCopy.swift */,
 				D7C4DF8505FB0059289BD01C /* CoinApp.swift */,
 				2B2D0202385785E426F3B631 /* en.lproj */,
+				8E9595BEC51BC87CA098E53F /* EvidenceCapture.swift */,
 				FDC99EF8D21DF8D2E4369F8B /* ExchangeTracker.swift */,
 				91109AAD09019EEE3B0317B0 /* fr.lproj */,
 				363F1D99A7A5A90CB65A3335 /* GuardReview.swift */,
@@ -174,17 +179,9 @@
 				BB712941342F6C8DF4EA7006 /* unittests */,
 				EB1379859BECF1D9BCFE3760 /* VoiceCues */,
 				66AD28573D5EBD30EBE49ED9 /* Products */,
-				F0732AD7AD1124C0CE26A0EA /* Pods */,
-				48C9A1AD251107A2CA629FC8 /* Frameworks */,
+				D6F28B606B5C636D393611F6 /* Pods */,
+				C10C0A29B0634605CE68A72A /* Frameworks */,
 			);
-			sourceTree = "<group>";
-		};
-		48C9A1AD251107A2CA629FC8 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				AB98B45A5150E1F51995BB2E /* Pods_Coin.framework */,
-			);
-			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		66AD28573D5EBD30EBE49ED9 /* Products */ = {
@@ -208,10 +205,29 @@
 		BB712941342F6C8DF4EA7006 /* unittests */ = {
 			isa = PBXGroup;
 			children = (
+				FADE405EFDBDC088E797ADFA /* EvidenceCaptureTests.swift */,
 				A042C8437AAA41B3E602A4B0 /* ExchangeTrackerTests.swift */,
 				C62A92AA909C28AED6B0792B /* TrainingModelTests.swift */,
 			);
 			path = unittests;
+			sourceTree = "<group>";
+		};
+		C10C0A29B0634605CE68A72A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				ED53207DC8BA55DD6B1515B4 /* Pods_Coin.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		D6F28B606B5C636D393611F6 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				06297B385453D2795A2D89C7 /* Pods-Coin.debug.xcconfig */,
+				6F2A00B128B95BB260B8E692 /* Pods-Coin.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
 			sourceTree = "<group>";
 		};
 		EB1379859BECF1D9BCFE3760 /* VoiceCues */ = {
@@ -253,16 +269,6 @@
 			path = VoiceCues;
 			sourceTree = "<group>";
 		};
-		F0732AD7AD1124C0CE26A0EA /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				F5DF4DEBB17D8202BF21664D /* Pods-Coin.debug.xcconfig */,
-				C8542EFD708E9C022A9ABB32 /* Pods-Coin.release.xcconfig */,
-			);
-			name = Pods;
-			path = Pods;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -270,10 +276,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = FB651B2EC57D7A5F256B72E1 /* Build configuration list for PBXNativeTarget "Coin" */;
 			buildPhases = (
-				BF64DDCD6E16EB35A3AB6B72 /* [CP] Check Pods Manifest.lock */,
+				6AA6A9C2D8C06FB770DF2485 /* [CP] Check Pods Manifest.lock */,
 				F786D31A65984F7637FC4EA7 /* Sources */,
 				2ED6E481E0B96BA1277282C0 /* Resources */,
-				1BE38B88AFB6E0085B654B2E /* Frameworks */,
+				9EE9103E2DD874C9797ACF3D /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -408,7 +414,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		BF64DDCD6E16EB35A3AB6B72 /* [CP] Check Pods Manifest.lock */ = {
+		6AA6A9C2D8C06FB770DF2485 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -437,6 +443,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5664EEE6733AA0550DE00190 /* EvidenceCaptureTests.swift in Sources */,
 				877EE9E9E3E830BF085085F4 /* ExchangeTrackerTests.swift in Sources */,
 				1BF3D0D11E87EC39C41EEDC2 /* TrainingModelTests.swift in Sources */,
 			);
@@ -457,6 +464,7 @@
 				3217F6D07757B48E150E66FA /* CoachingClient.swift in Sources */,
 				8C2171F0D05FA949AC1A5CD0 /* CoachingCopy.swift in Sources */,
 				EE740F45E71A240B83B5B808 /* CoinApp.swift in Sources */,
+				AA24DC3975150783D5EE96BF /* EvidenceCapture.swift in Sources */,
 				DEC847A3C5FDCB9F9FD34EFD /* ExchangeTracker.swift in Sources */,
 				9145CC1A6596E36971F94967 /* GuardReview.swift in Sources */,
 				98778AA15912D88E54E049B7 /* LiveWorkout.swift in Sources */,
@@ -486,7 +494,7 @@
 /* Begin XCBuildConfiguration section */
 		10262B971B41D3B28B8F3DC0 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = C8542EFD708E9C022A9ABB32 /* Pods-Coin.release.xcconfig */;
+			baseConfigurationReference = 6F2A00B128B95BB260B8E692 /* Pods-Coin.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -554,7 +562,7 @@
 		};
 		5E7E35426812D7498524CF70 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = F5DF4DEBB17D8202BF21664D /* Pods-Coin.debug.xcconfig */;
+			baseConfigurationReference = 06297B385453D2795A2D89C7 /* Pods-Coin.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
