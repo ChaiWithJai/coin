@@ -1,0 +1,44 @@
+[
+  {
+    "id": "01-home",
+    "order": 0,
+    "flow": "entry",
+    "title": "Start session",
+    "mobile": "shots/noir-home-corner.png"
+  },
+  {
+    "id": "02-live-before",
+    "order": 1,
+    "flow": "workout",
+    "title": "Live camera before",
+    "mobile": "shots/noir-live-camera-switch.png"
+  },
+  {
+    "id": "03-live-after",
+    "order": 2,
+    "flow": "workout",
+    "title": "Live camera compact",
+    "mobile": "shots/noir-live-compact.png"
+  },
+  {
+    "id": "04-recap",
+    "order": 3,
+    "flow": "review",
+    "title": "Session recap",
+    "mobile": "shots/noir-recap.png"
+  },
+  {
+    "id": "05-film",
+    "order": 4,
+    "flow": "review",
+    "title": "Film notebook",
+    "mobile": "shots/guard-analysis.png"
+  },
+  {
+    "id": "06-calendar",
+    "order": 5,
+    "flow": "plan",
+    "title": "Calendar",
+    "mobile": "shots/round-review.png"
+  }
+]

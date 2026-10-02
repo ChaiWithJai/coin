@@ -1,0 +1,1 @@
+Ray of Light style screenshot atlas for Coin. Open samples.json with its annotation workflow; the review uses normalized rectangles. Screenshots are simulator captures and cannot validate real camera composition. The film and calendar examples are earlier journey captures and should be recaptured after the next build.

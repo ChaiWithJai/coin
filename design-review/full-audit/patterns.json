@@ -1,0 +1,136 @@
+[
+  {
+    "mode": "tab-occlusion",
+    "description": "Floating bottom navigation covers lower list rows and cards because screens lack matching bottom scroll clearance.",
+    "count": 6,
+    "example_ids": [
+      "01-home-fr/mobile",
+      "02-home-en/mobile",
+      "07-film-en/mobile",
+      "13-film-fr/mobile",
+      "09-calendar-en/mobile",
+      "14-calendar-fr/mobile"
+    ],
+    "example_quotes": [
+      "Floating tab bar overlaps the first training-log row. The log's content continues behind it and is hard to scan or tap.",
+      "Training-log rows appear under the floating navigation bar. Add actual scroll content inset or relocate navigation."
+    ]
+  },
+  {
+    "mode": "language-leak",
+    "description": "Selected French language does not propagate to all counts, stage names, date labels and fixture-derived content.",
+    "count": 4,
+    "example_ids": [
+      "11-live-round-fr/mobile",
+      "12-recap-fr/mobile",
+      "13-film-fr/mobile",
+      "14-calendar-fr/mobile"
+    ],
+    "example_quotes": [
+      "French live round still labels the stage ROUND 1. Use the selected app language consistently in the camera UI.",
+      "French recap still says rounds and drill. Decide whether these are intentional boxing loanwords; current mixed register differs from the rest of the French UI."
+    ]
+  },
+  {
+    "mode": "overscaled-display",
+    "description": "Large title cards consume the first viewport and push the workout or review action/evidence below it.",
+    "count": 4,
+    "example_ids": [
+      "01-home-fr/mobile",
+      "02-home-en/mobile",
+      "05-recap-en/mobile",
+      "12-recap-fr/mobile"
+    ],
+    "example_quotes": [
+      "Two-line display title consumes about a quarter of the first screen. The camera start and chosen session sit below a long introduction, making entry feel like reading a poster rather than entering a workout.",
+      "The English headline takes nearly the full width and dominates the initial viewport. Reduce its type size and vertical block to bring the start action higher."
+    ]
+  },
+  {
+    "mode": "overscaled-live-hud",
+    "description": "Live bottom overlay uses a larger timer/button stack than needed for glanceable coaching over camera footage.",
+    "count": 4,
+    "example_ids": [
+      "03-live-warmup-en/mobile",
+      "04-live-round-en/mobile",
+      "10-live-warmup-fr/mobile",
+      "11-live-round-fr/mobile"
+    ],
+    "example_quotes": [
+      "The bottom HUD is tall and the red Start button fills most of its width. The camera area is visually clear in simulator, but usable framing with a real image is unverified.",
+      "The timer and Pause control dominate the bottom of the camera view. Make the timer and controls compact enough to read at a glance without masking feet or bag action."
+    ]
+  },
+  {
+    "mode": "contrast-mismatch",
+    "description": "Light text on the warm ivory film notebook destroys hierarchy and legibility in both languages.",
+    "count": 2,
+    "example_ids": [
+      "07-film-en/mobile",
+      "13-film-fr/mobile"
+    ],
+    "example_quotes": [
+      "White title, subtitle, section labels and status-bar text sit on warm ivory; several are nearly invisible. Correct color tokens before any further styling.",
+      "The same white-on-ivory failure hides the French film title and section labels. This persists across both languages."
+    ]
+  },
+  {
+    "mode": "native-style-drift",
+    "description": "Session log and calendar use bulky system grouped-list proportions instead of the established compact noir language.",
+    "count": 2,
+    "example_ids": [
+      "06-session-log-en/mobile",
+      "09-calendar-en/mobile"
+    ],
+    "example_quotes": [
+      "Dense grouped Form card, large navigation header and repeated planned rows abandon the compact editorial style of the entry and live views. Collapse untouched future rounds and elevate observed segments.",
+      "A single tall system-style card dominates the planning screen, with large blank space beneath the month grid. Distinguish calendar dates from log rows and keep the card proportional to the content."
+    ]
+  },
+  {
+    "mode": "visual-entropy",
+    "description": "Too many competing entry elements weaken the one-tap camera start.",
+    "count": 2,
+    "example_ids": [
+      "01-home-fr/mobile",
+      "02-home-en/mobile"
+    ],
+    "example_quotes": [
+      "Duration row, oversized red CTA and explanatory floor-angle paragraph form three stacked calls for attention. Preserve the corner mark, but reduce secondary copy and make the start control the single focus.",
+      "Large duration boxes and saturated button compete with the large title. Establish one accent use and a smaller control scale."
+    ]
+  },
+  {
+    "mode": "french-overflow",
+    "description": "Fixed three-column metric layout does not fit longer French labels and causes actual overlap.",
+    "count": 1,
+    "example_ids": [
+      "12-recap-fr/mobile"
+    ],
+    "example_quotes": [
+      "French stat labels overlap: ÉCHANTILLONS CAMÉRA runs into CONSIGNES DEMANDÉES. Three equal columns do not accommodate the French strings."
+    ]
+  },
+  {
+    "mode": "metric-ambiguity",
+    "description": "A technically precise completed-round count appears contradictory beside a reached-round card.",
+    "count": 1,
+    "example_ids": [
+      "05-recap-en/mobile"
+    ],
+    "example_quotes": [
+      "0 timed rounds appears above a Round 1 reached card. Both are technically distinguishable, but the hierarchy makes the report look self-contradictory. Lead with time trained and rounds reached, then label completed full rounds separately."
+    ]
+  },
+  {
+    "mode": "technical-frontload",
+    "description": "Technical server controls and telemetry explanations intrude into the consumer film flow.",
+    "count": 1,
+    "example_ids": [
+      "08-settings-en/mobile"
+    ],
+    "example_quotes": [
+      "Connection settings foreground URL, access key and pose telemetry in a large technical sheet reached from the film notebook. Keep this out of the first-use coaching journey and use compact support copy."
+    ]
+  }
+]

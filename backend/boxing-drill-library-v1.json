@@ -1,0 +1,46 @@
+{
+  "library_version": "coin-boxing-drills-v1",
+  "status": "prototype_not_coach_validated",
+  "protocols": [
+    {
+      "id": "probe-combine-angle-v1",
+      "goal": "Repeat an engagement: probe, combine, leave the line, reset.",
+      "engagement_phases": ["initiate", "interact", "terminate", "reset"],
+      "selected_position_default": "in_out",
+      "positional_variants": {
+        "in_out": "Approach and leave the line after the combination.",
+        "forward_pressure": "Advance behind the jab while preserving a deliberate end to the exchange.",
+        "planted_pivot": "Turn around the lead foot while preserving balance; do not require a large step."
+      },
+      "camera_evidence": {
+        "required_for_angle_claim": ["hips_visible", "feet_visible", "temporal_track_stable"],
+        "required_for_punch_candidate": ["shoulders_visible", "wrists_visible", "temporal_track_stable"],
+        "unknown_when": ["out_of_frame", "bag_occlusion", "multiple_people", "camera_moved", "insufficient_angle"],
+        "unverified_claims": ["punch_landed", "opponent_reaction", "absolute_distance", "successful_tactic"]
+      },
+      "live_cue_policy": {
+        "max_cues_at_once": 1,
+        "allowed_cue_ids": ["probe_first", "exit_reset", "quiet"],
+        "quiet_on_uncertainty": true
+      },
+      "cue_copy": {
+        "probe_first": {"fr": "Ouvre avec le jab.", "en": "Open with the jab."},
+        "exit_reset": {"fr": "Sors de la ligne. Reprends ta place.", "en": "Leave the line. Reset your position."}
+      },
+      "provenance": [
+        {
+          "role": "curriculum_concept_not_training_label",
+          "path": "/Users/jaibhagat/code/prismml/astral-school/public/data/boxing-foundations.json",
+          "sha256": "49854a4cf3258d06eb4517614181f345994b9f70bdc72351ae51f35882a0eb26",
+          "source_ids": ["feet", "attention", "coordination"]
+        },
+        {
+          "role": "reviewed_instruction_not_user_footage",
+          "path": "/Users/jaibhagat/code/prismml/astral-school/docs/reviews/boxing-inout-reviewed.json",
+          "sha256": "f6f8b9ce3a9b50517017d685b7a111194f7f892fa594b0ff44cd9f345c0b4d0f",
+          "source_ids": ["ghDNbod8B3s", "9gqxqT57qkA", "6XbTboFL0nY"]
+        }
+      ]
+    }
+  ]
+}

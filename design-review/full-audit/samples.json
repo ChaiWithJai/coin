@@ -1,0 +1,100 @@
+[
+  {
+    "id": "01-home-fr",
+    "order": 0,
+    "flow": "entry",
+    "title": "French workout entry",
+    "mobile": "shots/01-home-fr.png"
+  },
+  {
+    "id": "02-home-en",
+    "order": 1,
+    "flow": "entry",
+    "title": "English workout entry",
+    "mobile": "shots/02-home-en.png"
+  },
+  {
+    "id": "03-live-warmup-en",
+    "order": 2,
+    "flow": "live",
+    "title": "English camera and warm-up",
+    "mobile": "shots/03-live-warmup-en.png"
+  },
+  {
+    "id": "04-live-round-en",
+    "order": 3,
+    "flow": "live",
+    "title": "English boxing round",
+    "mobile": "shots/04-live-round-en.png"
+  },
+  {
+    "id": "05-recap-en",
+    "order": 4,
+    "flow": "review",
+    "title": "English immediate recap",
+    "mobile": "shots/05-recap-en.png"
+  },
+  {
+    "id": "06-session-log-en",
+    "order": 5,
+    "flow": "review",
+    "title": "English session log",
+    "mobile": "shots/06-session-log-en.png"
+  },
+  {
+    "id": "07-film-en",
+    "order": 6,
+    "flow": "film",
+    "title": "English film notebook",
+    "mobile": "shots/07-film-en.png"
+  },
+  {
+    "id": "08-settings-en",
+    "order": 7,
+    "flow": "settings",
+    "title": "English connection settings",
+    "mobile": "shots/08-settings-en.png"
+  },
+  {
+    "id": "09-calendar-en",
+    "order": 8,
+    "flow": "calendar",
+    "title": "English training calendar",
+    "mobile": "shots/09-calendar-en.png"
+  },
+  {
+    "id": "10-live-warmup-fr",
+    "order": 9,
+    "flow": "live",
+    "title": "French camera and warm-up",
+    "mobile": "shots/10-live-warmup-fr.png"
+  },
+  {
+    "id": "11-live-round-fr",
+    "order": 10,
+    "flow": "live",
+    "title": "French boxing round",
+    "mobile": "shots/11-live-round-fr.png"
+  },
+  {
+    "id": "12-recap-fr",
+    "order": 11,
+    "flow": "review",
+    "title": "French immediate recap",
+    "mobile": "shots/12-recap-fr.png"
+  },
+  {
+    "id": "13-film-fr",
+    "order": 12,
+    "flow": "film",
+    "title": "French film notebook",
+    "mobile": "shots/13-film-fr.png"
+  },
+  {
+    "id": "14-calendar-fr",
+    "order": 13,
+    "flow": "calendar",
+    "title": "French training calendar",
+    "mobile": "shots/14-calendar-fr.png"
+  }
+]

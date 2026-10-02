@@ -1,0 +1,25 @@
+{
+  "request": {
+    "request_id": "c5fa4af5-b0c9-4eba-bd6f-da3cca4cc7b8",
+    "session_id": "7fd4e6e9-5be0-40f8-9e86-89ba790dbba7",
+    "language": "fr",
+    "notes": [
+      {
+        "seconds": 13.0,
+        "text": "Main arrière basse (repérée par l’analyse, confirmée)"
+      }
+    ]
+  },
+  "response": {
+    "observation": "Main arrière basse (repérée par l’analyse, confirmée)",
+    "clip_timestamp_seconds": 13.0,
+    "drill": "Au ralenti, fais un jab isolé en gardant la main arrière près du visage. Reviens à ta garde de départ avant de recommencer. Vérifie ce point avec ton coach.",
+    "limitation": "Suggestion fondée sur tes notes, sans analyse automatique de la vidéo. À confirmer avec ton coach.",
+    "drill_id": "guard_return",
+    "drill_library_version": "prototype-library-v1",
+    "event_id": "53973e6c-cd8e-4fae-805a-3622099010e0",
+    "evidence_source": "user_notes",
+    "model": "bonsai2-27b",
+    "_seconds": 1.13
+  }
+}

@@ -1,0 +1,20 @@
+# dependencies and build output
+ios/Pods/
+ios/build/
+**/xcuserdata/
+DerivedData/
+*.xcresult
+__pycache__/
+.venv/
+# local tracking stores and runtime state
+backend/mlruns/
+backend/mlflow.db
+server/state/
+# secrets
+server/service-token
+*.env
+# media never goes in the repo
+*.mp4
+*.mov
+*.MOV
+ios/.derivedData/

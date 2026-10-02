@@ -1,0 +1,265 @@
+{
+  "model": "fish-audio/s2.1-pro",
+  "provider": "Vercel AI Gateway",
+  "voice_config": "BONSAI_DOLLY_VOICE_ID",
+  "billed_cost_usd": null,
+  "cost_status": "Gateway response did not expose billed cost; unknown is not zero.",
+  "generated_audio": [
+    {
+      "language": "fr",
+      "cue_key": "opening",
+      "text": "Entre dans le round. Pose ton téléphone. Respire. On commence.",
+      "filename": "fr_opening.mp3",
+      "bytes": 98219,
+      "sha256": "14458408d25667ac375f4d138a6b2f885ea284d91d784d56d2c769a851a1eb19"
+    },
+    {
+      "language": "en",
+      "cue_key": "opening",
+      "text": "Enter the round. Set down your phone. Breathe. We begin.",
+      "filename": "en_opening.mp3",
+      "bytes": 80665,
+      "sha256": "b08643bf982ec58c31bc53aa8a0dad08be8bd9c401bb6fc90eb50c28625d385e"
+    },
+    {
+      "language": "fr",
+      "cue_key": "probe_mid_cue",
+      "text": "Jab pour ouvrir. Deux ou trois coups, puis sors en angle.",
+      "filename": "fr_probe_mid_cue.mp3",
+      "bytes": 86516,
+      "sha256": "604acb87449a66a74fa63755a648be3f802b376236657969b1c322b3b0349299"
+    },
+    {
+      "language": "en",
+      "cue_key": "probe_mid_cue",
+      "text": "Probe with the jab. Two or three punches, then exit on an angle.",
+      "filename": "en_probe_mid_cue.mp3",
+      "bytes": 82754,
+      "sha256": "ae23af84e00a047ec06011bab2f757a7cb04eee609c4898f7d1b1cd847a60a5d"
+    },
+    {
+      "language": "fr",
+      "cue_key": "rest_speech",
+      "text": "Récupération. Respire.",
+      "filename": "fr_rest_speech.mp3",
+      "bytes": 44720,
+      "sha256": "636a40e4ff9268f1506e95f957749d7c39e44b92e0240bc2f0d61c889e739ae3"
+    },
+    {
+      "language": "en",
+      "cue_key": "rest_speech",
+      "text": "Rest. Breathe.",
+      "filename": "en_rest_speech.mp3",
+      "bytes": 37615,
+      "sha256": "855524e0aeb225bf87dd4b73aca62d567e5304b736d3249da3b4c148863c6ba8"
+    },
+    {
+      "language": "fr",
+      "cue_key": "mobility_cue",
+      "text": "Mobilité. Bouge les épaules, les hanches et les chevilles.",
+      "filename": "fr_mobility_cue.mp3",
+      "bytes": 92368,
+      "sha256": "6cb02e78fa5b3b500bdcc1e2a3b3362fdef9aa29d8ca5b61c553c9bca3d03280"
+    },
+    {
+      "language": "en",
+      "cue_key": "mobility_cue",
+      "text": "Mobility. Move your shoulders, hips and ankles.",
+      "filename": "en_mobility_cue.mp3",
+      "bytes": 81919,
+      "sha256": "55223402dff678cc13dbfa7e491bf68d4002a348fa70303b77272040ff3bf6db"
+    },
+    {
+      "language": "fr",
+      "cue_key": "squats_cue",
+      "text": "Squats. Descends avec contrôle, puis remonte.",
+      "filename": "fr_squats_cue.mp3",
+      "bytes": 76067,
+      "sha256": "90ae3ed2136e6169db9a345c96a587316894019f3d36dae21e6ece64d7b2042c"
+    },
+    {
+      "language": "en",
+      "cue_key": "squats_cue",
+      "text": "Squats. Lower with control, then stand.",
+      "filename": "en_squats_cue.mp3",
+      "bytes": 68544,
+      "sha256": "d256600ee3d4bd0d0796fb6d428be2c5c12366f42498bb317c7c73e57ade32e8"
+    },
+    {
+      "language": "fr",
+      "cue_key": "lunges_cue",
+      "text": "Fentes. Alterne les jambes et garde ton équilibre.",
+      "filename": "fr_lunges_cue.mp3",
+      "bytes": 95293,
+      "sha256": "ea5986450de29773f7c70e901fa0671dca197ecf3200ec9e84b75d6fe2365b75"
+    },
+    {
+      "language": "en",
+      "cue_key": "lunges_cue",
+      "text": "Lunges. Alternate legs and keep your balance.",
+      "filename": "en_lunges_cue.mp3",
+      "bytes": 64364,
+      "sha256": "b6da2254f57599c1f73e49009cf32ffc875c84a7c8d96c48f9bcea124b38e842"
+    },
+    {
+      "language": "fr",
+      "cue_key": "shadowboxing_cue",
+      "text": "Boxe dans le vide. Jab léger, garde haute, petits pas.",
+      "filename": "fr_shadowboxing_cue.mp3",
+      "bytes": 93203,
+      "sha256": "8f5fe7bc3f7fd62d1105aa595117fb37899a24eac3ebacc9f283a974fe78a665"
+    },
+    {
+      "language": "en",
+      "cue_key": "shadowboxing_cue",
+      "text": "Shadowbox. Light jab, hands up, small steps.",
+      "filename": "en_shadowboxing_cue.mp3",
+      "bytes": 95293,
+      "sha256": "ce9a562f2bb8b6fcf4ec53ef3d254bd109a5e4ff4aea9c2bae4ef2db70eb8120"
+    },
+    {
+      "language": "fr",
+      "cue_key": "round_speech",
+      "text": "Jab, combinaison, sortie en angle.",
+      "filename": "fr_round_speech.mp3",
+      "bytes": 56841,
+      "sha256": "dac9de7125c39b0b6bbfa2599a1035b997e6d244bda85950f4c4b1bf3809925b"
+    },
+    {
+      "language": "en",
+      "cue_key": "round_speech",
+      "text": "Jab, combination, angle exit.",
+      "filename": "en_round_speech.mp3",
+      "bytes": 60603,
+      "sha256": "a86f7f894fae17a9ba0aacc554508694680cdc13d1b0c75a10e556e87432289a"
+    },
+    {
+      "language": "fr",
+      "cue_key": "guard_round_speech",
+      "text": "Après chaque coup, reviens en garde.",
+      "filename": "fr_guard_round_speech.mp3",
+      "bytes": 43466,
+      "sha256": "c898ff17adfb9f3c538ffa3fd6a3b5a90e24a796573d0925895733c42e821b76"
+    },
+    {
+      "language": "en",
+      "cue_key": "guard_round_speech",
+      "text": "Return to guard after every punch.",
+      "filename": "en_guard_round_speech.mp3",
+      "bytes": 40541,
+      "sha256": "69319120bedf17355e65c5b7980e3d3f950b9781cf1cd393abc76136d134a4cc"
+    },
+    {
+      "language": "fr",
+      "cue_key": "free_round_speech",
+      "text": "Round libre. Reste attentif à ta garde et à tes appuis.",
+      "filename": "fr_free_round_speech.mp3",
+      "bytes": 99891,
+      "sha256": "fe5bfb486c93d6b60e5e42d29517c2923c69188f9045c2de6a5020710571a407"
+    },
+    {
+      "language": "en",
+      "cue_key": "free_round_speech",
+      "text": "Open round. Stay aware of your guard and footwork.",
+      "filename": "en_free_round_speech.mp3",
+      "bytes": 81919,
+      "sha256": "a324c4819200ed12ae48d3b38502aa07dfd26aa6fc90c1863ff12edbb568d868"
+    },
+    {
+      "language": "fr",
+      "cue_key": "probe_late_cue",
+      "text": "Reviens en garde, change d'angle, puis recommence.",
+      "filename": "fr_probe_late_cue.mp3",
+      "bytes": 64782,
+      "sha256": "c70c5c4602287d96f89c774e72ce7568923d4984c73eadd997cb8da7ea330c1f"
+    },
+    {
+      "language": "en",
+      "cue_key": "probe_late_cue",
+      "text": "Recover your guard, change angle, then repeat.",
+      "filename": "en_probe_late_cue.mp3",
+      "bytes": 56005,
+      "sha256": "b7815db954875b2abc70a99d9316b2388b1931f872673276b2c4f9d71223e4ab"
+    },
+    {
+      "language": "fr",
+      "cue_key": "guard_mid_cue",
+      "text": "Après le jab, ramène la main tout de suite.",
+      "filename": "fr_guard_mid_cue.mp3",
+      "bytes": 50154,
+      "sha256": "9b1f888b2863ae587582e6c00784b3d6238924f30f66478d93091b09034fd40e"
+    },
+    {
+      "language": "en",
+      "cue_key": "guard_mid_cue",
+      "text": "After the jab, bring your hand straight back.",
+      "filename": "en_guard_mid_cue.mp3",
+      "bytes": 61021,
+      "sha256": "aac0d2eba61b6c8459cc4e302077865a648b486b87161ca0c629f1d4de9c9181"
+    },
+    {
+      "language": "fr",
+      "cue_key": "guard_late_cue",
+      "text": "Garde les mains en place entre les coups.",
+      "filename": "fr_guard_late_cue.mp3",
+      "bytes": 38033,
+      "sha256": "d782097901208b2b950a73e978d5386f5c67320b581765c4d50ed7ae762bb3d1"
+    },
+    {
+      "language": "en",
+      "cue_key": "guard_late_cue",
+      "text": "Keep your hands in position between punches.",
+      "filename": "en_guard_late_cue.mp3",
+      "bytes": 37615,
+      "sha256": "083fac5915dcc81d0e21002e16351a789e5ee70c0f02d6f42c7285eec1c0ab13"
+    },
+    {
+      "language": "fr",
+      "cue_key": "free_mid_cue",
+      "text": "Une minute écoulée. Continue à ton rythme.",
+      "filename": "fr_free_mid_cue.mp3",
+      "bytes": 50154,
+      "sha256": "159c0f182cc840b311974b3e3aaa5daac23a69f56f189ad040ed34630d947e0c"
+    },
+    {
+      "language": "en",
+      "cue_key": "free_mid_cue",
+      "text": "One minute down. Keep your rhythm.",
+      "filename": "en_free_mid_cue.mp3",
+      "bytes": 50990,
+      "sha256": "cd52560f617d7ef945eb9630fd50e71a27325441b8befbf694165655e6f33416"
+    },
+    {
+      "language": "fr",
+      "cue_key": "free_late_cue",
+      "text": "Dernière minute. Reste propre dans tes mouvements.",
+      "filename": "fr_free_late_cue.mp3",
+      "bytes": 66454,
+      "sha256": "83867f894fa178a9a37afd12d3a431d80d1fab4dbc4d159ef6d20fc3d8b96ae4"
+    },
+    {
+      "language": "en",
+      "cue_key": "free_late_cue",
+      "text": "Final minute. Keep your movements clean.",
+      "filename": "en_free_late_cue.mp3",
+      "bytes": 57677,
+      "sha256": "fe6747754a2ccf4e2d0b3f5bf206caa11bacbcd85f1a699263284a4f2dd78801"
+    },
+    {
+      "language": "fr",
+      "cue_key": "cooldown_speech",
+      "text": "Retour au calme. Ralentis et respire.",
+      "filename": "fr_cooldown_speech.mp3",
+      "bytes": 48482,
+      "sha256": "f7f37d1e73f890f107935ca9430617518429e446847db0e92b783dcb4d2e9f6f"
+    },
+    {
+      "language": "en",
+      "cue_key": "cooldown_speech",
+      "text": "Cool down. Slow down and breathe.",
+      "filename": "en_cooldown_speech.mp3",
+      "bytes": 49318,
+      "sha256": "5adaa8a462f083f4f303b9eb06e9de018be19b0ed1bcad59b0d494cbc6b3309d"
+    }
+  ]
+}

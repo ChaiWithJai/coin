@@ -1,0 +1,17 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CB5D7882-F35E-469E-980B-5729D3C0F7D4",
+        "deviceName" : "Coin iPhone 11",
+        "exportedFileName" : "5AF1377F-78C7-46B1-9600-D2E129C6756F.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "sorted-day-log-fr_0_D0069E14-6CF9-4859-BF81-22D88B2203B5.png",
+        "timestamp" : 1790399357.287
+      }
+    ],
+    "testIdentifier" : "GuardFlowTests/testTemporaryDayLogCapture()",
+    "testIdentifierURL" : "test://com.apple.xcode/Coin/CoinUITests/GuardFlowTests/testTemporaryDayLogCapture"
+  }
+]

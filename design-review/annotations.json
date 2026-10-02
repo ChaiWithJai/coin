@@ -1,0 +1,58 @@
+[
+  {
+    "id": "coin-a1",
+    "sample": "02-live-before",
+    "viewport": "mobile",
+    "rect": {
+      "x": 0.04,
+      "y": 0.45,
+      "w": 0.92,
+      "h": 0.49
+    },
+    "note": "Timer, repeated drill text, phase chips, instruction and privacy note crowd the preview. In-session hierarchy should be camera first, with one current cue and controls at the edge.",
+    "from": "agent",
+    "ts": 0
+  },
+  {
+    "id": "coin-a2",
+    "sample": "01-home",
+    "viewport": "mobile",
+    "rect": {
+      "x": 0.08,
+      "y": 0.08,
+      "w": 0.35,
+      "h": 0.07
+    },
+    "note": "Original corner-post artwork now replaces abstract dots, matching the people-in-your-corner identity.",
+    "from": "agent",
+    "ts": 0
+  },
+  {
+    "id": "coin-a3",
+    "sample": "03-live-after",
+    "viewport": "mobile",
+    "rect": {
+      "x": 0.04,
+      "y": 0.68,
+      "w": 0.92,
+      "h": 0.24
+    },
+    "note": "Compact stage and timer rail, one cue, and two controls. Validate over real camera imagery and from a floor or bag angle on device.",
+    "from": "agent",
+    "ts": 0
+  },
+  {
+    "id": "coin-a4",
+    "sample": "04-recap",
+    "viewport": "mobile",
+    "rect": {
+      "x": 0.08,
+      "y": 0.36,
+      "w": 0.84,
+      "h": 0.4
+    },
+    "note": "Immediate recap exposes honest zero evidence and optional reflection. Needs real drill evidence and a shorter hierarchy before becoming a useful post-round report.",
+    "from": "agent",
+    "ts": 0
+  }
+]

@@ -1,0 +1,25 @@
+{
+  "request": {
+    "request_id": "ef6c634e-e90c-4eff-9478-5c956bac5e8b",
+    "session_id": "ef887e32-c385-4463-afbc-328089aeff4d",
+    "language": "fr",
+    "notes": [
+      {
+        "seconds": 12,
+        "text": "Synthetic development note: rear hand remains low after a jab in solo shadowboxing."
+      }
+    ]
+  },
+  "result": {
+    "drill": "Solo shadowboxing: after each jab, pause and consciously raise the rear hand to guard height before the next movement.",
+    "limitation": "Based on supplied notes only; requires video or coach confirmation to verify actual execution and timing.",
+    "observation": "Synthetic development note: rear hand remains low after a jab in solo shadowboxing.",
+    "clip_timestamp_seconds": 12.0,
+    "event_id": "aa66a437-a108-4dca-8793-5b289e175148",
+    "evidence_source": "user_notes",
+    "model": "bonsai2-27b"
+  },
+  "http_elapsed_seconds": 9.53160091600148,
+  "idempotent_replay": true,
+  "evidence_type": "synthetic_notes_over_real_coordinator"
+}

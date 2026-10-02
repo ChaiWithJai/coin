@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Coin — UI critical path review</title>
+<style>
+:root{
+  --bg:#faf8f4;--surface:#fff;--line:#ddd6ca;--ink:#2a2620;--muted:#8a8175;
+  --onboarding:#4c7fb8;--today:#b8874c;--lesson:#5d9a6c;--recall:#a05fa8;
+  --resurface:#c25b5b;--destinations:#5b9ec2;--placement:#8a9a3d;--tamil:#b0483a;
+  --annot:#e8890c;--suggest:#7b6cd0;
+}
+*{box-sizing:border-box;margin:0}
+body{font:15px/1.5 -apple-system,system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+header{display:flex;gap:14px;align-items:center;padding:10px 18px;background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:30}
+header h1{font-size:15px;font-weight:650;margin-right:6px}
+.tabs button{border:1px solid var(--line);background:none;padding:5px 14px;border-radius:16px;cursor:pointer;font-size:13px;margin-right:4px}
+.tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+#toast{position:fixed;bottom:18px;right:18px;background:var(--ink);color:#fff;padding:8px 16px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:99}
+main{padding:18px;max-width:1400px;margin:0 auto}
+.hidden{display:none!important}
+
+/* ---- content view ---- */
+#nav{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+#nav select{padding:5px 8px;font-size:13px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+#nav .arrows button{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:4px 12px;cursor:pointer}
+.flowchip{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 9px;border-radius:10px;color:#fff}
+#viewport-toggle button{border:1px solid var(--line);background:var(--surface);padding:4px 12px;font-size:12.5px;cursor:pointer}
+#viewport-toggle button:first-child{border-radius:6px 0 0 6px}
+#viewport-toggle button:last-child{border-radius:0 6px 6px 0;margin-left:-1px}
+#viewport-toggle button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+#stage{display:flex;gap:18px;align-items:flex-start}
+#imgwrap{position:relative;flex:1;min-width:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface);cursor:crosshair;user-select:none}
+#shot{display:block;width:100%;height:auto}
+.rect{position:absolute;border:2px solid var(--annot);background:rgba(232,137,12,.13);border-radius:3px;cursor:pointer}
+.rect.pending{border-style:solid;border-color:var(--annot);background:rgba(232,137,12,.22)}
+.rect.suggest{border-style:dashed;border-color:var(--suggest);background:rgba(123,108,208,.10)}
+.rect.hover-link{outline:3px solid var(--ink);outline-offset:1px}
+#margin{width:270px;flex-shrink:0;position:relative;min-height:200px}
+.note{position:absolute;left:0;width:100%;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--annot);border-radius:8px;padding:8px 10px;font-size:12.5px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.note.suggest{border-left-color:var(--suggest)}
+.note .tag{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--suggest)}
+.note .mode{font-size:11px;font-weight:650;color:var(--muted)}
+.note .txt{margin-top:2px;white-space:pre-wrap}
+.note .btns{margin-top:6px;display:flex;gap:6px}
+.note .btns button{font-size:11.5px;border:1px solid var(--line);background:none;border-radius:5px;padding:2px 9px;cursor:pointer}
+.note .btns .accept{background:var(--suggest);color:#fff;border-color:var(--suggest)}
+.note .hbtns{position:absolute;top:6px;right:8px;display:none;gap:4px}
+.note:hover .hbtns{display:flex}
+.note .hbtns button{font-size:11px;border:none;background:none;cursor:pointer;color:var(--muted)}
+.note.hover-link{outline:2px solid var(--ink)}
+#popover{position:absolute;z-index:40;background:var(--surface);border:1px solid var(--line);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);padding:8px;width:260px}
+#popover textarea{width:100%;height:56px;border:1px solid var(--line);border-radius:6px;padding:6px;font:12.5px/1.4 inherit;resize:vertical}
+#popover .row{display:flex;justify-content:space-between;margin-top:6px;font-size:12px;color:var(--muted)}
+
+/* ---- map view ---- */
+#map .lane{margin-bottom:22px}
+#map .lane h3{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+#map .lane h3::before{content:'';width:10px;height:10px;border-radius:3px;background:var(--lane-color)}
+#map .row{display:flex;gap:10px;flex-wrap:wrap}
+.node{width:150px;border:1.5px solid var(--line);border-radius:9px;background:var(--surface);cursor:pointer;overflow:hidden;position:relative}
+.node img{width:100%;height:92px;object-fit:cover;object-position:top;display:block;border-bottom:1px solid var(--line)}
+.node .cap{font-size:11px;padding:5px 7px;line-height:1.3}
+.node .cnt{position:absolute;top:4px;right:4px;background:var(--annot);color:#fff;font-size:10.5px;font-weight:700;border-radius:9px;padding:1px 6px}
+.node.annotated{border-color:var(--annot)}
+.node .arrow{position:absolute;left:-12px;top:45%;color:var(--muted)}
+
+/* ---- progress view ---- */
+#progress h2{font-size:14px;margin:18px 0 10px}
+#treemap{display:flex;flex-wrap:wrap;gap:10px}
+.mode-block{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:10px 12px;min-width:200px;flex-grow:1}
+.mode-block h4{font-size:13px}
+.mode-block .n{color:var(--muted);font-size:11.5px}
+.mode-block li{font-size:12.5px;margin:5px 0 0 16px;cursor:pointer}
+.mode-block li:hover{text-decoration:underline}
+#sugg-list{border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+#sugg-head{display:flex;gap:10px;align-items:center;padding:9px 12px;border-bottom:1px solid var(--line);font-size:13px}
+#sugg-head button{border:1px solid var(--line);border-radius:6px;background:none;padding:3px 11px;cursor:pointer;font-size:12.5px}
+#sugg-head .accept{background:var(--suggest);color:#fff;border-color:var(--suggest)}
+.sugg-row{display:flex;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:12.5px;align-items:flex-start}
+.sugg-row:last-child{border-bottom:none}
+.sugg-row .mode{font-weight:650;white-space:nowrap;color:var(--suggest)}
+.sugg-row .where{color:var(--muted);white-space:nowrap}
+.sugg-row .txt{cursor:pointer}
+.sugg-row .txt:hover{text-decoration:underline}
+.empty{color:var(--muted);font-size:13px;padding:14px}
+</style>
+</head>
+<body>
+<header>
+  <h1>UI critical path review</h1>
+  <div class="tabs">
+    <button data-v="content" class="on">Screen</button>
+    <button data-v="map">Journey</button>
+    <button data-v="progress">Progress</button>
+  </div>
+  <div id="counts" style="font-size:12.5px;color:var(--muted)"></div>
+</header>
+<main>
+  <section id="content">
+    <div id="nav">
+      <div class="arrows"><button id="prev">←</button> <button id="next">→</button></div>
+      <select id="picker"></select>
+      <span class="flowchip" id="flowchip"></span>
+      <span id="title" style="font-size:13.5px"></span>
+      <span style="flex:1"></span>
+      <span id="viewport-toggle"><button data-vp="desktop" >Desktop</button><button data-vp="mobile" class="on">Mobile</button></span>
+    </div>
+    <div id="stage">
+      <div id="imgwrap"><img id="shot" draggable="false"></div>
+      <div id="margin"></div>
+    </div>
+  </section>
+  <section id="map" class="hidden"></section>
+  <section id="progress" class="hidden">
+    <h2>Failure modes</h2>
+    <div id="treemap"></div>
+    <h2>Agent suggestions to review</h2>
+    <div id="sugg-list">
+      <div id="sugg-head">
+        <label><input type="checkbox" id="sugg-all"> Select all</label>
+        <button class="accept" id="sugg-accept">Accept selected</button>
+        <button id="sugg-dismiss">Dismiss selected</button>
+      </div>
+      <div id="sugg-rows"></div>
+    </div>
+  </section>
+</main>
+<div id="toast"></div>
+
+<script>
+const FLOWS={onboarding:'--onboarding',today:'--today',lesson:'--lesson',recall:'--recall',resurface:'--resurface',destinations:'--destinations',placement:'--placement',tamil:'--tamil'};
+let samples=[],annotations=[],suggestions=[],patterns=[];
+let cur=0,viewport='mobile';
+
+const $=s=>document.querySelector(s);
+const toast=m=>{const t=$('#toast');t.textContent=m;t.style.opacity=1;setTimeout(()=>t.style.opacity=0,2200)};
+const flowColor=f=>getComputedStyle(document.documentElement).getPropertyValue(FLOWS[f]||'--muted');
+
+async function load(){
+  [samples,annotations,suggestions,patterns]=await Promise.all(
+    ['samples','annotations','suggestions','patterns'].map(n=>fetch('/api/'+n).then(r=>r.json())));
+  const bak=localStorage.getItem('rol-review-annotations-r2');
+  if(bak && annotations.length===0){try{const b=JSON.parse(bak);if(b.length){annotations=b;saveAnnotations();}}catch{}}
+  buildPicker();show(cur);renderAll();
+}
+function saveAnnotations(){
+  localStorage.setItem('rol-review-annotations-r2',JSON.stringify(annotations));
+  fetch('/api/annotations',{method:'POST',body:JSON.stringify(annotations)});
+  renderCounts();
+}
+function saveSuggestions(){fetch('/api/suggestions',{method:'POST',body:JSON.stringify(suggestions)})}
+
+function renderCounts(){
+  const seen=new Set(annotations.map(a=>a.sample));
+  $('#counts').textContent=`${annotations.length} annotations · ${seen.size}/${samples.length} screens · ${suggestions.filter(s=>s.status==='pending').length} suggestions pending`;
+}
+
+/* ---------- content view ---------- */
+function buildPicker(){
+  $('#picker').innerHTML=samples.map((s,i)=>`<option value="${i}">${s.id} — ${s.title}</option>`).join('');
+}
+function show(i){
+  cur=(i+samples.length)%samples.length;
+  const s=samples[cur];
+  $('#picker').value=cur;
+  $('#flowchip').textContent=s.flow;
+  $('#flowchip').style.background=`var(${FLOWS[s.flow]})`;
+  $('#title').textContent=s.title;
+  const src=s[viewport]||s.desktop||s.mobile;
+  $('#shot').src=src;
+  $('#shot').onload=renderRects;
+  renderCounts();
+}
+function annotsFor(){return annotations.filter(a=>a.sample===samples[cur].id&&a.viewport===viewport)}
+function suggsFor(){return suggestions.filter(a=>a.sample===samples[cur].id&&a.viewport===viewport&&a.status==='pending')}
+
+function renderRects(){
+  document.querySelectorAll('.rect,#margin .note').forEach(e=>e.remove());
+  const img=$('#shot'),wrap=$('#imgwrap'),margin=$('#margin');
+  const W=img.clientWidth,H=img.clientHeight;
+  const items=[...annotsFor().map(a=>({...a,kind:'annot'})),...suggsFor().map(s=>({...s,kind:'suggest'}))];
+  items.sort((a,b)=>a.rect.y-b.rect.y);
+  let lastBottom=0;
+  for(const it of items){
+    const r=document.createElement('div');
+    r.className='rect'+(it.kind==='suggest'?' suggest':'');
+    Object.assign(r.style,{left:it.rect.x*W+'px',top:it.rect.y*H+'px',width:it.rect.w*W+'px',height:it.rect.h*H+'px'});
+    r.dataset.id=it.id;wrap.appendChild(r);
+    const n=document.createElement('div');
+    n.className='note'+(it.kind==='suggest'?' suggest':'');
+    n.dataset.id=it.id;
+    let top=it.rect.y*H;if(top<lastBottom+8)top=lastBottom+8;
+    n.style.top=top+'px';
+    n.innerHTML=(it.kind==='suggest'
+      ?`<div class="tag">agent suggestion</div><div class="mode">${esc(it.mode||'')}</div><div class="txt">${esc(it.note)}</div>
+        <div class="btns"><button class="accept">Accept</button><button class="dismiss">Dismiss</button></div>`
+      :`<div class="hbtns"><button class="edit">✎</button><button class="del">✕</button></div><div class="txt">${esc(it.note)}</div>`);
+    margin.appendChild(n);
+    lastBottom=top+n.offsetHeight;
+    const link=on=>{r.classList.toggle('hover-link',on);n.classList.toggle('hover-link',on)};
+    r.onmouseenter=n.onmouseenter=()=>link(true);
+    r.onmouseleave=n.onmouseleave=()=>link(false);
+    if(it.kind==='suggest'){
+      n.querySelector('.accept').onclick=()=>resolveSuggestion(it.id,true);
+      n.querySelector('.dismiss').onclick=()=>resolveSuggestion(it.id,false);
+    }else{
+      n.querySelector('.del').onclick=()=>{annotations=annotations.filter(a=>a.id!==it.id);saveAnnotations();renderRects();};
+      n.querySelector('.edit').onclick=()=>{const v=prompt('Edit note',it.note);if(v!=null){it.note=v;const a=annotations.find(x=>x.id===it.id);a.note=v;saveAnnotations();renderRects();}};
+    }
+  }
+  margin.style.minHeight=Math.max(lastBottom+20,H)+'px';
+}
+const esc=t=>t.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function resolveSuggestion(id,accept){
+  const s=suggestions.find(x=>x.id===id);if(!s)return;
+  s.status=accept?'accepted':'dismissed';
+  if(accept){annotations.push({id:'a'+Date.now()+Math.random().toString(36).slice(2,6),sample:s.sample,viewport:s.viewport,rect:s.rect,note:s.note,mode:s.mode,from:'agent',ts:Date.now()});saveAnnotations();}
+  saveSuggestions();renderRects();renderProgress();toast(accept?'Accepted':'Dismissed');
+}
+
+/* drag-to-annotate */
+let drag=null;
+$('#imgwrap').addEventListener('mousedown',e=>{
+  if(e.target.closest('.rect')||$('#popover'))return;
+  const b=$('#shot').getBoundingClientRect();
+  drag={x0:e.clientX-b.left,y0:e.clientY-b.top,b,el:document.createElement('div')};
+  drag.el.className='rect pending';$('#imgwrap').appendChild(drag.el);
+});
+window.addEventListener('mousemove',e=>{
+  if(!drag)return;
+  const x=Math.min(Math.max(e.clientX-drag.b.left,0),drag.b.width),y=Math.min(Math.max(e.clientY-drag.b.top,0),drag.b.height);
+  Object.assign(drag.el.style,{left:Math.min(drag.x0,x)+'px',top:Math.min(drag.y0,y)+'px',width:Math.abs(x-drag.x0)+'px',height:Math.abs(y-drag.y0)+'px'});
+});
+window.addEventListener('mouseup',e=>{
+  if(!drag)return;
+  const d=drag;drag=null;
+  const w=parseFloat(d.el.style.width||0),h=parseFloat(d.el.style.height||0);
+  if(w<8||h<8){d.el.remove();return;}
+  openPopover(d.el,d.b);
+});
+function openPopover(rectEl,b){
+  const pop=document.createElement('div');pop.id='popover';
+  pop.innerHTML=`<textarea placeholder="What is wrong here? (free text)"></textarea>
+    <div class="row"><span>Enter to save · Esc to cancel</span></div>`;
+  const top=parseFloat(rectEl.style.top)+parseFloat(rectEl.style.height)+6;
+  const left=Math.min(parseFloat(rectEl.style.left),b.width-270);
+  Object.assign(pop.style,{top:top+'px',left:Math.max(left,0)+'px'});
+  $('#imgwrap').appendChild(pop);
+  const ta=pop.querySelector('textarea');ta.focus();
+  const done=save=>{
+    if(save&&ta.value.trim()){
+      const W=$('#shot').clientWidth,H=$('#shot').clientHeight;
+      annotations.push({id:'a'+Date.now()+Math.random().toString(36).slice(2,6),
+        sample:samples[cur].id,viewport,
+        rect:{x:parseFloat(rectEl.style.left)/W,y:parseFloat(rectEl.style.top)/H,
+              w:parseFloat(rectEl.style.width)/W,h:parseFloat(rectEl.style.height)/H},
+        note:ta.value.trim(),from:'human',ts:Date.now()});
+      saveAnnotations();toast('Saved');
+    }
+    pop.remove();rectEl.remove();renderRects();
+  };
+  ta.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();done(true);}if(e.key==='Escape')done(false);};
+  setTimeout(()=>document.addEventListener('mousedown',function h(e){if(!pop.contains(e.target)){document.removeEventListener('mousedown',h);done(false);}}),0);
+}
+
+/* ---------- journey map ---------- */
+function renderMap(){
+  const lanes={};samples.forEach(s=>(lanes[s.flow]??=[]).push(s));
+  const seen=new Set(annotations.map(a=>a.sample));
+  $('#map').innerHTML=Object.entries(lanes).map(([flow,ss])=>`
+    <div class="lane" style="--lane-color:var(${FLOWS[flow]})"><h3>${flow}</h3><div class="row">
+      ${ss.map(s=>{
+        const n=annotations.filter(a=>a.sample===s.id).length;
+        return `<div class="node${seen.has(s.id)?' annotated':''}" data-id="${s.id}" title="${esc(s.title)}">
+          <img src="${s.mobile||s.desktop}" loading="lazy">
+          ${n?`<span class="cnt">${n}</span>`:''}
+          <div class="cap">${s.id.replace(/^\d+-/,'')}</div></div>`;
+      }).join('')}
+    </div></div>`).join('');
+  document.querySelectorAll('.node').forEach(n=>n.onclick=()=>{
+    cur=samples.findIndex(s=>s.id===n.dataset.id);switchView('content');show(cur);
+  });
+}
+
+/* ---------- progress ---------- */
+function renderProgress(){
+  const byMode={};
+  for(const a of annotations){const m=a.mode||'uncategorized';(byMode[m]??=[]).push(a);}
+  $('#treemap').innerHTML=Object.entries(byMode).sort((a,b)=>b[1].length-a[1].length).map(([m,list])=>`
+    <div class="mode-block" style="flex-basis:${120+list.length*40}px">
+      <h4>${esc(m)} <span class="n">· ${list.length}</span></h4>
+      <ul>${list.map(a=>`<li data-id="${a.id}" data-s="${a.sample}" data-vp="${a.viewport}">${esc(a.note.slice(0,90))} <span class="n">(${a.sample})</span></li>`).join('')}</ul>
+    </div>`).join('')||'<div class="empty">No annotations categorized yet — annotate on the Screen view; the agent organizes modes as you go.</div>';
+  document.querySelectorAll('.mode-block li').forEach(li=>li.onclick=()=>{
+    cur=samples.findIndex(s=>s.id===li.dataset.s);viewport=li.dataset.vp;
+    document.querySelectorAll('#viewport-toggle button').forEach(b=>b.classList.toggle('on',b.dataset.vp===viewport));
+    switchView('content');show(cur);
+  });
+  const pend=suggestions.filter(s=>s.status==='pending');
+  $('#sugg-rows').innerHTML=pend.map(s=>`
+    <div class="sugg-row"><input type="checkbox" data-id="${s.id}">
+      <span class="mode">${esc(s.mode||'?')}</span>
+      <span class="txt" data-s="${s.sample}" data-vp="${s.viewport}">${esc(s.note)}</span>
+      <span class="where">${s.sample} · ${s.viewport}</span></div>`).join('')
+    ||'<div class="empty">No pending suggestions.</div>';
+  document.querySelectorAll('.sugg-row .txt').forEach(t=>t.onclick=()=>{
+    cur=samples.findIndex(x=>x.id===t.dataset.s);viewport=t.dataset.vp;
+    document.querySelectorAll('#viewport-toggle button').forEach(b=>b.classList.toggle('on',b.dataset.vp===viewport));
+    switchView('content');show(cur);
+  });
+}
+$('#sugg-all').onchange=e=>document.querySelectorAll('.sugg-row input').forEach(c=>c.checked=e.target.checked);
+$('#sugg-accept').onclick=()=>bulk(true);
+$('#sugg-dismiss').onclick=()=>bulk(false);
+function bulk(accept){
+  const ids=[...document.querySelectorAll('.sugg-row input:checked')].map(c=>c.dataset.id);
+  ids.forEach(id=>resolveSuggestion(id,accept));
+  toast(`${ids.length} ${accept?'accepted':'dismissed'}`);
+}
+
+/* ---------- shell ---------- */
+function switchView(v){
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+  ['content','map','progress'].forEach(x=>$('#'+x).classList.toggle('hidden',x!==v));
+  if(v==='map')renderMap();if(v==='progress')renderProgress();
+}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>switchView(b.dataset.v));
+$('#prev').onclick=()=>show(cur-1);$('#next').onclick=()=>show(cur+1);
+$('#picker').onchange=e=>show(+e.target.value);
+document.querySelectorAll('#viewport-toggle button').forEach(b=>b.onclick=()=>{
+  viewport=b.dataset.vp;
+  document.querySelectorAll('#viewport-toggle button').forEach(x=>x.classList.toggle('on',x===b));
+  show(cur);
+});
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='TEXTAREA'||$('#popover'))return;
+  if(e.key==='ArrowLeft')show(cur-1);if(e.key==='ArrowRight')show(cur+1);
+});
+function renderAll(){renderCounts();}
+/* poll for agent updates */
+setInterval(async()=>{
+  const [sg,pt]=await Promise.all([fetch('/api/suggestions').then(r=>r.json()),fetch('/api/patterns').then(r=>r.json())]);
+  const newPending=sg.filter(s=>s.status==='pending').length-suggestions.filter(s=>s.status==='pending').length;
+  const changed=JSON.stringify(sg)!==JSON.stringify(suggestions)||JSON.stringify(pt)!==JSON.stringify(patterns);
+  suggestions=sg;patterns=pt;
+  if(newPending>0)toast(`${newPending} new agent suggestion${newPending>1?'s':''}`);
+  if(changed){renderRects();if(!$('#progress').classList.contains('hidden'))renderProgress();renderCounts();}
+},4000);
+load();
+</script>
+</body>
+</html>

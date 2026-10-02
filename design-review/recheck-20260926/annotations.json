@@ -1,0 +1,29 @@
+{
+  "coordinate_system": "normalized_xywh",
+  "image_size": [828, 1792],
+  "annotations": [
+    {"id":"entry-title","source":"01-home-fr.png","rect":[0.055,0.194,0.69,0.045],"cluster":"entry-hierarchy","note":"Large editorial title before camera action"},
+    {"id":"entry-intro","source":"01-home-fr.png","rect":[0.056,0.257,0.85,0.052],"cluster":"entry-hierarchy","note":"Two lines of explanatory copy"},
+    {"id":"entry-voice","source":"01-home-fr.png","rect":[0.058,0.329,0.39,0.027],"cluster":"entry-hierarchy","note":"Secondary voice action before camera"},
+    {"id":"entry-drill","source":"01-home-fr.png","rect":[0.056,0.379,0.88,0.086],"cluster":"entry-hierarchy","note":"Large drill heading before camera"},
+    {"id":"entry-cta","source":"01-home-fr.png","rect":[0.057,0.615,0.885,0.062],"cluster":"entry-hierarchy","note":"Primary camera entry below 60% of viewport"},
+    {"id":"entry-cta-fixed","source":"02-home-latest.png","rect":[0.057,0.339,0.885,0.048],"cluster":"entry-hierarchy","note":"Post-rebuild camera entry above 40% of viewport"},
+    {"id":"film-headline","source":"../full-audit/final/02-film-fr.png","rect":[0.096,0.17,0.79,0.083],"cluster":"film-grammar","note":"Two-line display slogan dominates notebook"},
+    {"id":"film-actions","source":"../full-audit/final/02-film-fr.png","rect":[0.047,0.324,0.905,0.117],"cluster":"film-grammar","note":"Import emphasized and placed before recording"},
+    {"id":"film-native-card","source":"../full-audit/final/02-film-fr.png","rect":[0.047,0.505,0.905,0.28],"cluster":"film-grammar","note":"Oversized rounded gray list slab"},
+    {"id":"film-round-term","source":"../full-audit/final/02-film-fr.png","rect":[0.093,0.474,0.38,0.03],"cluster":"language","note":"Mes rounds differs from reprise in history"},
+    {"id":"live-bottom-hud","source":"../full-audit/after/11-live-round-fr.png","rect":[0.055,0.807,0.89,0.13],"cluster":"camera-overlay","note":"Timer, cue, and control bar occupy lower 13%"},
+    {"id":"recap-zero","source":"../full-audit/after/12-recap-fr.png","rect":[0.056,0.235,0.89,0.037],"cluster":"evidence-order","note":"Zero completed rounds leads even when a round was reached"},
+    {"id":"recap-reached","source":"../full-audit/after/12-recap-fr.png","rect":[0.056,0.46,0.89,0.104],"cluster":"evidence-order","note":"Actual 13-second reached round appears lower"},
+    {"id":"calendar-repeated","source":"../full-audit/final/03-calendar-fr.png","rect":[0.047,0.419,0.89,0.475],"cluster":"history-repetition","note":"Repeated zero-round rows provide little distinction"},
+    {"id":"calendar-tab-cover","source":"../full-audit/final/03-calendar-fr.png","rect":[0.153,0.904,0.678,0.083],"cluster":"history-repetition","note":"Floating tabs cover lower row in older calendar capture"},
+    {"id":"daylog-repeated","source":"../full-audit/final-daylog/02-daylog-fr.png","rect":[0.047,0.154,0.905,0.617],"cluster":"history-repetition","note":"Eight near-identical rows, including 00:00 sessions"},
+    {"id":"log-caveats","source":"../full-audit/log-refactor/01-session-log-fr.png","rect":[0.048,0.171,0.88,0.057],"cluster":"evidence-order","note":"Technical disclaimer before reached workout evidence"}
+    ,{"id":"home-fr-fixed","source":"03-home-fr.png","rect":[0.057,0.339,0.885,0.048],"cluster":"entry-hierarchy","note":"French camera entry above 40% of viewport"}
+    ,{"id":"film-fr-fixed","source":"14-film-fr.png","rect":[0.048,0.228,0.905,0.124],"cluster":"film-grammar","note":"Flat filming-first actions and consistent reprise wording"}
+    ,{"id":"calendar-fr-final","source":"19-calendar-final.png","rect":[0.048,0.406,0.905,0.178],"cluster":"history-repetition","note":"Meaningful elapsed time first, camp plan collapsed"}
+    ,{"id":"daylog-fr-final","source":"18-day-log-final.png","rect":[0.048,0.154,0.905,0.306],"cluster":"history-repetition","note":"17, 13 and 8 seconds sort above zero-time attempts"}
+    ,{"id":"recap-fr-current","source":"12-recap-fr.png","rect":[0.056,0.18,0.89,0.386],"cluster":"evidence-order","note":"Zero completed rounds leads over reached round; test ended immediately"}
+    ,{"id":"live-fr-current","source":"09-round-fr-latest.png","rect":[0.056,0.822,0.89,0.12],"cluster":"camera-overlay","note":"Compact timer, one cue and wide start control; actual camera unknown"}
+  ]
+}

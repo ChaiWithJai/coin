@@ -1,0 +1,14 @@
+{
+  "unauthorized_status": 401,
+  "visibility_result": [
+    200,
+    {
+      "action": "quiet",
+      "source": "deterministic_veto",
+      "reason": "visibility",
+      "event_id": "9785da64-f35c-4546-83df-410a4e22599e"
+    }
+  ],
+  "idempotent_retry": true,
+  "conflicting_retry_status": 409
+}

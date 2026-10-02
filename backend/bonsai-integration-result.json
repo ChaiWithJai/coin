@@ -1,0 +1,42 @@
+{
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"observation\": \"Votre main arrière reste basse après le jab, ce qui limite votre garde et votre contre-attaque.\",\n  \"drill\": \"Enchaînez un jab puis remontez immédiatement votre main arrière au niveau de la mâchoire. Répétez lentement.\",\n  \"limitation\": \"Cet exercice ne remplace pas un coach. Évitez les sparring durs si vous ressentez une douleur.\"\n}"
+        }
+      }
+    ],
+    "created": 1790369209,
+    "model": "bonsai2-27b",
+    "system_fingerprint": "b1-d8f26ee",
+    "object": "chat.completion",
+    "usage": {
+      "completion_tokens": 95,
+      "prompt_tokens": 111,
+      "total_tokens": 206,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "id": "chatcmpl-PDcMTMgTgs0DwaQDYOjK8ihi8XiOGw9T",
+    "timings": {
+      "cache_n": 0,
+      "prompt_n": 111,
+      "prompt_ms": 470.96,
+      "prompt_per_token_ms": 4.242882882882883,
+      "prompt_per_second": 235.6888058433837,
+      "predicted_n": 95,
+      "predicted_ms": 3301.536,
+      "predicted_per_token_ms": 35.12272340425532,
+      "predicted_per_second": 28.47159625095713
+    }
+  },
+  "http_elapsed_seconds": 9.63498176005669,
+  "run_id": "b39657808dc64e41a41b6ff188a31e2b",
+  "trace_id": "tr-8f08c63298bf8fc98f1bf99d135413a4",
+  "schema_valid": true
+}

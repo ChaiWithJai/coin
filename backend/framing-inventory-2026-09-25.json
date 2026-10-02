@@ -1,0 +1,199 @@
+{
+  "version": "framing-gate-v1",
+  "results": [
+    {
+      "case_id": "personal",
+      "pose_file_sha256": "27928d91114dda97bfd9b9d679f8eee4e4180dd3829535332e91f8367c4aeb73",
+      "frame_count": 150,
+      "candidate_frames": 1,
+      "sustained_ready_frames": 0,
+      "visibility_gates": {
+        "full_body": {
+          "candidate_frames": 1,
+          "sustained_ready_frames": 0
+        },
+        "upper_body": {
+          "candidate_frames": 3,
+          "sustained_ready_frames": 0
+        },
+        "lower_body": {
+          "candidate_frames": 6,
+          "sustained_ready_frames": 0
+        }
+      },
+      "required_joints": [
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28
+      ],
+      "minimum_visibility": 0.55,
+      "sustain_seconds": 0.5,
+      "interpretation": "framing gate only; no punch, exchange, or drill labels"
+    },
+    {
+      "case_id": "johnson_jeffries",
+      "pose_file_sha256": "779ce62ae35f5e5a27de99afe1d206fd8c6e565940e98f8a6eba9b8d13b2fa65",
+      "frame_count": 150,
+      "candidate_frames": 29,
+      "sustained_ready_frames": 5,
+      "visibility_gates": {
+        "full_body": {
+          "candidate_frames": 29,
+          "sustained_ready_frames": 5
+        },
+        "upper_body": {
+          "candidate_frames": 30,
+          "sustained_ready_frames": 5
+        },
+        "lower_body": {
+          "candidate_frames": 71,
+          "sustained_ready_frames": 51
+        }
+      },
+      "required_joints": [
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28
+      ],
+      "minimum_visibility": 0.55,
+      "sustain_seconds": 0.5,
+      "interpretation": "framing gate only; no punch, exchange, or drill labels"
+    },
+    {
+      "case_id": "corbett_fitzsimmons",
+      "pose_file_sha256": "d56ee8563edcb29d56167cf6ff0b523363f51642115f387ea7f367a0b4e6fdaf",
+      "frame_count": 150,
+      "candidate_frames": 0,
+      "sustained_ready_frames": 0,
+      "visibility_gates": {
+        "full_body": {
+          "candidate_frames": 0,
+          "sustained_ready_frames": 0
+        },
+        "upper_body": {
+          "candidate_frames": 1,
+          "sustained_ready_frames": 0
+        },
+        "lower_body": {
+          "candidate_frames": 10,
+          "sustained_ready_frames": 4
+        }
+      },
+      "required_joints": [
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28
+      ],
+      "minimum_visibility": 0.55,
+      "sustain_seconds": 0.5,
+      "interpretation": "framing gate only; no punch, exchange, or drill labels"
+    },
+    {
+      "case_id": "corbett_courtney",
+      "pose_file_sha256": "706c6fa3d65fb8542174c0aee7091553743aa80bff705ca78e4c8ac8f89ac27f",
+      "frame_count": 150,
+      "candidate_frames": 23,
+      "sustained_ready_frames": 2,
+      "visibility_gates": {
+        "full_body": {
+          "candidate_frames": 23,
+          "sustained_ready_frames": 2
+        },
+        "upper_body": {
+          "candidate_frames": 26,
+          "sustained_ready_frames": 2
+        },
+        "lower_body": {
+          "candidate_frames": 74,
+          "sustained_ready_frames": 8
+        }
+      },
+      "required_joints": [
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28
+      ],
+      "minimum_visibility": 0.55,
+      "sustain_seconds": 0.5,
+      "interpretation": "framing gate only; no punch, exchange, or drill labels"
+    },
+    {
+      "case_id": "leonard_cushing",
+      "pose_file_sha256": "1a1c3214bb30ad4b0cf93cff706fa29565fff2e72f7a0094db2b5078026191c3",
+      "frame_count": 150,
+      "candidate_frames": 3,
+      "sustained_ready_frames": 0,
+      "visibility_gates": {
+        "full_body": {
+          "candidate_frames": 3,
+          "sustained_ready_frames": 0
+        },
+        "upper_body": {
+          "candidate_frames": 8,
+          "sustained_ready_frames": 0
+        },
+        "lower_body": {
+          "candidate_frames": 112,
+          "sustained_ready_frames": 53
+        }
+      },
+      "required_joints": [
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28
+      ],
+      "minimum_visibility": 0.55,
+      "sustain_seconds": 0.5,
+      "interpretation": "framing gate only; no punch, exchange, or drill labels"
+    }
+  ],
+  "actual_billed_cost_usd": null,
+  "cost_status": "Local processing only; hardware and electricity cost unmeasured",
+  "mlflow_run_id": "80c2d9063f2947b388ccf599eab8afd8",
+  "mlflow_trace_id": "tr-c39a74e8ff209178db3787ace2c5992a"
+}

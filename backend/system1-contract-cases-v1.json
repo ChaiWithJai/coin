@@ -1,0 +1,72 @@
+{
+  "dataset_id": "coin-system1-contract-v1",
+  "source_kind": "synthetic_contract_cases",
+  "purpose": "Check routing, language input, abstention and candidate stability; not boxing accuracy.",
+  "protocol_id": "probe-combine-angle-v1",
+  "cases": [
+    {
+      "id": "fr-hidden-feet",
+      "language": "fr",
+      "visible": false,
+      "cooldown_clear": true,
+      "state": {"camera": "bag-side", "coverage": "upper_body_only", "observed_phases": ["initiate", "interact"], "exit_evidence": "not_visible", "boxer_note": "Je ne vois pas mes pieds."},
+      "policy_expectation": "quiet_without_model"
+    },
+    {
+      "id": "en-cooldown",
+      "language": "en",
+      "visible": true,
+      "cooldown_clear": false,
+      "state": {"camera": "side", "coverage": "full", "observed_phases": ["initiate", "interact"], "exit_evidence": "straight_back"},
+      "policy_expectation": "quiet_without_model"
+    },
+    {
+      "id": "en-missing-reset",
+      "language": "en",
+      "visible": true,
+      "cooldown_clear": true,
+      "state": {"camera": "side", "coverage": "full", "observed_phases": ["initiate", "interact", "terminate"], "reset_evidence": "not_observed", "selected_position": "in_out"},
+      "policy_expectation": "candidate_only"
+    },
+    {
+      "id": "fr-complete-record",
+      "language": "fr",
+      "visible": true,
+      "cooldown_clear": true,
+      "state": {"camera": "side", "coverage": "full", "observed_phases": ["initiate", "interact", "terminate", "reset"], "selected_position": "in_out", "boxer_note": "J'ai fini et repris ma place."},
+      "policy_expectation": "candidate_only"
+    },
+    {
+      "id": "en-partial-occlusion",
+      "language": "en",
+      "visible": true,
+      "cooldown_clear": true,
+      "state": {"camera": "floor", "coverage": "partial", "observed_phases": ["initiate"], "unknown_phases": ["interact", "terminate", "reset"], "occlusion": "bag"},
+      "policy_expectation": "candidate_only"
+    },
+    {
+      "id": "fr-conflicting-report",
+      "language": "fr",
+      "visible": true,
+      "cooldown_clear": true,
+      "state": {"camera": "rear", "coverage": "full", "observed_phases": ["initiate", "interact"], "boxer_report": "J'ai changé d'angle.", "pose_exit_evidence": "uncertain"},
+      "policy_expectation": "candidate_only"
+    },
+    {
+      "id": "en-pressure-variant",
+      "language": "en",
+      "visible": true,
+      "cooldown_clear": true,
+      "state": {"camera": "side", "coverage": "full", "observed_phases": ["initiate", "interact", "terminate"], "selected_position": "forward_pressure", "movement": "remained_near_bag"},
+      "policy_expectation": "candidate_only"
+    },
+    {
+      "id": "fr-planted-pivot",
+      "language": "fr",
+      "visible": true,
+      "cooldown_clear": true,
+      "state": {"camera": "front", "coverage": "full", "observed_phases": ["initiate", "interact", "terminate"], "selected_position": "planted_pivot", "movement": "lead_foot_stayed_near_origin"},
+      "policy_expectation": "candidate_only"
+    }
+  ]
+}

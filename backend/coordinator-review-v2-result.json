@@ -1,0 +1,24 @@
+{
+  "request": {
+    "request_id": "6cfb14b6-4419-4ccd-801f-6a054d3f4fb8",
+    "session_id": "1b136135-ff8a-443a-a2de-04627afea178",
+    "language": "fr",
+    "notes": [
+      {
+        "seconds": 12,
+        "text": "Synthetic development note: rear hand remains low after a jab in solo shadowboxing."
+      }
+    ]
+  },
+  "result": {
+    "observation": "Après un jab, la main arrière reste basse pendant douze secondes dans le shadowboxing solo.",
+    "drill": "Exécuter lentement un jab, puis remonter immédiatement la main arrière au niveau du menton, en maintenant la posture dix secondes.",
+    "limitation": "Cette analyse repose sur les notes fournies et nécessite la confirmation vidéo ou d'un coach pour être validée.",
+    "event_id": "a5ddb0d0-294f-4cec-9efe-fc1eb39bde19",
+    "evidence_source": "user_notes",
+    "model": "bonsai2-27b"
+  },
+  "http_elapsed_seconds": 10.426004125009058,
+  "idempotent_replay": true,
+  "evidence_type": "synthetic_notes_over_real_coordinator"
+}

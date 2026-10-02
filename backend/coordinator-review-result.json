@@ -1,0 +1,25 @@
+{
+  "request": {
+    "request_id": "ee1ae807-8597-4c1c-b16e-3cd92d3106fa",
+    "session_id": "b94aae46-361b-4d83-b20c-1f6c792292ef",
+    "language": "fr",
+    "notes": [
+      {
+        "seconds": 12,
+        "text": "Synthetic development note: rear hand remains low after a jab in solo shadowboxing."
+      }
+    ]
+  },
+  "result": {
+    "drill": "Exécuter des jabs lents en solo, en gardant la main arrière basse et en remontant progressivement après chaque frappe.",
+    "limitation": "Cette analyse repose sur les notes fournies et nécessite la confirmation vidéo ou d'un coach pour être validée.",
+    "observation": "Synthetic development note: rear hand remains low after a jab in solo shadowboxing.",
+    "clip_timestamp_seconds": 12.0,
+    "event_id": "e3034cf5-96dd-4192-9753-508f0bd9dbf9",
+    "evidence_source": "user_notes",
+    "model": "bonsai2-27b"
+  },
+  "http_elapsed_seconds": 9.043246875022305,
+  "idempotent_replay": true,
+  "evidence_type": "synthetic_notes_over_real_coordinator"
+}

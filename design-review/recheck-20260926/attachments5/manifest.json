@@ -1,0 +1,80 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CB5D7882-F35E-469E-980B-5729D3C0F7D4",
+        "deviceName" : "Coin iPhone 11",
+        "exportedFileName" : "C4C0C9B8-D18F-49DD-AF70-B038D7E711BB.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "current-session-log-fr_0_A6B4EC79-C71F-433F-9460-8DC4618F5672.png",
+        "timestamp" : 1790399275.13
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CB5D7882-F35E-469E-980B-5729D3C0F7D4",
+        "deviceName" : "Coin iPhone 11",
+        "exportedFileName" : "DBC41613-AF6C-4C05-81C5-50B4521C4B8A.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "current-recap-fr_0_16C23BF6-E0AE-4978-843E-2FC9F758BA34.png",
+        "timestamp" : 1790399273.924
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CB5D7882-F35E-469E-980B-5729D3C0F7D4",
+        "deviceName" : "Coin iPhone 11",
+        "exportedFileName" : "743A15C1-AD22-4C48-83C7-2D2014077729.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "current-round-fr_0_F09895D6-7213-40D5-B1CF-90F2A2EF84EB.png",
+        "timestamp" : 1790399271.586
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CB5D7882-F35E-469E-980B-5729D3C0F7D4",
+        "deviceName" : "Coin iPhone 11",
+        "exportedFileName" : "8A8728CD-46A3-4DF8-B9C4-E65E935FCCBC.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "current-live-fr_0_7352022B-29FC-4125-9CAF-D977C2FA04E8.png",
+        "timestamp" : 1790399266.097
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CB5D7882-F35E-469E-980B-5729D3C0F7D4",
+        "deviceName" : "Coin iPhone 11",
+        "exportedFileName" : "E0626C0F-A170-4332-A164-C990B3AF39A8.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "current-day-log-fr_0_2F0C2D89-CC6D-484E-9785-8EF1FE36F1D5.png",
+        "timestamp" : 1790399261.568
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CB5D7882-F35E-469E-980B-5729D3C0F7D4",
+        "deviceName" : "Coin iPhone 11",
+        "exportedFileName" : "03F0E97C-A94B-4744-93E4-A2DC32D4CE22.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "current-calendar-fr_0_2FF2F88C-6F9B-4E2C-B802-2C6663B829DE.png",
+        "timestamp" : 1790399259.706
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CB5D7882-F35E-469E-980B-5729D3C0F7D4",
+        "deviceName" : "Coin iPhone 11",
+        "exportedFileName" : "C9080848-7275-4BD2-8352-6CD94B766173.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "current-film-fr_0_C5B7AC26-5771-4962-80F9-F9A9BF1EA4A5.png",
+        "timestamp" : 1790399257.851
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CB5D7882-F35E-469E-980B-5729D3C0F7D4",
+        "deviceName" : "Coin iPhone 11",
+        "exportedFileName" : "46C44B7C-6787-4E82-8D49-9E700CF1154A.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "current-home-fr_0_C43DE898-05EF-408F-A192-D5A8B9318131.png",
+        "timestamp" : 1790399254.884
+      }
+    ],
+    "testIdentifier" : "GuardFlowTests/testTemporaryVisualJourneyCapture()",
+    "testIdentifierURL" : "test://com.apple.xcode/Coin/CoinUITests/GuardFlowTests/testTemporaryVisualJourneyCapture"
+  }
+]

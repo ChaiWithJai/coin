@@ -1,0 +1,143 @@
+{
+  "manifest": {
+    "repo": "convaiinnovations/laya-multilingual",
+    "revision": "e4e9ddf21a7b1903b7acffd8814ad4307bf63a67",
+    "files": {
+      "model.safetensors": "9d628fd971b700382ac6f65920a86f149777b2e748e0c955fb3b19695aa8f204",
+      "rl_agent_config.json": "25061739243b617ad88d1219ba6f8a9c86c5881ca28df024fa2d9b3b2fcc30c6",
+      "tokenizer/tokenizer.json": "609d8f4c067cd3950f88594c5a802616cea245823836ef5848ee4fc40aab5b6f",
+      "tokenizer/tokenizer_config.json": "424b69444bf7b5809dc2cd2e36d0bd71b8055124dd24274d6db3c655d38205e7",
+      "encoder/config.json": "83f6916d13ef0f556ac461f28308dc2bffa7ebeadee8ec9e2db5812020ea5bb4"
+    },
+    "device": "cpu",
+    "laya_version": "0.3.20",
+    "torch_version": "2.14.0",
+    "purpose": "synthetic decision integration"
+  },
+  "load_seconds": 4.34720802702941,
+  "results": [
+    {
+      "case": {
+        "id": "confirmed-fr",
+        "state": "Boxe en solo. Observation confirmée par le boxeur: main arrière basse après le jab. Image actuelle nette. Aucun signal récent. Pas de douleur signalée."
+      },
+      "questions": {
+        "intervention": {
+          "type": "choice",
+          "instructions": "Choose whether to cue now, stay quiet, or request review. Only cue on a confirmed visible issue and when five-second cooldown is clear. Do not guess hidden movements.",
+          "criteria": {
+            "cue": "Confirmed visible issue, cooldown clear.",
+            "quiet": "No reliable issue or cooldown active.",
+            "review": "Conflicting evidence needing review."
+          }
+        }
+      },
+      "result": {
+        "model": "laya-rl-agent",
+        "answers": {
+          "intervention": {
+            "type": "choice",
+            "choice": "cue",
+            "probabilities": {
+              "cue": 0.5577,
+              "quiet": 0.3939,
+              "review": 0.0484
+            },
+            "confidence": 0.236,
+            "answer_confidence": 0.5577,
+            "action": {
+              "act_probability": 1.0
+            }
+          }
+        },
+        "usage": {
+          "input_tokens": 106,
+          "output_tokens": 0
+        }
+      },
+      "seconds": 0.2503602779470384
+    },
+    {
+      "case": {
+        "id": "occluded-en",
+        "state": "Solo boxing. The boxer is hidden behind the bag. Hand position is unknown. There is no confirmed movement observation."
+      },
+      "questions": {
+        "intervention": {
+          "type": "choice",
+          "instructions": "Choose whether to cue now, stay quiet, or request review. Only cue on a confirmed visible issue and when five-second cooldown is clear. Do not guess hidden movements.",
+          "criteria": {
+            "cue": "Confirmed visible issue, cooldown clear.",
+            "quiet": "No reliable issue or cooldown active.",
+            "review": "Conflicting evidence needing review."
+          }
+        }
+      },
+      "result": {
+        "model": "laya-rl-agent",
+        "answers": {
+          "intervention": {
+            "type": "choice",
+            "choice": "cue",
+            "probabilities": {
+              "cue": 0.5287,
+              "quiet": 0.4006,
+              "review": 0.0706
+            },
+            "confidence": 0.1894,
+            "answer_confidence": 0.5287,
+            "action": {
+              "act_probability": 1.0
+            }
+          }
+        },
+        "usage": {
+          "input_tokens": 94,
+          "output_tokens": 0
+        }
+      },
+      "seconds": 0.13746889494359493
+    },
+    {
+      "case": {
+        "id": "cooldown-fr",
+        "state": "Boxe en solo. Main arrière basse confirmée, mais un signal a déjà été donné il y a une seconde. Attendre au moins cinq secondes entre les signaux."
+      },
+      "questions": {
+        "intervention": {
+          "type": "choice",
+          "instructions": "Choose whether to cue now, stay quiet, or request review. Only cue on a confirmed visible issue and when five-second cooldown is clear. Do not guess hidden movements.",
+          "criteria": {
+            "cue": "Confirmed visible issue, cooldown clear.",
+            "quiet": "No reliable issue or cooldown active.",
+            "review": "Conflicting evidence needing review."
+          }
+        }
+      },
+      "result": {
+        "model": "laya-rl-agent",
+        "answers": {
+          "intervention": {
+            "type": "choice",
+            "choice": "cue",
+            "probabilities": {
+              "cue": 0.9528,
+              "quiet": 0.0228,
+              "review": 0.0244
+            },
+            "confidence": 0.7971,
+            "answer_confidence": 0.9528,
+            "action": {
+              "act_probability": 1.0
+            }
+          }
+        },
+        "usage": {
+          "input_tokens": 106,
+          "output_tokens": 0
+        }
+      },
+      "seconds": 0.14126754901371896
+    }
+  ]
+}

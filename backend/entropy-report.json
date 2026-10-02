@@ -1,0 +1,32 @@
+{
+  "version": "entropy-check-v1",
+  "language": {
+    "inline_language_branches": 59,
+    "inline_branch_budget": 59,
+    "drill_keys": [
+      "guard_return",
+      "review_clip"
+    ],
+    "backend_ios_drill_key_parity": true,
+    "source_of_truth": "duplicated_python_and_swift"
+  },
+  "telemetry": {
+    "unique_events": 7,
+    "events_finished": 7,
+    "events_unresolved": 0,
+    "events_recovered_after_export_failure": 3,
+    "failed_export_attempt_runs": 21,
+    "rule": "Report reliability by unique event ID, not raw MLflow run status counts."
+  },
+  "evidence": {
+    "coach_reviewed_exchange_labels": 0,
+    "physical_iphone_live_sessions": 0,
+    "laya_synthetic_cases": 3,
+    "compact_bonsai_checkpoint_pinned": false,
+    "compact_bonsai_live_benchmark_complete": false,
+    "resident_27b_vision_verified": false,
+    "resident_27b_modality": "text_only"
+  },
+  "ratchet_violations": [],
+  "ratchet_passed": true
+}

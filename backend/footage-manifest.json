@@ -1,0 +1,11 @@
+{
+  "id": "personal-bag-15s",
+  "local_path": "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/work/fixtures/personal-bag-15s.mp4",
+  "sha256": "ee3bbedd9a636768c41a685fa1bb3def25cd9ac5cfaf5a645f2f44633e5b25ff",
+  "source": "/Users/jaibhagat/Downloads/boxing-film-study/comparison-v1/personal/clip.mp4",
+  "provenance": "Existing study PROTOCOL.md identifies original IMG_0951.MOV as private user video, excerpt starting at original 144 seconds. This attribution is documentary, not face identification.",
+  "authorization": "User instructed to find a suitable clip for this app evaluation. Local development only.",
+  "scope": "15-second 10-fps study derivative. Previously used development footage; not held-out. Close framing and occlusion limit observations.",
+  "human_movement_labels": null,
+  "mlflow_media_policy": "Log hash/manifest only; retain raw private media locally, outside app bundle."
+}

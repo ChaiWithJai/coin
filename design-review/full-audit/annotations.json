@@ -1,0 +1,434 @@
+[
+  {
+    "id": "coin-full-01",
+    "sample": "01-home-fr",
+    "viewport": "mobile",
+    "rect": {
+      "x": 0.04,
+      "y": 0.2,
+      "w": 0.86,
+      "h": 0.22
+    },
+    "mode": "overscaled-display",
+    "priority": "P1",
+    "note": "Two-line display title consumes about a quarter of the first screen. The camera start and chosen session sit below a long introduction, making entry feel like reading a poster rather than entering a workout.",
+    "from": "agent",
+    "ts": 0
+  },
+  {
+    "id": "coin-full-02",
+    "sample": "02-home-en",
+    "viewport": "mobile",
+    "rect": {
+      "x": 0.04,
+      "y": 0.2,
+      "w": 0.88,
+      "h": 0.15
+    },
+    "mode": "overscaled-display",
+    "priority": "P1",
+    "note": "The English headline takes nearly the full width and dominates the initial viewport. Reduce its type size and vertical block to bring the start action higher.",
+    "from": "agent",
+    "ts": 0
+  },
+  {
+    "id": "coin-full-03",
+    "sample": "01-home-fr",
+    "viewport": "mobile",
+    "rect": {
+      "x": 0.04,
+      "y": 0.79,
+      "w": 0.91,
+      "h": 0.19
+    },
+    "mode": "tab-occlusion",
+    "priority": "P1",
+    "note": "Floating tab bar overlaps the first training-log row. The log's content continues behind it and is hard to scan or tap.",
+    "from": "agent",
+    "ts": 0
+  },
+  {
+    "id": "coin-full-04",
+    "sample": "02-home-en",
+    "viewport": "mobile",
+    "rect": {
+      "x": 0.04,
+      "y": 0.79,
+      "w": 0.91,
+      "h": 0.19
+    },
+    "mode": "tab-occlusion",
+    "priority": "P1",
+    "note": "Training-log rows appear under the floating navigation bar. Add actual scroll content inset or relocate navigation.",
+    "from": "agent",
+    "ts": 0
+  },
+  {
+    "id": "coin-full-05",
+    "sample": "01-home-fr",
+    "viewport": "mobile",
+    "rect": {
+      "x": 0.04,
+      "y": 0.61,
+      "w": 0.9,
+      "h": 0.15
+    },
+    "mode": "visual-entropy",
+    "priority": "P2",
+    "note": "Duration row, oversized red CTA and explanatory floor-angle paragraph form three stacked calls for attention. Preserve the corner mark, but reduce secondary copy and make the start control the single focus.",
+    "from": "agent",
+    "ts": 0
+  },
+  {
+    "id": "coin-full-06",
+    "sample": "02-home-en",
+    "viewport": "mobile",
+    "rect": {
+      "x": 0.04,
+      "y": 0.61,
+      "w": 0.9,
+      "h": 0.15
+    },
+    "mode": "visual-entropy",
+    "priority": "P2",
+    "note": "Large duration boxes and saturated button compete with the large title. Establish one accent use and a smaller control scale.",
+    "from": "agent",
+    "ts": 0
+  },
+  {
+    "id": "coin-full-07",
+    "sample": "03-live-warmup-en",
+    "viewport": "mobile",
+    "rect": {
+      "x": 0.04,
+      "y": 0.78,
+      "w": 0.9,
+      "h": 0.17
+    },
+    "mode": "overscaled-live-hud",
+    "priority": "P1",
+    "note": "The bottom HUD is tall and the red Start button fills most of its width. The camera area is visually clear in simulator, but usable framing with a real image is unverified.",
+    "from": "agent",
+    "ts": 0
+  },
+  {
+    "id": "coin-full-08",
+    "sample": "04-live-round-en",
+    "viewport": "mobile",
+    "rect": {
+      "x": 0.04,
+      "y": 0.78,
+      "w": 0.9,
+      "h": 0.17
+    },
+    "mode": "overscaled-live-hud",
+    "priority": "P1",
+    "note": "The timer and Pause control dominate the bottom of the camera view. Make the timer and controls compact enough to read at a glance without masking feet or bag action.",
+    "from": "agent",
+    "ts": 0
+  },
+  {
+    "id": "coin-full-09",
+    "sample": "10-live-warmup-fr",
+    "viewport": "mobile",
+    "rect": {
+      "x": 0.04,
+      "y": 0.78,
+      "w": 0.9,
+      "h": 0.17
+    },
+    "mode": "overscaled-live-hud",
+    "priority": "P1",
+    "note": "French warm-up shows the same tall HUD; the longer Commencer label needs a compact, language-safe layout.",
+    "from": "agent",
+    "ts": 0
+  },
+  {
+    "id": "coin-full-10",
+    "sample": "11-live-round-fr",
+    "viewport": "mobile",
+    "rect": {
+      "x": 0.04,
+      "y": 0.78,
+      "w": 0.9,
+      "h": 0.17
+    },
+    "mode": "overscaled-live-hud",
+    "priority": "P1",
+    "note": "Long French drill instruction and full-width Pause button occupy the bottom edge. Verify dynamic type and long drill names before adding more text.",
+    "from": "agent",
+    "ts": 0
+  },
+  {
+    "id": "coin-full-11",
+    "sample": "11-live-round-fr",
+    "viewport": "mobile",
+    "rect": {
+      "x": 0.04,
+      "y": 0.79,
+      "w": 0.27,
+      "h": 0.04
+    },
+    "mode": "language-leak",
+    "priority": "P1",
+    "note": "French live round still labels the stage ROUND 1. Use the selected app language consistently in the camera UI.",
+    "from": "agent",
+    "ts": 0
+  },
+  {
+    "id": "coin-full-12",
+    "sample": "05-recap-en",
+    "viewport": "mobile",
+    "rect": {
+      "x": 0.04,
+      "y": 0.16,
+      "w": 0.9,
+      "h": 0.2
+    },
+    "mode": "overscaled-display",
+    "priority": "P1",
+    "note": "Session saved heading and status summary are much larger than the evidence that matters after a workout; they push the useful round card down.",
+    "from": "agent",
+    "ts": 0
+  },
+  {
+    "id": "coin-full-13",
+    "sample": "05-recap-en",
+    "viewport": "mobile",
+    "rect": {
+      "x": 0.04,
+      "y": 0.32,
+      "w": 0.9,
+      "h": 0.2
+    },
+    "mode": "metric-ambiguity",
+    "priority": "P1",
+    "note": "0 timed rounds appears above a Round 1 reached card. Both are technically distinguishable, but the hierarchy makes the report look self-contradictory. Lead with time trained and rounds reached, then label completed full rounds separately.",
+    "from": "agent",
+    "ts": 0
+  },
+  {
+    "id": "coin-full-14",
+    "sample": "12-recap-fr",
+    "viewport": "mobile",
+    "rect": {
+      "x": 0.04,
+      "y": 0.18,
+      "w": 0.9,
+      "h": 0.26
+    },
+    "mode": "overscaled-display",
+    "priority": "P1",
+    "note": "Séance enregistrée wraps into two very large lines; the actual round evidence starts below the middle of the screen and the next action is pushed to the bottom.",
+    "from": "agent",
+    "ts": 0
+  },
+  {
+    "id": "coin-full-15",
+    "sample": "12-recap-fr",
+    "viewport": "mobile",
+    "rect": {
+      "x": 0.04,
+      "y": 0.45,
+      "w": 0.91,
+      "h": 0.09
+    },
+    "mode": "french-overflow",
+    "priority": "P0",
+    "note": "French stat labels overlap: ÉCHANTILLONS CAMÉRA runs into CONSIGNES DEMANDÉES. Three equal columns do not accommodate the French strings.",
+    "from": "agent",
+    "ts": 0
+  },
+  {
+    "id": "coin-full-16",
+    "sample": "12-recap-fr",
+    "viewport": "mobile",
+    "rect": {
+      "x": 0.04,
+      "y": 0.32,
+      "w": 0.91,
+      "h": 0.13
+    },
+    "mode": "language-leak",
+    "priority": "P1",
+    "note": "French recap still says rounds and drill. Decide whether these are intentional boxing loanwords; current mixed register differs from the rest of the French UI.",
+    "from": "agent",
+    "ts": 0
+  },
+  {
+    "id": "coin-full-17",
+    "sample": "06-session-log-en",
+    "viewport": "mobile",
+    "rect": {
+      "x": 0.04,
+      "y": 0.33,
+      "w": 0.91,
+      "h": 0.58
+    },
+    "mode": "native-style-drift",
+    "priority": "P1",
+    "note": "Dense grouped Form card, large navigation header and repeated planned rows abandon the compact editorial style of the entry and live views. Collapse untouched future rounds and elevate observed segments.",
+    "from": "agent",
+    "ts": 0
+  },
+  {
+    "id": "coin-full-18",
+    "sample": "07-film-en",
+    "viewport": "mobile",
+    "rect": {
+      "x": 0.04,
+      "y": 0.12,
+      "w": 0.91,
+      "h": 0.31
+    },
+    "mode": "contrast-mismatch",
+    "priority": "P0",
+    "note": "White title, subtitle, section labels and status-bar text sit on warm ivory; several are nearly invisible. Correct color tokens before any further styling.",
+    "from": "agent",
+    "ts": 0
+  },
+  {
+    "id": "coin-full-19",
+    "sample": "13-film-fr",
+    "viewport": "mobile",
+    "rect": {
+      "x": 0.04,
+      "y": 0.12,
+      "w": 0.91,
+      "h": 0.31
+    },
+    "mode": "contrast-mismatch",
+    "priority": "P0",
+    "note": "The same white-on-ivory failure hides the French film title and section labels. This persists across both languages.",
+    "from": "agent",
+    "ts": 0
+  },
+  {
+    "id": "coin-full-20",
+    "sample": "07-film-en",
+    "viewport": "mobile",
+    "rect": {
+      "x": 0.04,
+      "y": 0.84,
+      "w": 0.91,
+      "h": 0.14
+    },
+    "mode": "tab-occlusion",
+    "priority": "P1",
+    "note": "Floating tabs cover the Live feedback card, including its explanatory text; the notebook content needs bottom clearance.",
+    "from": "agent",
+    "ts": 0
+  },
+  {
+    "id": "coin-full-21",
+    "sample": "13-film-fr",
+    "viewport": "mobile",
+    "rect": {
+      "x": 0.04,
+      "y": 0.84,
+      "w": 0.91,
+      "h": 0.14
+    },
+    "mode": "tab-occlusion",
+    "priority": "P1",
+    "note": "French notebook's Conseils en direct card is covered by the floating tab bar.",
+    "from": "agent",
+    "ts": 0
+  },
+  {
+    "id": "coin-full-22",
+    "sample": "13-film-fr",
+    "viewport": "mobile",
+    "rect": {
+      "x": 0.04,
+      "y": 0.56,
+      "w": 0.91,
+      "h": 0.23
+    },
+    "mode": "language-leak",
+    "priority": "P1",
+    "note": "Saved film rows retain English fixture titles such as Evaluation clip while the surrounding UI is French; distinguish user-given titles from fixture content and label demos visibly.",
+    "from": "agent",
+    "ts": 0
+  },
+  {
+    "id": "coin-full-23",
+    "sample": "09-calendar-en",
+    "viewport": "mobile",
+    "rect": {
+      "x": 0.04,
+      "y": 0.8,
+      "w": 0.91,
+      "h": 0.18
+    },
+    "mode": "tab-occlusion",
+    "priority": "P1",
+    "note": "The calendar's session rows disappear below the floating tab bar; a day with many logs cannot be scanned from this viewport.",
+    "from": "agent",
+    "ts": 0
+  },
+  {
+    "id": "coin-full-24",
+    "sample": "14-calendar-fr",
+    "viewport": "mobile",
+    "rect": {
+      "x": 0.04,
+      "y": 0.8,
+      "w": 0.91,
+      "h": 0.18
+    },
+    "mode": "tab-occlusion",
+    "priority": "P1",
+    "note": "The French calendar also loses log rows beneath the navigation bar.",
+    "from": "agent",
+    "ts": 0
+  },
+  {
+    "id": "coin-full-25",
+    "sample": "14-calendar-fr",
+    "viewport": "mobile",
+    "rect": {
+      "x": 0.04,
+      "y": 0.68,
+      "w": 0.91,
+      "h": 0.22
+    },
+    "mode": "language-leak",
+    "priority": "P1",
+    "note": "French calendar date pills say Sep and session rows say rounds; month heading alone is localized. Use one French locale for dates and count strings.",
+    "from": "agent",
+    "ts": 0
+  },
+  {
+    "id": "coin-full-26",
+    "sample": "09-calendar-en",
+    "viewport": "mobile",
+    "rect": {
+      "x": 0.04,
+      "y": 0.23,
+      "w": 0.91,
+      "h": 0.54
+    },
+    "mode": "native-style-drift",
+    "priority": "P2",
+    "note": "A single tall system-style card dominates the planning screen, with large blank space beneath the month grid. Distinguish calendar dates from log rows and keep the card proportional to the content.",
+    "from": "agent",
+    "ts": 0
+  },
+  {
+    "id": "coin-full-27",
+    "sample": "08-settings-en",
+    "viewport": "mobile",
+    "rect": {
+      "x": 0.04,
+      "y": 0.2,
+      "w": 0.91,
+      "h": 0.55
+    },
+    "mode": "technical-frontload",
+    "priority": "P2",
+    "note": "Connection settings foreground URL, access key and pose telemetry in a large technical sheet reached from the film notebook. Keep this out of the first-use coaching journey and use compact support copy.",
+    "from": "agent",
+    "ts": 0
+  }
+]

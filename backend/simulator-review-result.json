@@ -1,0 +1,13 @@
+{
+  "evidence_type": "simulator_ui_with_synthetic_note_on_private_development_clip",
+  "round_id": "FAF070B1-4258-4255-961B-734EE0C533C7",
+  "review": {
+    "observation": "Test: feet are out of frame. Replay this moment.",
+    "limitation": "Suggestion fondée sur tes notes, sans analyse automatique de la vidéo. À confirmer avec ton coach.",
+    "event_id": "259c626e-7efe-4829-a715-8683ddc3d43c",
+    "model": "bonsai2-27b",
+    "drill": "Revois ce passage au ralenti et note ce qui est clairement visible. Choisis avec ton coach un seul point à travailler avant de modifier ta technique.",
+    "evidence_source": "user_notes"
+  },
+  "mlflow_run_id": "76b3b5af4a7141f49996e0e13430539d"
+}

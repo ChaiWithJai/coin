@@ -1,0 +1,26 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CB5D7882-F35E-469E-980B-5729D3C0F7D4",
+        "deviceName" : "Coin iPhone 11",
+        "exportedFileName" : "796005D8-0F8A-4B4C-83B2-C88A4EAB67CE.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "final-day-log-fr_0_4B438D12-FCAB-46A2-9913-2658791DCE93.png",
+        "timestamp" : 1790399431.222
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CB5D7882-F35E-469E-980B-5729D3C0F7D4",
+        "deviceName" : "Coin iPhone 11",
+        "exportedFileName" : "D5DE4665-2C62-4AD9-B306-BD881E914423.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "final-calendar-fr_0_B3FC6EE7-9BF0-4911-AF3B-0688383B461E.png",
+        "timestamp" : 1790399429.382
+      }
+    ],
+    "testIdentifier" : "GuardFlowTests/testTemporaryFinalHistoryCapture()",
+    "testIdentifierURL" : "test://com.apple.xcode/Coin/CoinUITests/GuardFlowTests/testTemporaryFinalHistoryCapture"
+  }
+]

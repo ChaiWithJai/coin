@@ -1,0 +1,38 @@
+{
+  "schema_version": "drill-coverage-v1",
+  "clip_sha256": "ee3bbedd9a636768c41a685fa1bb3def25cd9ac5cfaf5a645f2f44633e5b25ff",
+  "extractor": "apple-vision-pose-offline",
+  "frame_count": 150,
+  "person_candidate_frames": 48,
+  "joint_visible_frames": {
+    "leftShoulder": 13,
+    "rightShoulder": 2,
+    "leftWrist": 1,
+    "rightWrist": 5,
+    "leftHip": 0,
+    "rightHip": 0,
+    "leftAnkle": 0,
+    "rightAnkle": 0
+  },
+  "complete_group_frames": {
+    "upper_body": 0,
+    "angle_exit": 0
+  },
+  "longest_complete_run_frames": {
+    "upper_body": 0,
+    "angle_exit": 0
+  },
+  "angle_exit_observable": false,
+  "drill_coverage_sufficient": false,
+  "engagement_classification": "not_attempted",
+  "system1_route": "abstain_unobservable",
+  "system2_route": "insufficient_visual_evidence",
+  "laya_called": false,
+  "bonsai_called": false,
+  "interpretation": "Coverage only; no jab, combination, contact, angle exit, or drill success is inferred.",
+  "frames_artifact": "work/posecli/frames.json",
+  "media_retained_locally": true,
+  "source_kind": "previously_extracted_personal_clip",
+  "mlflow_run_id": "5447a104820349e2bb90e8dafe1a0e91",
+  "mlflow_trace_id": "tr-615757af2b65f10b5d74afc3fab2cf3b"
+}

@@ -1,0 +1,141 @@
+{
+  "dataset_id": "coin-system1-contract-v1",
+  "dataset_sha256": "df99cf0b0cc6d266285c8c8feb30ab278bdbf8246d6f6658aa76cede5f802fd0",
+  "source_kind": "synthetic_contract_cases",
+  "case_count": 8,
+  "contract_pass_count": 8,
+  "model_accuracy": null,
+  "actual_billed_usd": null,
+  "results": [
+    {
+      "case_id": "fr-hidden-feet",
+      "language": "fr",
+      "expectation": "quiet_without_model",
+      "contract_passed": true,
+      "action": "quiet",
+      "source": "deterministic_veto",
+      "candidate_choice": null,
+      "candidate_confidence": null,
+      "candidate_answer_confidence": null,
+      "usage": null,
+      "round_trip_ms": 21.7,
+      "event_id": "b0e2e00d-765e-49d9-8532-0259acb6e289"
+    },
+    {
+      "case_id": "en-cooldown",
+      "language": "en",
+      "expectation": "quiet_without_model",
+      "contract_passed": true,
+      "action": "quiet",
+      "source": "deterministic_veto",
+      "candidate_choice": null,
+      "candidate_confidence": null,
+      "candidate_answer_confidence": null,
+      "usage": null,
+      "round_trip_ms": 2.9,
+      "event_id": "7dd58ee3-8554-4f63-9fa7-99e6170385b5"
+    },
+    {
+      "case_id": "en-missing-reset",
+      "language": "en",
+      "expectation": "candidate_only",
+      "contract_passed": true,
+      "action": "quiet",
+      "source": "unpromoted_laya_candidate",
+      "candidate_choice": "review",
+      "candidate_confidence": 0.0631,
+      "candidate_answer_confidence": 0.502,
+      "usage": {
+        "input_tokens": 122,
+        "output_tokens": 0
+      },
+      "round_trip_ms": 499.7,
+      "event_id": "fe238468-0292-4281-9c5d-784d2801ef7b"
+    },
+    {
+      "case_id": "fr-complete-record",
+      "language": "fr",
+      "expectation": "candidate_only",
+      "contract_passed": true,
+      "action": "quiet",
+      "source": "unpromoted_laya_candidate",
+      "candidate_choice": "cue",
+      "candidate_confidence": 0.1304,
+      "candidate_answer_confidence": 0.5533,
+      "usage": {
+        "input_tokens": 130,
+        "output_tokens": 0
+      },
+      "round_trip_ms": 508.7,
+      "event_id": "c95b44d3-20b1-46c5-b382-502de04c1429"
+    },
+    {
+      "case_id": "en-partial-occlusion",
+      "language": "en",
+      "expectation": "candidate_only",
+      "contract_passed": true,
+      "action": "quiet",
+      "source": "unpromoted_laya_candidate",
+      "candidate_choice": "cue",
+      "candidate_confidence": 0.128,
+      "candidate_answer_confidence": 0.5434,
+      "usage": {
+        "input_tokens": 117,
+        "output_tokens": 0
+      },
+      "round_trip_ms": 522.5,
+      "event_id": "8ce60632-05e6-4199-a012-aae106a120e0"
+    },
+    {
+      "case_id": "fr-conflicting-report",
+      "language": "fr",
+      "expectation": "candidate_only",
+      "contract_passed": true,
+      "action": "quiet",
+      "source": "unpromoted_laya_candidate",
+      "candidate_choice": "review",
+      "candidate_confidence": 0.1339,
+      "candidate_answer_confidence": 0.4496,
+      "usage": {
+        "input_tokens": 124,
+        "output_tokens": 0
+      },
+      "round_trip_ms": 508.1,
+      "event_id": "f1da6f40-49e9-424e-8605-b780ef6e15b5"
+    },
+    {
+      "case_id": "en-pressure-variant",
+      "language": "en",
+      "expectation": "candidate_only",
+      "contract_passed": true,
+      "action": "quiet",
+      "source": "unpromoted_laya_candidate",
+      "candidate_choice": "review",
+      "candidate_confidence": 0.1843,
+      "candidate_answer_confidence": 0.6395,
+      "usage": {
+        "input_tokens": 123,
+        "output_tokens": 0
+      },
+      "round_trip_ms": 512.0,
+      "event_id": "eb4c7109-7397-41b9-80b5-1d6b6c683f2f"
+    },
+    {
+      "case_id": "fr-planted-pivot",
+      "language": "fr",
+      "expectation": "candidate_only",
+      "contract_passed": true,
+      "action": "quiet",
+      "source": "unpromoted_laya_candidate",
+      "candidate_choice": "review",
+      "candidate_confidence": 0.1393,
+      "candidate_answer_confidence": 0.5655,
+      "usage": {
+        "input_tokens": 127,
+        "output_tokens": 0
+      },
+      "round_trip_ms": 485.6,
+      "event_id": "7af4afd0-1598-4723-b489-b24cf833004c"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "run_id": "d21d17eb6b5f4197932dc9069051ff7e",
+  "trace_id": "tr-5654df616f56f8a81ce243efc5c6d9e5",
+  "spans": [
+    "live_window",
+    "evidence_gate"
+  ],
+  "evidence_type": "synthetic fixture; no visual accuracy or model inference established"
+}

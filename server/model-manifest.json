@@ -1,0 +1,16 @@
+{
+  "observed_at": "2026-09-25",
+  "host_alias": "gb10",
+  "endpoint": "http://127.0.0.1:5214/v1",
+  "model_alias": "bonsai2-27b",
+  "model_filename": "Ternary-Bonsai-2-27B-PQ2_0.gguf",
+  "model_sha256": "3907dc1658db1f78a9826bf8d5bcb8dc65db0d466388937af57f2294fae62ec1",
+  "runtime_git_revision": "d8f26eec76da6d09bb708bcba51ef64b8cd868a3",
+  "runtime_binary_sha256": "0e27eb23ab5d02d3dc854231bc4ec23a8c7f2c444bf96ae8b39b9607d8f1f73b",
+  "runtime_working_tree": "clean observed",
+  "model_parameters_reported": 26895998464,
+  "capabilities_reported": ["completion"],
+  "service_policy": "Existing shared service; do not restart or reconfigure. Integration latency is not an isolated benchmark.",
+  "training_compatibility": "unverified",
+  "vision_capability": "not established"
+}

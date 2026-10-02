@@ -1,0 +1,12 @@
+{
+  "run_id": "874f5ae4952b4074a6e539c277ccdc9f",
+  "trace_ids": [
+    "tr-9e81efce75a04936e58748b581b7fc0d",
+    "tr-274a30e49261351b8e231be0cbdc00fe",
+    "tr-526602404b6403e52bbd7548e7f5d10f"
+  ],
+  "correct": 1,
+  "cases": 3,
+  "label_source": "predefined synthetic contract expectations, not human film labels",
+  "decision": "Do not promote zero-shot Laya to live cue authority. Hard visibility/cooldown gates remain mandatory."
+}

@@ -1,0 +1,14 @@
+{
+  "candidate_id": "ternary-bonsai-8b-pq2-gb10",
+  "host": "gb10",
+  "model_path": "/home/chaiwithjai/bonsai-evidence-lab/models/public-text/ternary/8B/Ternary-Bonsai-8B-PQ2_0.gguf",
+  "model_bytes": 2182184672,
+  "model_sha256": "1376f942aa90e60f7b570c1d81b3916fea1315ff85aa1c4d19006af68fb4b922",
+  "format": "GGUF PQ2_0",
+  "proposed_role": "System 1 structured decision candidate",
+  "inference_status": "not_run_for_coin",
+  "latency_ms": null,
+  "quality_status": "unmeasured",
+  "queue_status": "shared_GB10_GPU_lane_occupied_by_resident_llama_server",
+  "source_note": "A T7 Hugging Face cache ref exists, but its cache directory has no snapshot weights. The pinned 8B file above is under the GB10 evidence lab. This manifest records local bytes, not publisher identity or task fitness."
+}

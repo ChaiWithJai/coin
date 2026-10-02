@@ -1,0 +1,777 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		01A429B1D5DB015B21915D74 /* en_free_mid_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 9A86E4068D498EF3A4C0D28E /* en_free_mid_cue.mp3 */; };
+		02E41CF8C4F5C918BF568934 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B6E6C07A3DD5FCFEB9DE4935 /* PrivacyInfo.xcprivacy */; };
+		0321A361EEABDD5D9273E6B2 /* en_squats_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = EAAD6AD111D4DAB730355015 /* en_squats_cue.mp3 */; };
+		0360296025155AB60C041A67 /* GuardFlowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 963A427486EDF99D2A80E2ED /* GuardFlowTests.swift */; };
+		0EED624B951048C4C4FD9C71 /* fr_shadowboxing_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 760BD32B3B99EC8C233B41EC /* fr_shadowboxing_cue.mp3 */; };
+		1BF3D0D11E87EC39C41EEDC2 /* TrainingModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C62A92AA909C28AED6B0792B /* TrainingModelTests.swift */; };
+		3217F6D07757B48E150E66FA /* CoachingClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B94EF50BCAC352618C6BDAF4 /* CoachingClient.swift */; };
+		32EDD1E5759FECE983A3F519 /* fr_mobility_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = F126B44FADF979DB60876D00 /* fr_mobility_cue.mp3 */; };
+		3B56F97490CC96300150FC48 /* fr_guard_late_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 78BA8330E77C72A23BB50801 /* fr_guard_late_cue.mp3 */; };
+		3BD1B684BA727A4CDD5E035A /* en_shadowboxing_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E82AAB99EEEF87D8C7228B81 /* en_shadowboxing_cue.mp3 */; };
+		448E6DD9C4492F04EA8096BE /* pose_landmarker_full.task in Resources */ = {isa = PBXBuildFile; fileRef = 2C539A054E88DBE420544DDB /* pose_landmarker_full.task */; };
+		450D4A0FC74BBB8027B3E762 /* fr_probe_late_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E0CD0D15FCB90CCE599A82F6 /* fr_probe_late_cue.mp3 */; };
+		4C99702E58F44CBEBFC92F9E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 10DA177B4E61D928C2B3804A /* Assets.xcassets */; };
+		4F2F2F79CE8D191594FBE96B /* en_guard_late_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 7C8674C36766F3CC7B88E58D /* en_guard_late_cue.mp3 */; };
+		5B853F895D812868697C762B /* Pods_Coin.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1E7763A484049FD1352A2F12 /* Pods_Coin.framework */; };
+		6D5BAC01C91E873545C10A51 /* ReviewRequestStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0E0AEF89485FE5A96B94B5A /* ReviewRequestStore.swift */; };
+		7385C83E6DB58C4C3C3B3455 /* TrainingViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = C33E9193EFE38EE1F4D8EC54 /* TrainingViews.swift */; };
+		743EA5CD5A96CB990A5D3673 /* en_probe_mid_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 739344F947F29F891BEB9B98 /* en_probe_mid_cue.mp3 */; };
+		747449F8E11E7E413B585DFE /* en_free_late_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = CE1B2E2F38A6B6111DC40089 /* en_free_late_cue.mp3 */; };
+		7F50A11E6E8D372182EFB61A /* en_guard_round_speech.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = BACDD627F4BD3BC61620EC60 /* en_guard_round_speech.mp3 */; };
+		808FF29949245E024E7C3DB8 /* en_lunges_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = F10F4D2585E436427628683C /* en_lunges_cue.mp3 */; };
+		882E4DC572B096685B3320C1 /* fr_lunges_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 5BC2C2E172ABEC1B77F3987D /* fr_lunges_cue.mp3 */; };
+		8C2171F0D05FA949AC1A5CD0 /* CoachingCopy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67FF365A4ECD7E5586A2944E /* CoachingCopy.swift */; };
+		8C71556DC0743146F3B4A925 /* TrainingModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCF7032611512B2B3E4F1B73 /* TrainingModel.swift */; };
+		8FCFBC9CF9175A15F0F79031 /* fr_round_speech.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 68295785E6979ABC38B63141 /* fr_round_speech.mp3 */; };
+		9145CC1A6596E36971F94967 /* GuardReview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363F1D99A7A5A90CB65A3335 /* GuardReview.swift */; };
+		9288FE291745B9AFBB8B52A2 /* en_opening.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = B5CFD70A62D6B2F4E601D7CF /* en_opening.mp3 */; };
+		98778AA15912D88E54E049B7 /* LiveWorkout.swift in Sources */ = {isa = PBXBuildFile; fileRef = E095F31CCF96339E10AAF775 /* LiveWorkout.swift */; };
+		9F2E46FB6A0D4E7ACD8A63FF /* fr_cooldown_speech.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 167036E47C90AC6984873B68 /* fr_cooldown_speech.mp3 */; };
+		A175486B33B447AD244C2BC2 /* en_free_round_speech.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 694152EA177F711CF5BBC929 /* en_free_round_speech.mp3 */; };
+		A1FD1A90528D6EEFB4F1306B /* en_mobility_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = AC8046F581E562F48CCE7FAC /* en_mobility_cue.mp3 */; };
+		A9411B5ED6FF34D923B8D62F /* en_guard_mid_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 2873053203FC8F43F4E02954 /* en_guard_mid_cue.mp3 */; };
+		A9B0E725F2417F603F7BF709 /* fr_guard_mid_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 17A654BF5AFE9AA1772B10F9 /* fr_guard_mid_cue.mp3 */; };
+		B0F815C8484988C5FD322BE5 /* fr_guard_round_speech.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 70E879C52825C0C30781D2D3 /* fr_guard_round_speech.mp3 */; };
+		B2DFA140C3EB57A2A31AF1C0 /* PoseAnalysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCBF209919D815548051C13 /* PoseAnalysis.swift */; };
+		BC62D48B37D04547CB431641 /* fr_opening.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 3C725A1B8DC5BB37500EEA59 /* fr_opening.mp3 */; };
+		CD94D1C5E4F593A83760072A /* en_cooldown_speech.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 32BA66EDF9A0064EDF569BD0 /* en_cooldown_speech.mp3 */; };
+		D7CE29D9F4C8D3533741C601 /* fr_squats_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 2BC7DCE6683F7B03F40FEB4C /* fr_squats_cue.mp3 */; };
+		DD8607104B7053E9DC10CB2A /* fr_probe_mid_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 6B010D2F3B2E7A2EC5F03697 /* fr_probe_mid_cue.mp3 */; };
+		E1BC8E7057EC08A27BD83228 /* fr_free_late_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = C76C22526372AA63A65A45E8 /* fr_free_late_cue.mp3 */; };
+		E3D6D2BDB7AF59E05D999883 /* fr_free_mid_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 585FD2FBAEB06A164E1BAF34 /* fr_free_mid_cue.mp3 */; };
+		E761E2F22868C4CCC8C53FBA /* fr_rest_speech.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 18D787B920456C6E65F28A8A /* fr_rest_speech.mp3 */; };
+		EE740F45E71A240B83B5B808 /* CoinApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7C4DF8505FB0059289BD01C /* CoinApp.swift */; };
+		F19679E81755DD3F7BA60701 /* en_rest_speech.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = EFB516E2BBE5ADF1979915F8 /* en_rest_speech.mp3 */; };
+		F36BE0404DF79A0604BB3F9A /* en_round_speech.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = F42194BDBA060BCDE5C58843 /* en_round_speech.mp3 */; };
+		F7777134380865D6AE5EC0DA /* en_probe_late_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = B86C0DEE49D9C8EE03A85161 /* en_probe_late_cue.mp3 */; };
+		F83ADB4A2092924671775DC8 /* fr_free_round_speech.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 39E9FEA6739F1429EB23204F /* fr_free_round_speech.mp3 */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		0010B44E4B6AC68A29F2C72F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 355F6ABBBC8BC390763B5B07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 08B5FF7819595ED1294BF09A;
+			remoteInfo = Coin;
+		};
+		CFA1B14908015A9F14A99C2D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 355F6ABBBC8BC390763B5B07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 08B5FF7819595ED1294BF09A;
+			remoteInfo = Coin;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		10DA177B4E61D928C2B3804A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		167036E47C90AC6984873B68 /* fr_cooldown_speech.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = fr_cooldown_speech.mp3; sourceTree = "<group>"; };
+		17A654BF5AFE9AA1772B10F9 /* fr_guard_mid_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = fr_guard_mid_cue.mp3; sourceTree = "<group>"; };
+		18D787B920456C6E65F28A8A /* fr_rest_speech.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = fr_rest_speech.mp3; sourceTree = "<group>"; };
+		1E7763A484049FD1352A2F12 /* Pods_Coin.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Coin.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		2873053203FC8F43F4E02954 /* en_guard_mid_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_guard_mid_cue.mp3; sourceTree = "<group>"; };
+		2B2D0202385785E426F3B631 /* en.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; path = en.lproj; sourceTree = "<group>"; };
+		2BC7DCE6683F7B03F40FEB4C /* fr_squats_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = fr_squats_cue.mp3; sourceTree = "<group>"; };
+		2C539A054E88DBE420544DDB /* pose_landmarker_full.task */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_landmarker_full.task; sourceTree = "<group>"; };
+		3212BAF5CA1878325357EFBA /* Coin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Coin.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		32BA66EDF9A0064EDF569BD0 /* en_cooldown_speech.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_cooldown_speech.mp3; sourceTree = "<group>"; };
+		363F1D99A7A5A90CB65A3335 /* GuardReview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuardReview.swift; sourceTree = "<group>"; };
+		39E9FEA6739F1429EB23204F /* fr_free_round_speech.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = fr_free_round_speech.mp3; sourceTree = "<group>"; };
+		3C725A1B8DC5BB37500EEA59 /* fr_opening.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = fr_opening.mp3; sourceTree = "<group>"; };
+		523F54EE79B17704AAD14EAC /* Pods-Coin.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Coin.release.xcconfig"; path = "Target Support Files/Pods-Coin/Pods-Coin.release.xcconfig"; sourceTree = "<group>"; };
+		585FD2FBAEB06A164E1BAF34 /* fr_free_mid_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = fr_free_mid_cue.mp3; sourceTree = "<group>"; };
+		5BC2C2E172ABEC1B77F3987D /* fr_lunges_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = fr_lunges_cue.mp3; sourceTree = "<group>"; };
+		67FF365A4ECD7E5586A2944E /* CoachingCopy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoachingCopy.swift; sourceTree = "<group>"; };
+		68295785E6979ABC38B63141 /* fr_round_speech.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = fr_round_speech.mp3; sourceTree = "<group>"; };
+		694152EA177F711CF5BBC929 /* en_free_round_speech.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_free_round_speech.mp3; sourceTree = "<group>"; };
+		6B010D2F3B2E7A2EC5F03697 /* fr_probe_mid_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = fr_probe_mid_cue.mp3; sourceTree = "<group>"; };
+		70E879C52825C0C30781D2D3 /* fr_guard_round_speech.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = fr_guard_round_speech.mp3; sourceTree = "<group>"; };
+		739344F947F29F891BEB9B98 /* en_probe_mid_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_probe_mid_cue.mp3; sourceTree = "<group>"; };
+		760BD32B3B99EC8C233B41EC /* fr_shadowboxing_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = fr_shadowboxing_cue.mp3; sourceTree = "<group>"; };
+		76206D31125EB5B72C40FD6C /* Pods-Coin.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Coin.debug.xcconfig"; path = "Target Support Files/Pods-Coin/Pods-Coin.debug.xcconfig"; sourceTree = "<group>"; };
+		78BA8330E77C72A23BB50801 /* fr_guard_late_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = fr_guard_late_cue.mp3; sourceTree = "<group>"; };
+		7C8674C36766F3CC7B88E58D /* en_guard_late_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_guard_late_cue.mp3; sourceTree = "<group>"; };
+		91109AAD09019EEE3B0317B0 /* fr.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; path = fr.lproj; sourceTree = "<group>"; };
+		963A427486EDF99D2A80E2ED /* GuardFlowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuardFlowTests.swift; sourceTree = "<group>"; };
+		9A86E4068D498EF3A4C0D28E /* en_free_mid_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_free_mid_cue.mp3; sourceTree = "<group>"; };
+		A000F457AE5913FBE19B7695 /* CoinUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CoinUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A0E0AEF89485FE5A96B94B5A /* ReviewRequestStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewRequestStore.swift; sourceTree = "<group>"; };
+		AA126C6A2CB87A5BF3D32E89 /* CoinTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CoinTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		AC8046F581E562F48CCE7FAC /* en_mobility_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_mobility_cue.mp3; sourceTree = "<group>"; };
+		B5CFD70A62D6B2F4E601D7CF /* en_opening.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_opening.mp3; sourceTree = "<group>"; };
+		B6E6C07A3DD5FCFEB9DE4935 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		B86C0DEE49D9C8EE03A85161 /* en_probe_late_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_probe_late_cue.mp3; sourceTree = "<group>"; };
+		B94EF50BCAC352618C6BDAF4 /* CoachingClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoachingClient.swift; sourceTree = "<group>"; };
+		BACDD627F4BD3BC61620EC60 /* en_guard_round_speech.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_guard_round_speech.mp3; sourceTree = "<group>"; };
+		C33E9193EFE38EE1F4D8EC54 /* TrainingViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingViews.swift; sourceTree = "<group>"; };
+		C62A92AA909C28AED6B0792B /* TrainingModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingModelTests.swift; sourceTree = "<group>"; };
+		C76C22526372AA63A65A45E8 /* fr_free_late_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = fr_free_late_cue.mp3; sourceTree = "<group>"; };
+		CCCBF209919D815548051C13 /* PoseAnalysis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseAnalysis.swift; sourceTree = "<group>"; };
+		CE1B2E2F38A6B6111DC40089 /* en_free_late_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_free_late_cue.mp3; sourceTree = "<group>"; };
+		D7C4DF8505FB0059289BD01C /* CoinApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinApp.swift; sourceTree = "<group>"; };
+		DCF7032611512B2B3E4F1B73 /* TrainingModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingModel.swift; sourceTree = "<group>"; };
+		E095F31CCF96339E10AAF775 /* LiveWorkout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveWorkout.swift; sourceTree = "<group>"; };
+		E0CD0D15FCB90CCE599A82F6 /* fr_probe_late_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = fr_probe_late_cue.mp3; sourceTree = "<group>"; };
+		E82AAB99EEEF87D8C7228B81 /* en_shadowboxing_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_shadowboxing_cue.mp3; sourceTree = "<group>"; };
+		EAAD6AD111D4DAB730355015 /* en_squats_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_squats_cue.mp3; sourceTree = "<group>"; };
+		EFB516E2BBE5ADF1979915F8 /* en_rest_speech.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_rest_speech.mp3; sourceTree = "<group>"; };
+		F10F4D2585E436427628683C /* en_lunges_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_lunges_cue.mp3; sourceTree = "<group>"; };
+		F126B44FADF979DB60876D00 /* fr_mobility_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = fr_mobility_cue.mp3; sourceTree = "<group>"; };
+		F42194BDBA060BCDE5C58843 /* en_round_speech.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_round_speech.mp3; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		4AABE72A53D91048DBA9B51E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5B853F895D812868697C762B /* Pods_Coin.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		01385E1403A438AA7D4A803C = {
+			isa = PBXGroup;
+			children = (
+				10DA177B4E61D928C2B3804A /* Assets.xcassets */,
+				B94EF50BCAC352618C6BDAF4 /* CoachingClient.swift */,
+				67FF365A4ECD7E5586A2944E /* CoachingCopy.swift */,
+				D7C4DF8505FB0059289BD01C /* CoinApp.swift */,
+				2B2D0202385785E426F3B631 /* en.lproj */,
+				91109AAD09019EEE3B0317B0 /* fr.lproj */,
+				363F1D99A7A5A90CB65A3335 /* GuardReview.swift */,
+				E095F31CCF96339E10AAF775 /* LiveWorkout.swift */,
+				2C539A054E88DBE420544DDB /* pose_landmarker_full.task */,
+				CCCBF209919D815548051C13 /* PoseAnalysis.swift */,
+				B6E6C07A3DD5FCFEB9DE4935 /* PrivacyInfo.xcprivacy */,
+				A0E0AEF89485FE5A96B94B5A /* ReviewRequestStore.swift */,
+				DCF7032611512B2B3E4F1B73 /* TrainingModel.swift */,
+				C33E9193EFE38EE1F4D8EC54 /* TrainingViews.swift */,
+				8FD123CD5FD93E620B7ACE9F /* uitests */,
+				BB712941342F6C8DF4EA7006 /* unittests */,
+				EB1379859BECF1D9BCFE3760 /* VoiceCues */,
+				66AD28573D5EBD30EBE49ED9 /* Products */,
+				E899FF293C96EB633CD570CB /* Pods */,
+				4E4E33B8AC438CD4EDFBC39D /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		4E4E33B8AC438CD4EDFBC39D /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				1E7763A484049FD1352A2F12 /* Pods_Coin.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		66AD28573D5EBD30EBE49ED9 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				3212BAF5CA1878325357EFBA /* Coin.app */,
+				AA126C6A2CB87A5BF3D32E89 /* CoinTests.xctest */,
+				A000F457AE5913FBE19B7695 /* CoinUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		8FD123CD5FD93E620B7ACE9F /* uitests */ = {
+			isa = PBXGroup;
+			children = (
+				963A427486EDF99D2A80E2ED /* GuardFlowTests.swift */,
+			);
+			path = uitests;
+			sourceTree = "<group>";
+		};
+		BB712941342F6C8DF4EA7006 /* unittests */ = {
+			isa = PBXGroup;
+			children = (
+				C62A92AA909C28AED6B0792B /* TrainingModelTests.swift */,
+			);
+			path = unittests;
+			sourceTree = "<group>";
+		};
+		E899FF293C96EB633CD570CB /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				76206D31125EB5B72C40FD6C /* Pods-Coin.debug.xcconfig */,
+				523F54EE79B17704AAD14EAC /* Pods-Coin.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		EB1379859BECF1D9BCFE3760 /* VoiceCues */ = {
+			isa = PBXGroup;
+			children = (
+				32BA66EDF9A0064EDF569BD0 /* en_cooldown_speech.mp3 */,
+				CE1B2E2F38A6B6111DC40089 /* en_free_late_cue.mp3 */,
+				9A86E4068D498EF3A4C0D28E /* en_free_mid_cue.mp3 */,
+				694152EA177F711CF5BBC929 /* en_free_round_speech.mp3 */,
+				7C8674C36766F3CC7B88E58D /* en_guard_late_cue.mp3 */,
+				2873053203FC8F43F4E02954 /* en_guard_mid_cue.mp3 */,
+				BACDD627F4BD3BC61620EC60 /* en_guard_round_speech.mp3 */,
+				F10F4D2585E436427628683C /* en_lunges_cue.mp3 */,
+				AC8046F581E562F48CCE7FAC /* en_mobility_cue.mp3 */,
+				B5CFD70A62D6B2F4E601D7CF /* en_opening.mp3 */,
+				B86C0DEE49D9C8EE03A85161 /* en_probe_late_cue.mp3 */,
+				739344F947F29F891BEB9B98 /* en_probe_mid_cue.mp3 */,
+				EFB516E2BBE5ADF1979915F8 /* en_rest_speech.mp3 */,
+				F42194BDBA060BCDE5C58843 /* en_round_speech.mp3 */,
+				E82AAB99EEEF87D8C7228B81 /* en_shadowboxing_cue.mp3 */,
+				EAAD6AD111D4DAB730355015 /* en_squats_cue.mp3 */,
+				167036E47C90AC6984873B68 /* fr_cooldown_speech.mp3 */,
+				C76C22526372AA63A65A45E8 /* fr_free_late_cue.mp3 */,
+				585FD2FBAEB06A164E1BAF34 /* fr_free_mid_cue.mp3 */,
+				39E9FEA6739F1429EB23204F /* fr_free_round_speech.mp3 */,
+				78BA8330E77C72A23BB50801 /* fr_guard_late_cue.mp3 */,
+				17A654BF5AFE9AA1772B10F9 /* fr_guard_mid_cue.mp3 */,
+				70E879C52825C0C30781D2D3 /* fr_guard_round_speech.mp3 */,
+				5BC2C2E172ABEC1B77F3987D /* fr_lunges_cue.mp3 */,
+				F126B44FADF979DB60876D00 /* fr_mobility_cue.mp3 */,
+				3C725A1B8DC5BB37500EEA59 /* fr_opening.mp3 */,
+				E0CD0D15FCB90CCE599A82F6 /* fr_probe_late_cue.mp3 */,
+				6B010D2F3B2E7A2EC5F03697 /* fr_probe_mid_cue.mp3 */,
+				18D787B920456C6E65F28A8A /* fr_rest_speech.mp3 */,
+				68295785E6979ABC38B63141 /* fr_round_speech.mp3 */,
+				760BD32B3B99EC8C233B41EC /* fr_shadowboxing_cue.mp3 */,
+				2BC7DCE6683F7B03F40FEB4C /* fr_squats_cue.mp3 */,
+			);
+			path = VoiceCues;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		08B5FF7819595ED1294BF09A /* Coin */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FB651B2EC57D7A5F256B72E1 /* Build configuration list for PBXNativeTarget "Coin" */;
+			buildPhases = (
+				E1751197459807C489ADD473 /* [CP] Check Pods Manifest.lock */,
+				F786D31A65984F7637FC4EA7 /* Sources */,
+				2ED6E481E0B96BA1277282C0 /* Resources */,
+				4AABE72A53D91048DBA9B51E /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Coin;
+			productName = Coin;
+			productReference = 3212BAF5CA1878325357EFBA /* Coin.app */;
+			productType = "com.apple.product-type.application";
+		};
+		B962A4F71925432514B7D7BC /* CoinUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6E9F1E4F0DD6C1FC6AF4B212 /* Build configuration list for PBXNativeTarget "CoinUITests" */;
+			buildPhases = (
+				909756591B50F9C164CD8F0B /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				526FA714331B44EB3D48CA3D /* PBXTargetDependency */,
+			);
+			name = CoinUITests;
+			productName = CoinUITests;
+			productReference = A000F457AE5913FBE19B7695 /* CoinUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		C0306AEA2CEB0F7E2CAA770F /* CoinTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0379B36C1C15E1211EB44ED2 /* Build configuration list for PBXNativeTarget "CoinTests" */;
+			buildPhases = (
+				7B68EAF96A2C541734006B62 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				6CE7DC0977FAE311D77353BB /* PBXTargetDependency */,
+			);
+			name = CoinTests;
+			productName = CoinTests;
+			productReference = AA126C6A2CB87A5BF3D32E89 /* CoinTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		355F6ABBBC8BC390763B5B07 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 2660;
+				TargetAttributes = {
+					08B5FF7819595ED1294BF09A = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+					B962A4F71925432514B7D7BC = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+						TestTargetID = 08B5FF7819595ED1294BF09A;
+					};
+					C0306AEA2CEB0F7E2CAA770F = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 71A31D83B9508BC723B03991 /* Build configuration list for PBXProject "Coin" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 01385E1403A438AA7D4A803C;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 66AD28573D5EBD30EBE49ED9 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				08B5FF7819595ED1294BF09A /* Coin */,
+				B962A4F71925432514B7D7BC /* CoinUITests */,
+				C0306AEA2CEB0F7E2CAA770F /* CoinTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		2ED6E481E0B96BA1277282C0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4C99702E58F44CBEBFC92F9E /* Assets.xcassets in Resources */,
+				02E41CF8C4F5C918BF568934 /* PrivacyInfo.xcprivacy in Resources */,
+				CD94D1C5E4F593A83760072A /* en_cooldown_speech.mp3 in Resources */,
+				747449F8E11E7E413B585DFE /* en_free_late_cue.mp3 in Resources */,
+				01A429B1D5DB015B21915D74 /* en_free_mid_cue.mp3 in Resources */,
+				A175486B33B447AD244C2BC2 /* en_free_round_speech.mp3 in Resources */,
+				4F2F2F79CE8D191594FBE96B /* en_guard_late_cue.mp3 in Resources */,
+				A9411B5ED6FF34D923B8D62F /* en_guard_mid_cue.mp3 in Resources */,
+				7F50A11E6E8D372182EFB61A /* en_guard_round_speech.mp3 in Resources */,
+				808FF29949245E024E7C3DB8 /* en_lunges_cue.mp3 in Resources */,
+				A1FD1A90528D6EEFB4F1306B /* en_mobility_cue.mp3 in Resources */,
+				9288FE291745B9AFBB8B52A2 /* en_opening.mp3 in Resources */,
+				F7777134380865D6AE5EC0DA /* en_probe_late_cue.mp3 in Resources */,
+				743EA5CD5A96CB990A5D3673 /* en_probe_mid_cue.mp3 in Resources */,
+				F19679E81755DD3F7BA60701 /* en_rest_speech.mp3 in Resources */,
+				F36BE0404DF79A0604BB3F9A /* en_round_speech.mp3 in Resources */,
+				3BD1B684BA727A4CDD5E035A /* en_shadowboxing_cue.mp3 in Resources */,
+				0321A361EEABDD5D9273E6B2 /* en_squats_cue.mp3 in Resources */,
+				9F2E46FB6A0D4E7ACD8A63FF /* fr_cooldown_speech.mp3 in Resources */,
+				E1BC8E7057EC08A27BD83228 /* fr_free_late_cue.mp3 in Resources */,
+				E3D6D2BDB7AF59E05D999883 /* fr_free_mid_cue.mp3 in Resources */,
+				F83ADB4A2092924671775DC8 /* fr_free_round_speech.mp3 in Resources */,
+				3B56F97490CC96300150FC48 /* fr_guard_late_cue.mp3 in Resources */,
+				A9B0E725F2417F603F7BF709 /* fr_guard_mid_cue.mp3 in Resources */,
+				B0F815C8484988C5FD322BE5 /* fr_guard_round_speech.mp3 in Resources */,
+				882E4DC572B096685B3320C1 /* fr_lunges_cue.mp3 in Resources */,
+				32EDD1E5759FECE983A3F519 /* fr_mobility_cue.mp3 in Resources */,
+				BC62D48B37D04547CB431641 /* fr_opening.mp3 in Resources */,
+				450D4A0FC74BBB8027B3E762 /* fr_probe_late_cue.mp3 in Resources */,
+				DD8607104B7053E9DC10CB2A /* fr_probe_mid_cue.mp3 in Resources */,
+				E761E2F22868C4CCC8C53FBA /* fr_rest_speech.mp3 in Resources */,
+				8FCFBC9CF9175A15F0F79031 /* fr_round_speech.mp3 in Resources */,
+				0EED624B951048C4C4FD9C71 /* fr_shadowboxing_cue.mp3 in Resources */,
+				D7CE29D9F4C8D3533741C601 /* fr_squats_cue.mp3 in Resources */,
+				448E6DD9C4492F04EA8096BE /* pose_landmarker_full.task in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		E1751197459807C489ADD473 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-Coin-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		7B68EAF96A2C541734006B62 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1BF3D0D11E87EC39C41EEDC2 /* TrainingModelTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		909756591B50F9C164CD8F0B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0360296025155AB60C041A67 /* GuardFlowTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F786D31A65984F7637FC4EA7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3217F6D07757B48E150E66FA /* CoachingClient.swift in Sources */,
+				8C2171F0D05FA949AC1A5CD0 /* CoachingCopy.swift in Sources */,
+				EE740F45E71A240B83B5B808 /* CoinApp.swift in Sources */,
+				9145CC1A6596E36971F94967 /* GuardReview.swift in Sources */,
+				98778AA15912D88E54E049B7 /* LiveWorkout.swift in Sources */,
+				B2DFA140C3EB57A2A31AF1C0 /* PoseAnalysis.swift in Sources */,
+				6D5BAC01C91E873545C10A51 /* ReviewRequestStore.swift in Sources */,
+				8C71556DC0743146F3B4A925 /* TrainingModel.swift in Sources */,
+				7385C83E6DB58C4C3C3B3455 /* TrainingViews.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		526FA714331B44EB3D48CA3D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 08B5FF7819595ED1294BF09A /* Coin */;
+			targetProxy = 0010B44E4B6AC68A29F2C72F /* PBXContainerItemProxy */;
+		};
+		6CE7DC0977FAE311D77353BB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 08B5FF7819595ED1294BF09A /* Coin */;
+			targetProxy = CFA1B14908015A9F14A99C2D /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		10262B971B41D3B28B8F3DC0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 523F54EE79B17704AAD14EAC /* Pods-Coin.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Coin;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Show your live workout and track visible movement; save a video only when you choose.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Include your training audio when recording a round.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIFileSharingEnabled = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.coinboxing.prototype;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		3C87BC6BC0ABCEB97A949C5D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(PROJECT_DIR)/Pods/MediaPipeTasksVision/frameworks/MediaPipeTasksVision.xcframework/ios-arm64_x86_64-simulator\"",
+					"\"$(PROJECT_DIR)/Pods/MediaPipeTasksCommon/frameworks/MediaPipeTasksCommon.xcframework/ios-arm64_x86_64-simulator\"",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.coinboxing.prototype.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Coin.app/Coin";
+			};
+			name = Release;
+		};
+		508E69A0A41C61F654E7023F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.coinboxing.prototype.uitests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Coin;
+			};
+			name = Release;
+		};
+		5E7E35426812D7498524CF70 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 76206D31125EB5B72C40FD6C /* Pods-Coin.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Coin;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Show your live workout and track visible movement; save a video only when you choose.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Include your training audio when recording a round.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIFileSharingEnabled = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.coinboxing.prototype;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		A3E5017C0D029A9F6D755BA7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.coinboxing.prototype.uitests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Coin;
+			};
+			name = Debug;
+		};
+		C806F555BE1BDE95621FBCBD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = TNK67SNT56;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		DF01AF6B95BF01CB464544A7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(PROJECT_DIR)/Pods/MediaPipeTasksVision/frameworks/MediaPipeTasksVision.xcframework/ios-arm64_x86_64-simulator\"",
+					"\"$(PROJECT_DIR)/Pods/MediaPipeTasksCommon/frameworks/MediaPipeTasksCommon.xcframework/ios-arm64_x86_64-simulator\"",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.coinboxing.prototype.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Coin.app/Coin";
+			};
+			name = Debug;
+		};
+		E659453028201792906CCB91 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = TNK67SNT56;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0379B36C1C15E1211EB44ED2 /* Build configuration list for PBXNativeTarget "CoinTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DF01AF6B95BF01CB464544A7 /* Debug */,
+				3C87BC6BC0ABCEB97A949C5D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		6E9F1E4F0DD6C1FC6AF4B212 /* Build configuration list for PBXNativeTarget "CoinUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A3E5017C0D029A9F6D755BA7 /* Debug */,
+				508E69A0A41C61F654E7023F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		71A31D83B9508BC723B03991 /* Build configuration list for PBXProject "Coin" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C806F555BE1BDE95621FBCBD /* Debug */,
+				E659453028201792906CCB91 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		FB651B2EC57D7A5F256B72E1 /* Build configuration list for PBXNativeTarget "Coin" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5E7E35426812D7498524CF70 /* Debug */,
+				10262B971B41D3B28B8F3DC0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 355F6ABBBC8BC390763B5B07 /* Project object */;
+}
