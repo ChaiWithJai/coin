@@ -7,12 +7,13 @@ from pydantic import BaseModel,Field
 from typing import Literal
 from telemetry import Outbox
 from drills import eligible,render_selection,VERSION
+import round_harness
 ROOT=Path(__file__).resolve().parent
 DATA=ROOT/'state';DATA.mkdir(exist_ok=True)
 TOKEN=Path(os.environ.get('COIN_TOKEN_FILE',str(ROOT/'service-token'))).read_text().strip()
 if len(TOKEN)<32:raise RuntimeError('Strong service token required')
 OUTBOX=Outbox(DATA/'events.sqlite3')
-LAYA_LOCK=threading.Lock();REVIEW_LOCK=threading.Lock()
+LAYA_LOCK=threading.Lock();REVIEW_LOCK=threading.Lock();ROUND_LOCK=threading.Lock()
 agent=None
 
 def authorize(authorization:str=Header(default='')):
@@ -48,6 +49,29 @@ class PoseWindow(BaseModel):
     wrist_travel_body_widths:float|None=Field(default=None,ge=0,le=10)
     lower_body_visible:bool|None=None
     source_version:Literal['mediapipe-pose-full-v1']
+
+class Punch(BaseModel):
+    hand:Literal['lead','rear']
+    atMs:int
+    peakSpeed:float=Field(ge=0,le=200)
+    rearHandLow:bool
+class Exchange(BaseModel):
+    id:int=Field(ge=0)
+    startMs:int
+    endMs:int
+    punches:list[Punch]=Field(min_length=1,max_length=20)
+    opener:Literal['probe','commit']
+    resetMs:int|None=None
+    lateralShift:float=Field(ge=0,le=20)
+    cue:str|None=Field(default=None,max_length=40)
+class RoundSummary(BaseModel):
+    request_id:uuid.UUID
+    language:Literal['fr','en']='fr'
+    stance:Literal['orthodox','southpaw']='orthodox'
+    drill_id:str|None=Field(default=None,max_length=80)
+    round:int=Field(ge=0,le=100)
+    duration_s:int=Field(ge=0,le=3600)
+    exchanges:list[Exchange]=Field(min_length=1,max_length=200)
 
 
 def db():
@@ -159,6 +183,31 @@ def decide(body:Decision):
     except Exception as e:
         record(body,'intervention_decision',body.model_dump(mode='json'),{'error_type':type(e).__name__},time.perf_counter()-start,True)
         raise HTTPException(503,'Decision failed; request retained for inspection')
+
+@app.post('/v1/round')
+def round_report(body:RoundSummary):
+    """Phone rules -> small-model labels per exchange -> 27B round report. Traced through the outbox."""
+    prior=begin_request(body)
+    if prior:return prior
+    if not ROUND_LOCK.acquire(timeout=60):
+        with db() as c:c.execute('DELETE FROM requests WHERE id=?',(str(body.request_id),))
+        raise HTTPException(429,'Another round report is running')
+    start=time.perf_counter()
+    try:
+        response,stages,facts=round_harness.run(body.model_dump(mode='json'))
+        payload={'session_id':str(body.request_id),'window_id':str(body.request_id),'received_at':time.time(),
+                 'model_versions':{'small':'bonsai-2-4b','large':'bonsai-2-27b','rules':'exchange-tracker-v1'},
+                 'decision':{'status':'complete','constraint':response['constraint'],'facts':facts},'stages':stages}
+        response['event_id']=OUTBOX.enqueue(payload,event_id=str(body.request_id))
+        finish_request(body,response);return response
+    except Exception as e:
+        with db() as c:c.execute('DELETE FROM requests WHERE id=?',(str(body.request_id),))
+        OUTBOX.enqueue({'session_id':str(body.request_id),'window_id':str(body.request_id),'received_at':time.time(),
+                        'model_versions':{},'decision':{'status':'failed','error':type(e).__name__,'detail':str(e)[:300]},
+                        'stages':[{'name':'round_report','span_type':'AGENT','inputs':{'round':body.round},'outputs':{'error':str(e)[:300]},
+                                   'duration_ms':(time.perf_counter()-start)*1000}]})
+        raise HTTPException(503,'Round report failed; the phone keeps the round and retries')
+    finally:ROUND_LOCK.release()
 
 @app.post('/v1/review')
 def review(body:Review):
