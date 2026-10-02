@@ -102,22 +102,55 @@ import XCTest
 }
 
 @MainActor final class RoundReportRecoveryTests: XCTestCase {
-    func testOnlyUnreportedSummariesResumeWithOriginalIdentity() throws {
+    func testOnlyValidReportedSummariesStopRetrying() throws {
         let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: folder) }
-        let summary = RoundSummary(requestID: "pending", language: "fr", stance: "orthodox", drillID: "free-boxing-v1",
-                                   round: 1, durationS: 180, exchanges: [], sessionID: "same-session", workoutMode: "freestyle")
+        let sessionID = UUID()
+        let pendingID = UUID().uuidString
+        let summary = RoundSummary(requestID: pendingID, language: "fr", stance: "orthodox", drillID: "free-boxing-v1",
+                                   round: 1, durationS: 180, exchanges: [], sessionID: sessionID.uuidString, workoutMode: "freestyle")
         try JSONEncoder().encode(summary).write(to: folder.appendingPathComponent("pending-summary.json"))
         var completed = summary
-        completed.requestID = "complete"
+        completed.requestID = UUID().uuidString
+        completed.round = 2
         try JSONEncoder().encode(completed).write(to: folder.appendingPathComponent("complete-summary.json"))
-        try Data("{}".utf8).write(to: folder.appendingPathComponent("complete-report.json"))
+        try JSONEncoder().encode(report).write(to: folder.appendingPathComponent("\(completed.requestID)-report.json"))
+        // A file existing is insufficient: a corrupt response must remain retryable.
+        try Data("{}".utf8).write(to: folder.appendingPathComponent("\(pendingID)-report.json"))
         try Data("corrupt".utf8).write(to: folder.appendingPathComponent("bad-summary.json"))
         let pending = RoundReportClient.pendingSummaries(in: folder)
         XCTAssertEqual(pending.count, 1)
-        XCTAssertEqual(pending.first?.requestID, "pending")
-        XCTAssertEqual(pending.first?.sessionID, "same-session")
+        XCTAssertEqual(pending.first?.requestID, pendingID)
+        XCTAssertEqual(pending.first?.sessionID, sessionID.uuidString)
         XCTAssertEqual(pending.first?.workoutMode, "freestyle")
+        let reviews = RoundReportClient.savedReviews(sessionID: sessionID, in: folder)
+        XCTAssertEqual(reviews.map(\.round), [1, 2])
+        XCTAssertNil(reviews[0].report)
+        XCTAssertEqual(reviews[1].report, report)
+    }
+
+    func testReviewsNeverCrossSessionsOrGuessLegacySession() throws {
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let session = UUID()
+        for (index, identifier) in [session.uuidString, UUID().uuidString, nil].enumerated() {
+            let id = UUID().uuidString
+            let summary = RoundSummary(requestID: id, language: "en", stance: "orthodox", drillID: "free-boxing-v1",
+                                       round: 1, durationS: 180, exchanges: [], sessionID: identifier,
+                                       workoutMode: "program", sourceTitle: "Source title \(index)")
+            try JSONEncoder().encode(summary).write(to: folder.appendingPathComponent("\(id)-summary.json"))
+            try JSONEncoder().encode(report).write(to: folder.appendingPathComponent("\(id)-report.json"))
+        }
+        let rows = RoundReportClient.savedReviews(sessionID: session, in: folder)
+        XCTAssertEqual(rows.count, 1)
+        XCTAssertEqual(rows[0].title, "Source title 0")
+        XCTAssertEqual(rows[0].language, "en")
+    }
+
+    private var report: RoundReport {
+        RoundReport(observation: "One detection", interpretation: "Technique unverified", constraint: "Continue your program",
+                    prediction: "Review footage", drill: "Source title", labels: [], models: ["fixture"], latencyMs: 1)
     }
 }

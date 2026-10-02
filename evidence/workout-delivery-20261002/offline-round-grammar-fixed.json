@@ -1,0 +1,115 @@
+{
+  "request_id": "c868ea92-b7bf-459b-97ae-fb79454965d0",
+  "job_id": "live-round:c868ea92-b7bf-459b-97ae-fb79454965d0",
+  "work": {
+    "processed_items": 2
+  },
+  "analysis": {
+    "evidence_status": "offline_candidate_not_validated_coaching",
+    "id": "live-round:c868ea92-b7bf-459b-97ae-fb79454965d0",
+    "item_counts": {
+      "complete": 2,
+      "failed": 0,
+      "pending": 0,
+      "running": 0
+    },
+    "provenance": {
+      "drill_id": "free-boxing-v1",
+      "origin": "synthetic",
+      "request_id": "c868ea92-b7bf-459b-97ae-fb79454965d0",
+      "session_id": "5a7341da-0173-49e9-8068-40d562ef54df",
+      "source_id": "synthetic-program-check",
+      "source_title": "Synthetic source stance drill",
+      "workout_mode": "program"
+    },
+    "report": {
+      "focus": "Continue la consigne de ton programme au prochain round.",
+      "limitations": "Ces détections décrivent l’activité repérée ; la technique reste à vérifier.",
+      "observation": "1 échange et 1 départ de coup repérés."
+    },
+    "report_error": null,
+    "report_model": {
+      "endpoint": "http://127.0.0.1:8712",
+      "model_sha256": null,
+      "resolved_model": "/home/chaiwithjai/models/bonsai-gen/Ternary-Bonsai-2-9B-gguf/Ternary-Bonsai-2-9B-PTQ1_0.gguf"
+    },
+    "report_prompt_version": "completed-round-batch-v2.1",
+    "report_state": "complete",
+    "round_context": {
+      "assessment_scope": "observed_events_only",
+      "drill_id": "free-boxing-v1",
+      "duration_s": 120,
+      "language": "fr",
+      "request_id": "c868ea92-b7bf-459b-97ae-fb79454965d0",
+      "round": 1,
+      "session_id": "5a7341da-0173-49e9-8068-40d562ef54df",
+      "source_id": "synthetic-program-check",
+      "source_instructions": "Development fixture:4 rounds of2minutes.",
+      "source_title": "Synthetic source stance drill",
+      "workout_mode": "program"
+    },
+    "state": "complete"
+  },
+  "export": {
+    "exported_items": 4
+  },
+  "status": {
+    "job_id": "live-round:c868ea92-b7bf-459b-97ae-fb79454965d0",
+    "state": "enqueued",
+    "attempts": 1,
+    "last_error": null,
+    "updated_at": 1790980918.1120207,
+    "processing": "offline_only",
+    "request_id": "c868ea92-b7bf-459b-97ae-fb79454965d0",
+    "session_id": "5a7341da-0173-49e9-8068-40d562ef54df",
+    "origin": "synthetic",
+    "analysis": {
+      "state": "complete",
+      "job_state": "complete",
+      "counts": {
+        "complete": 2
+      },
+      "items": [
+        {
+          "item_id": "exchange:1",
+          "kind": "exchange",
+          "state": "complete",
+          "attempts": 1,
+          "prompt_version": "completed-round-batch-v2.1",
+          "result": {
+            "choice_scores": {
+              "A": 0.011518938637015341,
+              "B": 0.43115066202434754,
+              "C": 0.5501138490212735
+            },
+            "confidence_kind": "uncalibrated_token_probability",
+            "decision": "review",
+            "evidence_gate_applied": false,
+            "proposed_decision": "review",
+            "review_state": "model_proposal",
+            "unreported_probability_mass": 0.007216550317363679,
+            "valid_choice": true
+          }
+        },
+        {
+          "item_id": "report",
+          "kind": "report",
+          "state": "complete",
+          "attempts": 1,
+          "prompt_version": "completed-round-batch-v2.1",
+          "result": {
+            "focus": "Continue la consigne de ton programme au prochain round.",
+            "limitations": "Ces détections décrivent l’activité repérée ; la technique reste à vérifier.",
+            "observation": "1 échange et 1 départ de coup repérés."
+          }
+        }
+      ],
+      "report": {
+        "focus": "Continue la consigne de ton programme au prochain round.",
+        "limitations": "Ces détections décrivent l’activité repérée ; la technique reste à vérifier.",
+        "observation": "1 échange et 1 départ de coup repérés."
+      },
+      "withheld_unreviewed_results": false
+    }
+  }
+}

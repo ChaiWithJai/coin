@@ -1,0 +1,92 @@
+{
+  "deployed_at_utc": "2026-10-02T22:35:19Z",
+  "deployment": "offline_analysis_result_retrieval_v2",
+  "directory": "/home/chaiwithjai/Documents/code/coin-boxing",
+  "installed": {
+    "service.py": "ae9badb523d4e21f14623a242e32154e2fda65c50ada8646a6c0329639b4c9d9",
+    "round_harness.py": "840257ad0dca2fb7be111d396d35a0123df7a96d841fa9019316a22f0649a39c",
+    "batch_jobs.py": "ee403c406b2518815123afc6f67f42cdd9c82c0f6a606d017baa88d15642b98b"
+  },
+  "changed_files": [
+    "service.py",
+    "batch_jobs.py"
+  ],
+  "pid": 2716721,
+  "backup": "/home/chaiwithjai/Documents/code/coin-boxing/backups/20261002T223508-offline-results",
+  "request_states_before_restart": {
+    "complete": 38
+  },
+  "checks": {
+    "127.0.0.1": {
+      "/health": {
+        "http_status": 200,
+        "body": {
+          "ready": true,
+          "visual_perception": false,
+          "live_policy_promoted": false,
+          "outbox": {
+            "delivered": 39
+          }
+        }
+      },
+      "/v1/batch/status": {
+        "http_status": 200,
+        "body": {
+          "processing": "offline_only",
+          "enqueue_counts": {
+            "enqueued": 11
+          }
+        }
+      }
+    },
+    "192.168.68.196": {
+      "/health": {
+        "http_status": 200,
+        "body": {
+          "ready": true,
+          "visual_perception": false,
+          "live_policy_promoted": false,
+          "outbox": {
+            "delivered": 39
+          }
+        }
+      },
+      "/v1/batch/status": {
+        "http_status": 200,
+        "body": {
+          "processing": "offline_only",
+          "enqueue_counts": {
+            "enqueued": 11
+          }
+        }
+      }
+    },
+    "100.122.5.1": {
+      "/health": {
+        "http_status": 200,
+        "body": {
+          "ready": true,
+          "visual_perception": false,
+          "live_policy_promoted": false,
+          "outbox": {
+            "delivered": 39
+          }
+        }
+      },
+      "/v1/batch/status": {
+        "http_status": 200,
+        "body": {
+          "processing": "offline_only",
+          "enqueue_counts": {
+            "enqueued": 11
+          }
+        }
+      }
+    }
+  },
+  "unauthenticated_batch_http_status": 401,
+  "stage_pid_stopped": 2716598,
+  "model_inference_executed": false,
+  "preserved_forwarder_pid": 2526383,
+  "deterministic_server_tests_passed": 39
+}

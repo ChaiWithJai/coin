@@ -1,7 +1,7 @@
 """Private development coordinator. Text observations only; no video claims."""
 import os,json,time,secrets,threading,urllib.request,sqlite3,uuid
 from pathlib import Path
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager,closing
 from fastapi import FastAPI,Header,HTTPException,Depends
 from pydantic import BaseModel,Field
 from typing import Literal
@@ -195,16 +195,79 @@ app=FastAPI(title='Coin private development service',lifespan=lifespan,dependenc
 @app.get('/health')
 def health():return {'ready':agent is not None,'visual_perception':False,'live_policy_promoted':False,'outbox':OUTBOX.counts()}
 
+def same_uuid(left,right):
+    """Compare UUID identity without changing the preserved source spelling."""
+    if left is None or right is None:return left is None and right is None
+    try:return uuid.UUID(str(left))==uuid.UUID(str(right))
+    except (ValueError,TypeError,AttributeError):return False
+
 @app.get('/v1/batch/status')
-def batch_status(request_id:uuid.UUID|None=None):
+def batch_status(request_id:uuid.UUID|None=None,session_id:uuid.UUID|None=None):
     with db() as c:
         if request_id is None:
             counts=dict(c.execute('SELECT state,count(*) FROM batch_enqueues GROUP BY state').fetchall())
             return {'processing':'offline_only','enqueue_counts':counts}
-        row=c.execute('SELECT job_id,state,attempts,last_error,updated_at FROM batch_enqueues WHERE request_id=?',
+        row=c.execute('SELECT job_id,state,attempts,last_error,updated_at,payload FROM batch_enqueues WHERE request_id=?',
                       (str(request_id),)).fetchone()
     if row is None:raise HTTPException(404,'No offline analysis receipt for request')
-    return dict(zip(('job_id','state','attempts','last_error','updated_at'),row),processing='offline_only')
+    record=json.loads(row[5])
+    if session_id is not None and not same_uuid(record.get('session_id'),session_id):
+        raise HTTPException(404,'No offline analysis receipt for request in this session')
+    result=dict(zip(('job_id','state','attempts','last_error','updated_at'),row[:5]),processing='offline_only')
+    result.update(request_id=str(request_id),session_id=record.get('session_id'),origin=record.get('origin','live'))
+    result['analysis']=read_round_batch_analysis(row[0],str(request_id),record,row[1])
+    return result
+
+def read_round_batch_analysis(job_id,request_id,record,enqueue_state):
+    """Read only this receipt's job. Never start workers or return stored prompts."""
+    from batch_jobs import VERSION as current_batch_version
+    path=DATA/'batch-jobs.sqlite3'
+    missing={'state':'awaiting_enqueue' if enqueue_state!='enqueued' else 'missing','items':[],'counts':{}}
+    if not path.exists():return missing
+    try:
+        # Do not instantiate Store here: a GET must not create or migrate a job DB.
+        with closing(sqlite3.connect(path.resolve().as_uri()+'?mode=ro',uri=True,timeout=.25)) as c:
+            c.row_factory=sqlite3.Row
+            c.execute('BEGIN')
+            job=c.execute('SELECT state,provenance FROM jobs WHERE id=?',(job_id,)).fetchone()
+            if job is None:return missing
+            provenance=json.loads(job['provenance'])
+            expected={'request_id':request_id,'session_id':record.get('session_id'),
+                      'origin':record.get('origin','live'),'source_id':record.get('source_id') or request_id}
+            if any(not same_uuid(provenance.get(key),value) if key in ('request_id','session_id')
+                   else provenance.get(key)!=value for key,value in expected.items()):
+                return {'state':'identity_mismatch','items':[],'counts':{}}
+            rows=c.execute('SELECT item_id,kind,state,attempts,output,error FROM items WHERE job_id=? ORDER BY item_id',(job_id,)).fetchall()
+        counts={};items=[];withheld=False
+        allowed={'exchange':{'decision','proposed_decision','valid_choice','evidence_gate_applied','choice_scores','unreported_probability_mass','confidence_kind','review_state'},
+                 'report':{'observation','focus','limitations'}}
+        for row in rows:
+            counts[row['state']]=counts.get(row['state'],0)+1
+            item={key:row[key] for key in ('item_id','kind','state','attempts')}
+            if row['state']=='complete' and row['output']:
+                output=json.loads(row['output']);proposal=output.get('result',{})
+                if not isinstance(proposal,dict):raise ValueError('Invalid stored analysis result')
+                gate=output.get('output_gate') or {}
+                bounded=(isinstance(gate,dict) and (
+                    (row['kind']=='report' and gate.get('evidence_status')=='counts_only_not_technique_or_adherence_evaluation'
+                     and gate.get('language')==record.get('language')) or
+                    (row['kind']=='exchange' and gate.get('assessment_scope') in ('assigned_drill_candidates','observed_events_only'))))
+                item['prompt_version']=output.get('prompt_version')
+                if output.get('prompt_version')==current_batch_version and bounded:
+                    item['result']={key:value for key,value in proposal.items() if key in allowed.get(row['kind'],set())}
+                else:
+                    item['result_status']='legacy_unreviewed';withheld=True
+            elif row['state']=='failed' and row['error']:
+                error=json.loads(row['error'])
+                item['error_type']=error.get('type','AnalysisError') if isinstance(error,dict) else 'AnalysisError'
+            items.append(item)
+        state='running' if job['state']=='pending' and counts.get('running',0)>0 else job['state']
+        report=next((item.get('result') for item in items if item['kind']=='report' and item['state']=='complete'),None)
+        if withheld and state in ('complete','partial'):state='legacy_unreviewed'
+        return {'state':state,'job_state':job['state'],'counts':counts,'items':items,
+                'report':None if withheld else report,'withheld_unreviewed_results':withheld}
+    except (sqlite3.Error,ValueError,TypeError,AttributeError):
+        return {'state':'unavailable','items':[],'counts':{}}
 
 @app.post('/v1/live/pose-window')
 def pose_window(body:PoseWindow):

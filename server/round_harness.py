@@ -198,8 +198,10 @@ def contextual_report(summary):
              'duration_s': summary['duration_s'], 'workout_mode': summary.get('workout_mode'),
              'source_title': summary.get('source_title'), 'drill_id': summary.get('drill_id'),
              'quality_evaluated': False}
-    observation = (f"{n} échanges et {punches} départs de coups repérés." if language == 'fr'
-                   else f"{n} exchanges and {punches} punch onsets observed.")
+    observation = (f"{n} {'échange' if n == 1 else 'échanges'} et {punches} "
+                   f"{'départ de coup' if punches == 1 else 'départs de coups'} repérés." if language == 'fr'
+                   else f"{n} {'exchange' if n == 1 else 'exchanges'} and {punches} "
+                   f"{'punch onset' if punches == 1 else 'punch onsets'} observed.")
     instruction = ("Continue la consigne de ton programme au prochain round." if language == 'fr'
                    else "Continue your program's instruction next round.") if summary.get('workout_mode') == 'program' else (
                    "Choisis un seul objectif pour le prochain round libre." if language == 'fr'

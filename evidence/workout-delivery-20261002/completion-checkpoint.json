@@ -1,0 +1,115 @@
+{
+  "checked_at": "2026-10-02T22:43:35.988756+00:00",
+  "target": "Coin boxing app",
+  "bundle_identifier": "com.coinboxing.prototype",
+  "git_repository": "ChaiWithJai/coin",
+  "phone": {
+    "device": "Lakshmi iPhone 11 Pro",
+    "id": "DCB3F4A7-4528-5743-9F8B-DA1230DB95B6",
+    "app_path": "file:///private/var/containers/Bundle/Application/90537866-9F84-421D-8CA4-F4305D84D8B0/Coin.app/Coin",
+    "pid": 33769,
+    "install_result": {
+      "deviceIdentifier": "DCB3F4A7-4528-5743-9F8B-DA1230DB95B6",
+      "installedApplications": [
+        {
+          "bundleID": "com.coinboxing.prototype",
+          "databaseSequenceNumber": 3428,
+          "databaseUUID": "7C3BE253-338A-4808-96CB-FA6B0F4523A4",
+          "installationURL": "file:///private/var/containers/Bundle/Application/90537866-9F84-421D-8CA4-F4305D84D8B0/Coin.app/",
+          "launchServicesIdentifier": "unknown",
+          "options": {}
+        }
+      ]
+    },
+    "launch_result": {
+      "deviceIdentifier": "DCB3F4A7-4528-5743-9F8B-DA1230DB95B6",
+      "launchOptions": {
+        "activatedWhenStarted": true,
+        "arguments": [
+          "--",
+          "-noAutoStart"
+        ],
+        "environmentVariables": {
+          "TERM": "dumb"
+        },
+        "platformSpecificOptions": {},
+        "startStopped": false,
+        "terminateExistingInstances": false,
+        "user": {
+          "active": true
+        }
+      },
+      "process": {
+        "auditToken": [
+          4294967295,
+          501,
+          501,
+          501,
+          501,
+          33769,
+          0,
+          92050
+        ],
+        "executable": "file:///private/var/containers/Bundle/Application/90537866-9F84-421D-8CA4-F4305D84D8B0/Coin.app/Coin",
+        "processIdentifier": 33769
+      }
+    },
+    "executable_sha256": "beed61aa59a2a8ee0818da056fc138e9d182acbecdf61425511321b36b2978fc",
+    "catalog_sha256": "39e5592bfb6fe1f635325c99c8fb2e67866da8eeb0119968bb96ed7aea5d3a2c",
+    "source_catalog_bytes_match": true
+  },
+  "tests": {
+    "ios_combined": "41 unit + 5 UI passed",
+    "ios_combined_result": "/tmp/coin-workout-derived/Logs/Test/Test-Coin-2026.10.02_18-28-07--0400.xcresult",
+    "ios_final_review": "41 unit + focused UI passed, fixture-only pending card",
+    "ios_final_review_result": "/tmp/coin-workout-derived/Logs/Test/Test-Coin-2026.10.02_18-32-36--0400.xcresult",
+    "server": 40,
+    "source_import": 8
+  },
+  "synthetic_integration": {
+    "request_id": "c868ea92-b7bf-459b-97ae-fb79454965d0",
+    "offline_job_id": "live-round:c868ea92-b7bf-459b-97ae-fb79454965d0",
+    "state": "complete",
+    "round_observation": "1 échange et 1 départ de coup repérés.",
+    "offline_report": {
+      "focus": "Continue la consigne de ton programme au prochain round.",
+      "limitations": "Ces détections décrivent l’activité repérée ; la technique reste à vérifier.",
+      "observation": "1 échange et 1 départ de coup repérés."
+    },
+    "events": [
+      {
+        "kind": "live",
+        "event_id": "c868ea92-b7bf-459b-97ae-fb79454965d0"
+      },
+      {
+        "kind": "batch_exchange",
+        "event_id": "dc0a3925-09dc-54b7-b015-cf870355b290"
+      },
+      {
+        "kind": "batch_report",
+        "event_id": "827070d5-503c-506b-9dd9-60daa29fe209"
+      }
+    ],
+    "source": "synthetic program round over actual private service and Bonsai 9B; no phone footage"
+  },
+  "mlflow": {
+    "experiment": "boxing-app-inference",
+    "experiment_id": "40",
+    "events_expected": 3,
+    "event_run_trace_receipt": "final-mlflow-readback.json",
+    "development_usage_run_id": "658f07204fa1498abdea5fb5dd3a94bb",
+    "development_usage_scope": "exposed per-response usage records only; no hidden reasoning captured"
+  },
+  "cost": {
+    "actual_billed_usd": null,
+    "estimated_usd": null,
+    "status": "unknown, not zero"
+  },
+  "limitations": [
+    "No completed physical workout observed",
+    "Source workout instructions remain English",
+    "Mixed exercise circuits remain manual",
+    "Offline model classifications are proposals, not reviewed labels",
+    "No TestFlight readiness claim"
+  ]
+}

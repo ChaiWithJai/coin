@@ -3,10 +3,16 @@ import XCTest
 final class WorkoutFlowTests: XCTestCase {
     override func setUpWithError() throws { continueAfterFailure = false }
 
-    private func application(language: String, directory: String = UUID().uuidString) -> XCUIApplication {
+    private func application(language: String, directory: String = UUID().uuidString, shortFreestyle: Bool = false) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["-noAutoStart", "-language", language]
         app.launchEnvironment["COIN_TRAINING_DIRECTORY"] = "workout-ui-" + directory
+        app.launchEnvironment["COIN_SERVICE_URL"] = "http://127.0.0.1:1"
+        app.launchEnvironment["COIN_SERVICE_TOKEN"] = "ui-fixture"
+        if shortFreestyle {
+            app.launchEnvironment["COIN_TEST_FREESTYLE"] = "1"
+            app.launchEnvironment["COIN_TEST_ROUND_REVIEW"] = "1"
+        }
         app.launch()
         return app
     }
@@ -90,5 +96,75 @@ final class WorkoutFlowTests: XCTestCase {
             attach("freestyle-" + language, app: app)
             app.terminate()
         }
+    }
+
+    func testEntireManualStrengthWorkoutSavesReviewAndProgramProgress() throws {
+        let app = application(language: "en")
+        app.buttons["choose-program"].tap()
+        let sourceDay = app.buttons["lesson-basic-w1-d6"]
+        reveal(sourceDay, in: app)
+        sourceDay.tap()
+        app.buttons["start-workout"].tap()
+        XCTAssertTrue(app.buttons["complete-manual-step"].waitForExistence(timeout: 5))
+        app.buttons["complete-manual-step"].tap()
+        XCTAssertTrue(app.buttons["recap-done"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["WARM UP:"].exists)
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "marked done by you")).firstMatch.exists)
+        XCTAssertFalse(app.staticTexts["0 min"].exists)
+        attach("manual-strength-complete-recap", app: app)
+        let viewLog = app.buttons["recap-view-log"]
+        reveal(viewLog, in: app)
+        viewLog.tap()
+        XCTAssertTrue(app.staticTexts["WARM UP:"].waitForExistence(timeout: 3))
+        app.buttons["Original instructions"].tap()
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS[c] %@", "Pallof")).firstMatch.waitForExistence(timeout: 3))
+        attach("manual-strength-source-review", app: app)
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        app.buttons["recap-done"].tap()
+        XCTAssertTrue(app.buttons["choose-program"].waitForExistence(timeout: 5))
+        app.terminate()
+        app.launch()
+        app.buttons["choose-program"].tap()
+        let completed = app.buttons["lesson-basic-w1-d6"]
+        reveal(completed, in: app)
+        XCTAssertTrue(completed.label.contains("Workout completed"), completed.label)
+        attach("manual-strength-program-progress", app: app)
+        app.buttons["Close"].tap()
+        let saved = app.buttons["saved-session-basic-w1-d6"]
+        reveal(saved, in: app)
+        saved.tap()
+        XCTAssertTrue(app.staticTexts["WARM UP:"].waitForExistence(timeout: 3))
+    }
+
+    func testFreestyleTimerFinishesSavesReflectionAndReopensReview() throws {
+        let app = application(language: "en", shortFreestyle: true)
+        app.buttons["start-workout"].tap()
+        XCTAssertTrue(app.staticTexts["workout-clock"].waitForExistence(timeout: 5))
+        XCTAssertEqual(app.staticTexts["workout-clock"].label, "00:10")
+        app.buttons["workout-toggle"].tap()
+        XCTAssertTrue(app.buttons["recap-done"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.staticTexts["That's a wrap."].exists)
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "00:10 timed · finished")).firstMatch.exists)
+        let pendingReview = app.staticTexts["Review pending. Your round is saved on this phone."]
+        reveal(pendingReview, in: app)
+        XCTAssertTrue(pendingReview.exists)
+        attach("freestyle-final-round-pending-recap", app: app)
+        let note = app.descendants(matching: .any)["recap-reflection"]
+        reveal(note, in: app)
+        note.tap()
+        note.typeText("Finished the timed round.")
+        app.buttons["recap-done"].tap()
+        XCTAssertTrue(app.buttons["choose-program"].waitForExistence(timeout: 5))
+        app.terminate()
+        app.launch()
+        let saved = app.buttons["saved-session-freestyle-1-10-0-v1"]
+        reveal(saved, in: app)
+        saved.tap()
+        reveal(pendingReview, in: app)
+        XCTAssertTrue(pendingReview.exists)
+        let reflection = app.staticTexts["Finished the timed round."]
+        reveal(reflection, in: app)
+        XCTAssertTrue(reflection.exists)
+        attach("freestyle-finished-saved-review", app: app)
     }
 }

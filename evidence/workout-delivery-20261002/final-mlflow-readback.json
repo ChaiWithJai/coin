@@ -1,0 +1,41 @@
+{
+  "experiment_id": "40",
+  "checked_events": [
+    {
+      "kind": "live",
+      "event_id": "c868ea92-b7bf-459b-97ae-fb79454965d0",
+      "run_id": "d2c0f820e165444d99426af61e13a4df",
+      "trace_id": "tr-196f0a106b56af7684fbe35215775de6",
+      "status": "FINISHED",
+      "spans": [
+        "coaching_event",
+        "phone.exchange_rules",
+        "bonsai.contextual_report",
+        "report.locale_evidence_gate"
+      ]
+    },
+    {
+      "kind": "batch_exchange",
+      "event_id": "dc0a3925-09dc-54b7-b015-cf870355b290",
+      "run_id": "337571a5ef414943bbb086a6e84214b1",
+      "trace_id": "tr-d6da44a989a5210af31c379696619e12",
+      "status": "FINISHED",
+      "spans": [
+        "coaching_event",
+        "batch.exchange"
+      ]
+    },
+    {
+      "kind": "batch_report",
+      "event_id": "827070d5-503c-506b-9dd9-60daa29fe209",
+      "run_id": "72aef1d573994b1e93351adc0e84100e",
+      "trace_id": "tr-d3dbc5a919d104f5fac2fd0eb6aad076",
+      "status": "FINISHED",
+      "spans": [
+        "coaching_event",
+        "batch.report"
+      ]
+    }
+  ],
+  "all_finished": true
+}

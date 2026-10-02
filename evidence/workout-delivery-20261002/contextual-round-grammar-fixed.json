@@ -1,0 +1,89 @@
+{
+  "scope": "synthetic_request_over_real_private_coordinator_and_9b",
+  "request": {
+    "request_id": "c868ea92-b7bf-459b-97ae-fb79454965d0",
+    "session_id": "5a7341da-0173-49e9-8068-40d562ef54df",
+    "origin": "synthetic",
+    "language": "fr",
+    "stance": "orthodox",
+    "workout_mode": "program",
+    "drill_id": "free-boxing-v1",
+    "source_id": "synthetic-program-check",
+    "source_title": "Synthetic source stance drill",
+    "source_instructions": "Development fixture:4 rounds of2minutes.",
+    "round": 1,
+    "duration_s": 120,
+    "exchanges": [
+      {
+        "id": 1,
+        "startMs": 1000,
+        "endMs": 1500,
+        "opener": "commit",
+        "resetMs": null,
+        "lateralShift": 0,
+        "punches": [
+          {
+            "hand": "rear",
+            "atMs": 1000,
+            "peakSpeed": 5,
+            "rearHandLow": false
+          }
+        ]
+      }
+    ]
+  },
+  "response": {
+    "observation": "1 échange et 1 départ de coup repérés.",
+    "interpretation": "Les coups repérés ne permettent pas de juger le respect de la consigne.",
+    "constraint": "Continue la consigne de ton programme au prochain round.",
+    "prediction": "La technique reste à vérifier sur les images.",
+    "drill": "Synthetic source stance drill",
+    "labels": [],
+    "models": [
+      "/home/chaiwithjai/models/bonsai-gen/Ternary-Bonsai-2-9B-gguf/Ternary-Bonsai-2-9B-PTQ1_0.gguf"
+    ],
+    "latency_ms": 1817,
+    "event_id": "c868ea92-b7bf-459b-97ae-fb79454965d0",
+    "offline_analysis": {
+      "accepted": true,
+      "job_id": "live-round:c868ea92-b7bf-459b-97ae-fb79454965d0",
+      "state": "pending",
+      "processing": "offline_only"
+    }
+  },
+  "offline_status": {
+    "job_id": "live-round:c868ea92-b7bf-459b-97ae-fb79454965d0",
+    "state": "enqueued",
+    "attempts": 1,
+    "last_error": null,
+    "updated_at": 1790980918.1120207,
+    "processing": "offline_only",
+    "request_id": "c868ea92-b7bf-459b-97ae-fb79454965d0",
+    "session_id": "5a7341da-0173-49e9-8068-40d562ef54df",
+    "origin": "synthetic",
+    "analysis": {
+      "state": "pending",
+      "job_state": "pending",
+      "counts": {
+        "pending": 2
+      },
+      "items": [
+        {
+          "item_id": "exchange:1",
+          "kind": "exchange",
+          "state": "pending",
+          "attempts": 0
+        },
+        {
+          "item_id": "report",
+          "kind": "report",
+          "state": "pending",
+          "attempts": 0
+        }
+      ],
+      "report": null,
+      "withheld_unreviewed_results": false
+    }
+  },
+  "elapsed_including_enqueue_wait_s": 7.858871461125091
+}

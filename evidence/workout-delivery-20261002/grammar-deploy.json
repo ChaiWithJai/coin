@@ -1,0 +1,99 @@
+{
+  "deployed_at_utc": "2026-10-02T22:41:25Z",
+  "deployment": "singular_plural_grammar_v2.1",
+  "directory": "/home/chaiwithjai/Documents/code/coin-boxing",
+  "installed": {
+    "service.py": "ae9badb523d4e21f14623a242e32154e2fda65c50ada8646a6c0329639b4c9d9",
+    "round_harness.py": "9dac65f6f450a91ae1e6452b745606367ff8177c48b44ab91ce0e6ff40055202",
+    "batch_jobs.py": "f8062ce647a482ee2f4690bb65b0a402f0ec578624bee59307a6bed4df280cb3"
+  },
+  "changed_files": [
+    "round_harness.py",
+    "batch_jobs.py"
+  ],
+  "pid": 2725395,
+  "backup": "/home/chaiwithjai/Documents/code/coin-boxing/backups/20261002T224114-grammar",
+  "request_states_before_restart": {
+    "complete": 38
+  },
+  "checks": {
+    "127.0.0.1": {
+      "/health": {
+        "http_status": 200,
+        "body": {
+          "ready": true,
+          "visual_perception": false,
+          "live_policy_promoted": false,
+          "outbox": {
+            "delivered": 41
+          }
+        }
+      },
+      "/v1/batch/status": {
+        "http_status": 200,
+        "body": {
+          "processing": "offline_only",
+          "enqueue_counts": {
+            "enqueued": 11
+          }
+        }
+      }
+    },
+    "192.168.68.196": {
+      "/health": {
+        "http_status": 200,
+        "body": {
+          "ready": true,
+          "visual_perception": false,
+          "live_policy_promoted": false,
+          "outbox": {
+            "delivered": 41
+          }
+        }
+      },
+      "/v1/batch/status": {
+        "http_status": 200,
+        "body": {
+          "processing": "offline_only",
+          "enqueue_counts": {
+            "enqueued": 11
+          }
+        }
+      }
+    },
+    "100.122.5.1": {
+      "/health": {
+        "http_status": 200,
+        "body": {
+          "ready": true,
+          "visual_perception": false,
+          "live_policy_promoted": false,
+          "outbox": {
+            "delivered": 41
+          }
+        }
+      },
+      "/v1/batch/status": {
+        "http_status": 200,
+        "body": {
+          "processing": "offline_only",
+          "enqueue_counts": {
+            "enqueued": 11
+          }
+        }
+      }
+    }
+  },
+  "unauthenticated_batch_http_status": 401,
+  "stage_pid_stopped": 2724890,
+  "model_inference_executed": false,
+  "preserved_forwarder_pid": 2526383,
+  "deterministic_server_tests_passed": 40,
+  "stage_version_gate_checks": {
+    "current_version": "completed-round-batch-v2.1",
+    "v2_withheld": true,
+    "current_bounded_fixture_exposed": true,
+    "isolated_state": "/tmp/coin-grammar-deploy-20261002/state",
+    "inference": false
+  }
+}

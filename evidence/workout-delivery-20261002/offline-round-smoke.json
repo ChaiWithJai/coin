@@ -1,0 +1,121 @@
+{
+  "request_id": "af887fd6-30ba-41df-8e7e-36da536743e8",
+  "job_id": "live-round:af887fd6-30ba-41df-8e7e-36da536743e8",
+  "work": {
+    "processed_items": 2
+  },
+  "analysis": {
+    "evidence_status": "offline_candidate_not_validated_coaching",
+    "id": "live-round:af887fd6-30ba-41df-8e7e-36da536743e8",
+    "item_counts": {
+      "complete": 2,
+      "failed": 0,
+      "pending": 0,
+      "running": 0
+    },
+    "provenance": {
+      "drill_id": "free-boxing-v1",
+      "origin": "synthetic",
+      "request_id": "af887fd6-30ba-41df-8e7e-36da536743e8",
+      "session_id": "f361498b-d6c9-44b0-8173-6f4752558195",
+      "source_id": "synthetic-program-check",
+      "source_title": "Synthetic source stance drill",
+      "workout_mode": "program"
+    },
+    "report": {
+      "focus": "Continue la consigne de ton programme au prochain round.",
+      "limitations": "Les détections ne permettent pas de juger le respect de la consigne.",
+      "observation": "1 échanges et 1 départs de coups repérés."
+    },
+    "report_error": null,
+    "report_model": {
+      "endpoint": "http://127.0.0.1:8712",
+      "model_sha256": null,
+      "resolved_model": "/home/chaiwithjai/models/bonsai-gen/Ternary-Bonsai-2-9B-gguf/Ternary-Bonsai-2-9B-PTQ1_0.gguf"
+    },
+    "report_prompt_version": "completed-round-batch-v2",
+    "report_state": "complete",
+    "round_context": {
+      "assessment_scope": "observed_events_only",
+      "drill_id": "free-boxing-v1",
+      "duration_s": 120,
+      "language": "fr",
+      "request_id": "af887fd6-30ba-41df-8e7e-36da536743e8",
+      "round": 1,
+      "session_id": "f361498b-d6c9-44b0-8173-6f4752558195",
+      "source_id": "synthetic-program-check",
+      "source_instructions": "Development fixture:4 rounds of2minutes.",
+      "source_title": "Synthetic source stance drill",
+      "workout_mode": "program"
+    },
+    "state": "complete"
+  },
+  "export": {
+    "exported_items": 2
+  },
+  "status": {
+    "job_id": "live-round:af887fd6-30ba-41df-8e7e-36da536743e8",
+    "state": "enqueued",
+    "attempts": 1,
+    "last_error": null,
+    "updated_at": 1790979158.1011136,
+    "processing": "offline_only",
+    "request_id": "af887fd6-30ba-41df-8e7e-36da536743e8",
+    "session_id": "f361498b-d6c9-44b0-8173-6f4752558195",
+    "origin": "synthetic",
+    "analysis": {
+      "state": "complete",
+      "job_state": "complete",
+      "counts": {
+        "complete": 2
+      },
+      "items": [
+        {
+          "item_id": "exchange:1",
+          "kind": "exchange",
+          "state": "complete",
+          "attempts": 1,
+          "prompt_version": "completed-round-batch-v2",
+          "result": {
+            "choice_scores": {
+              "A": 0.015062212163844414,
+              "B": 0.5572114459527433,
+              "C": 0.42074808920661794
+            },
+            "confidence_kind": "uncalibrated_token_probability",
+            "decision": "quiet",
+            "evidence_gate_applied": false,
+            "proposed_decision": "quiet",
+            "review_state": "model_proposal",
+            "unreported_probability_mass": 0.006978252676794305,
+            "valid_choice": true
+          }
+        },
+        {
+          "item_id": "report",
+          "kind": "report",
+          "state": "complete",
+          "attempts": 1,
+          "prompt_version": "completed-round-batch-v2",
+          "result": {
+            "focus": "Continue la consigne de ton programme au prochain round.",
+            "limitations": "Les détections ne permettent pas de juger le respect de la consigne.",
+            "observation": "1 échanges et 1 départs de coups repérés."
+          }
+        }
+      ],
+      "report": {
+        "focus": "Continue la consigne de ton programme au prochain round.",
+        "limitations": "Les détections ne permettent pas de juger le respect de la consigne.",
+        "observation": "1 échanges et 1 départs de coups repérés."
+      },
+      "withheld_unreviewed_results": false
+    }
+  },
+  "assessment": {
+    "workflow": "passed",
+    "french_count_agreement": "failed: 1 échanges et 1 départs de coups",
+    "superseded_by": "offline-round-grammar-fixed.json",
+    "promotion": "not promoted"
+  }
+}

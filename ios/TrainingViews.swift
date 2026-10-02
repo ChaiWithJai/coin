@@ -13,11 +13,26 @@ private enum SessionCopy {
     static func clockSummary(_ session: TrainingSession, language: String) -> String {
         if session.sourceTitle != nil {
             return language == "fr"
-                ? "\(session.elapsedClock) au chrono · \(session.timedRoundCount) reprises terminées"
-                : "\(session.elapsedClock) timed · \(session.timedRoundCount) rounds finished"
+                ? "\(session.elapsedClock) au chrono · \(session.completedBlockIDs.count) / \(session.blocks.count) étapes terminées"
+                : "\(session.elapsedClock) timed · \(session.completedBlockIDs.count) / \(session.blocks.count) steps complete"
         }
         return TrainingCopy.format("recap_clock_summary", language, session.elapsedClock,
                                    session.plannedMinutes, session.timedRoundCount)
+    }
+    static func blockTitle(_ block: SessionBlock, language: String) -> String {
+        if let title = block.sourceTitle { return title }
+        if block.kind == .boxing {
+            return TrainingCopy.format("round_drill", language, block.roundNumber ?? 0,
+                                       DrillLibrary.name(block.drillID ?? "", language: language))
+        }
+        if block.kind == .exercise { return language == "fr" ? "Exercice" : "Exercise" }
+        if block.kind == .recovery { return language == "fr" ? "Récupération" : "Recovery" }
+        return TrainingCopy.text(block.kind.rawValue, language)
+    }
+    static func plannedTime(_ block: SessionBlock, language: String) -> String {
+        if block.isManual { return language == "fr" ? "À ton rythme" : "At your pace" }
+        let clock = String(format: "%02d:%02d", block.effectiveSeconds / 60, block.effectiveSeconds % 60)
+        return language == "fr" ? "\(clock) prévu" : "\(clock) planned"
     }
     static func milestone(_ kind: CampMilestoneKind, language: String) -> String {
         switch kind {
@@ -61,7 +76,18 @@ struct TrainingHomeView: View {
     @StateObject private var voice = WorkoutSpeechController()
     private var selectedTemplate: TrainingTemplate {
         if let lesson = selectedLesson { return lesson.template() }
-        if freestyle { return SessionTemplates.freestyle()! }
+        if freestyle {
+            #if DEBUG
+            let env = ProcessInfo.processInfo.environment
+            if env["COIN_TEST_FREESTYLE"] == "1",
+               let token = env["COIN_TRAINING_DIRECTORY"],
+               token.hasPrefix("workout-ui-"),
+               token.allSatisfy({ $0.isLetter || $0.isNumber || $0 == "-" }) {
+                return SessionTemplates.freestyle(rounds: 1, roundSeconds: 10, restSeconds: 0)!
+            }
+            #endif
+            return SessionTemplates.freestyle()!
+        }
         return SessionTemplates.all.first { $0.durationMinutes == selectedMinutes } ?? SessionTemplates.all[0]
     }
     private var activeSession: TrainingSession? { training.data.sessions.first { $0.state == .active } }
@@ -192,7 +218,7 @@ struct TrainingHomeView: View {
                                     Spacer()
                                     Image(systemName: "arrow.right")
                                 }.font(.caption).foregroundStyle(Noir.ink).padding(.vertical, 15)
-                            }
+                            }.accessibilityIdentifier("saved-session-\(session.templateID)")
                             Rectangle().fill(Noir.gold.opacity(0.2)).frame(height: 1)
                         }
                     }
@@ -274,6 +300,7 @@ struct TrainingSessionView: View {
                         }
                     }
                 }
+                Section { SavedRoundReportsView(sessionID: sessionID) }
                 Section(TrainingCopy.text("session_videos", language)) {
                     let linked = films.rounds.filter { session.linkedRoundIDs.contains($0.id) }
                     if linked.isEmpty {
@@ -352,10 +379,7 @@ struct TrainingSessionView: View {
                 .font(.system(size: 17)).foregroundStyle(session.completedBlockIDs.contains(block.id) ? Noir.gold : Noir.muted)
                 .frame(width: 22)
             VStack(alignment: .leading, spacing: 4) {
-                Text(block.kind == .boxing
-                     ? TrainingCopy.format("round_drill", language, block.roundNumber ?? 0,
-                                           DrillLibrary.name(block.drillID ?? "", language: language))
-                     : TrainingCopy.text(block.kind.rawValue, language))
+                Text(SessionCopy.blockTitle(block, language: language))
                     .font(.system(size: 16, weight: .medium, design: .serif))
                     .foregroundStyle(Noir.ink)
                 if !segments.isEmpty {
@@ -364,7 +388,15 @@ struct TrainingSessionView: View {
                          : TrainingCopy.format("segment_timing", language, seconds / 60, seconds % 60, skipped))
                         .font(.caption).foregroundStyle(Noir.muted)
                 } else {
-                    Text("\(block.minutes) min").font(.caption).foregroundStyle(Noir.muted)
+                    Text(SessionCopy.plannedTime(block, language: language)).font(.caption).foregroundStyle(Noir.muted)
+                }
+                if let instructions = block.sourceInstructions {
+                    DisclosureGroup(language == "fr" ? "Consigne originale" : "Original instructions") {
+                        Text(instructions).font(.caption).textSelection(.enabled)
+                        if let address = block.sourceURL, let url = URL(string: address) {
+                            Link(language == "fr" ? "Voir la séance source" : "View source workout", destination: url)
+                        }
+                    }.font(.caption).tint(Noir.gold)
                 }
                 if pose.sampled > 0 {
                     Text(TrainingCopy.format("pose_samples", language, pose.visible, pose.sampled))
@@ -421,28 +453,35 @@ struct WorkoutRecapView: View {
                         Text(SessionCopy.clockSummary(session, language: language))
                             .font(.title3).foregroundStyle(Noir.ink)
                         Rectangle().fill(Noir.gold.opacity(0.4)).frame(height: 1)
-                        let reachedRounds = session.blocks.filter { block in
-                            block.kind == .boxing && (session.segmentLogs ?? []).contains { $0.blockID == block.id && !$0.isRest && $0.elapsedSeconds > 0 }
+                        let reachedWork = session.blocks.filter { block in
+                            (session.segmentLogs ?? []).contains { $0.blockID == block.id && !$0.isRest }
                         }
-                        if !reachedRounds.isEmpty {
-                            Text(TrainingCopy.text("recap_drills", language))
+                        if !reachedWork.isEmpty {
+                            Text(language == "fr" ? "PARCOURS DE SÉANCE" : "WORKOUT RECORD")
                                 .font(.system(size: 10, weight: .bold, design: .monospaced))
                                 .tracking(2).foregroundStyle(Noir.gold)
                                 .padding(.top, 8)
-                            ForEach(reachedRounds) { block in
+                            ForEach(reachedWork) { block in
                                 if let record = session.segmentLogs?.last(where: { $0.blockID == block.id && !$0.isRest }) {
                                     HStack(alignment: .top, spacing: 12) {
-                                        Text(String(format: "%02d", block.roundNumber ?? 0))
-                                            .font(.system(size: 25, weight: .light, design: .monospaced))
-                                            .foregroundStyle(Noir.gold)
+                                        if let number = block.roundNumber {
+                                            Text(String(format: "%02d", number))
+                                                .font(.system(size: 25, weight: .light, design: .monospaced))
+                                                .foregroundStyle(Noir.gold)
+                                        } else {
+                                            Image(systemName: session.completedBlockIDs.contains(block.id) ? "checkmark.circle" : "circle.dotted")
+                                                .foregroundStyle(Noir.gold)
+                                        }
                                         VStack(alignment: .leading, spacing: 5) {
-                                            Text(DrillLibrary.name(block.drillID ?? "", language: language))
+                                            Text(SessionCopy.blockTitle(block, language: language))
                                                 .font(.system(size: 17, weight: .medium, design: .serif))
                                                 .foregroundStyle(Noir.ink)
                                             let elapsed = String(format: "%02d:%02d", record.elapsedSeconds / 60, record.elapsedSeconds % 60)
                                             let statusKey = record.exitReason == "timer_elapsed" ? "recap_round_elapsed" :
                                                 (record.exitReason == "skipped" ? "recap_round_skipped" : "recap_round_early")
-                                            Text(TrainingCopy.format(statusKey, language, elapsed))
+                                            Text(record.exitReason == "manual_completed"
+                                                 ? (language == "fr" ? "\(elapsed) au chrono · confirmé par toi" : "\(elapsed) timed · marked done by you")
+                                                 : TrainingCopy.format(statusKey, language, elapsed))
                                                 .font(.caption.monospaced()).foregroundStyle(Noir.muted)
                                         }
                                         Spacer()
@@ -452,6 +491,7 @@ struct WorkoutRecapView: View {
                                 }
                             }
                         }
+                        SavedRoundReportsView(sessionID: sessionID)
                         HStack(alignment: .top, spacing: 18) {
                             recapStat("recap_camera", value: session.poseWindows?.count ?? 0)
                             recapStat("recap_cues", value: session.cueRequests?.count ?? 0)
@@ -462,6 +502,7 @@ struct WorkoutRecapView: View {
                             .font(.system(size: 12, weight: .bold, design: .monospaced))
                             .tracking(2).foregroundStyle(Noir.gold).padding(.top, 8)
                         TextField(TrainingCopy.text("recap_placeholder", language), text: $reflection, axis: .vertical)
+                            .accessibilityIdentifier("recap-reflection")
                             .lineLimit(3...5).padding(14)
                             .background(Noir.panel, in: RoundedRectangle(cornerRadius: 8))
                             .foregroundStyle(Noir.ink)
@@ -472,7 +513,7 @@ struct WorkoutRecapView: View {
                                 Image(systemName: "arrow.up.right")
                             }.font(.headline).foregroundStyle(Noir.ink)
                                 .padding(18).background(Noir.panel, in: RoundedRectangle(cornerRadius: 8))
-                        }
+                        }.accessibilityIdentifier("recap-view-log")
                     }
                 }.frame(maxWidth: .infinity, alignment: .leading).padding(24)
             }
@@ -483,7 +524,7 @@ struct WorkoutRecapView: View {
                         training.updateReflection(sessionID, text: reflection)
                         onDone()
                     }
-                        .foregroundStyle(Noir.gold)
+                        .foregroundStyle(Noir.gold).accessibilityIdentifier("recap-done")
                 }
             }
             .onAppear { reflection = session?.reflection ?? "" }
@@ -704,6 +745,8 @@ struct WorkoutProgramPicker: View {
                                     Spacer()
                                     if training.data.sessions.contains(where: { $0.templateID == lesson.template().id && $0.state == .completed && $0.completedBlockIDs.count == $0.blocks.count }) {
                                         Image(systemName: "checkmark.circle.fill").foregroundStyle(Noir.gold)
+                                            .accessibilityLabel(language == "fr" ? "Séance terminée" : "Workout completed")
+                                            .accessibilityIdentifier("lesson-completed-\(lesson.id)")
                                     } else { Image(systemName: "arrow.right").foregroundStyle(Noir.muted) }
                                 }.padding(.vertical, 5)
                             }.accessibilityIdentifier("lesson-\(lesson.id)").listRowBackground(Noir.panel)

@@ -1,5 +1,6 @@
 """Live reports durably schedule offline work without executing a batch model."""
 import importlib.util
+import json
 import os
 import sys
 import tempfile
@@ -10,7 +11,12 @@ from unittest.mock import patch
 
 SERVER=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(SERVER))
-from batch_jobs import Store
+from batch_jobs import Store,VERSION
+
+def bounded_output(result,kind='report',**extra):
+    gate=({'evidence_status':'counts_only_not_technique_or_adherence_evaluation','language':'en'} if kind=='report'
+          else {'assessment_scope':'observed_events_only'})
+    return dict(result=result,prompt_version=VERSION,output_gate=gate,**extra)
 
 class ServiceBatchTests(unittest.TestCase):
     def setUp(self):
@@ -92,6 +98,129 @@ class ServiceBatchTests(unittest.TestCase):
         self.service.enqueue_pending_rounds()
         store=Store(self.service.DATA/'batch-jobs.sqlite3')
         self.assertEqual(store.inspect(receipt['job_id'])[0]['provenance']['origin'],'synthetic')
+
+    def queued_analysis(self):
+        receipt=self.service.schedule_round_batch(self.body)
+        self.service.enqueue_pending_rounds()
+        return receipt['job_id'],Store(self.service.DATA/'batch-jobs.sqlite3')
+
+    def test_pending_analysis_is_distinct_from_enqueue_receipt(self):
+        self.service.schedule_round_batch(self.body)
+        status=self.service.batch_status(self.body.request_id)
+        self.assertEqual(status['state'],'pending')
+        self.assertEqual(status['analysis']['state'],'awaiting_enqueue')
+        self.assertFalse((self.service.DATA/'batch-jobs.sqlite3').exists())
+        self.service.enqueue_pending_rounds()
+        status=self.service.batch_status(self.body.request_id)
+        self.assertEqual(status['state'],'enqueued')
+        self.assertEqual(status['analysis']['state'],'pending')
+        self.assertEqual(status['analysis']['counts'],{'pending':2})
+
+    def test_completed_analysis_excludes_prompts_and_receipt_input(self):
+        job,store=self.queued_analysis()
+        secret='DO_NOT_EXPOSE_STORED_PROMPT'
+        report={'observation':'One observed exchange.','focus':'Follow the source.','limitations':'Rule candidate only.'}
+        with store.db() as db:
+            db.execute("UPDATE jobs SET state='complete' WHERE id=?",(job,))
+            db.execute("UPDATE items SET state='complete',output=? WHERE job_id=? AND kind='report'",
+                (json.dumps(bounded_output(dict(report,unexpected_raw=secret),request=secret,raw_response=secret)),job))
+            db.execute("UPDATE items SET state='complete',output=? WHERE job_id=? AND kind='exchange'",
+                (json.dumps(bounded_output({'decision':'quiet','raw_choice':secret},kind='exchange',request=secret)),job))
+        status=self.service.batch_status(self.body.request_id,self.body.session_id)
+        self.assertEqual(status['state'],'enqueued')
+        self.assertEqual(status['analysis']['state'],'complete')
+        self.assertEqual(status['analysis']['report'],report)
+        self.assertEqual(status['analysis']['counts'],{'complete':2})
+        encoded=json.dumps(status)
+        for value in (secret,self.body.source_title,self.body.source_instructions,'peakSpeed'):
+            self.assertNotIn(value,encoded)
+
+    def test_failed_item_exposes_error_type_and_hides_stale_result_on_retry(self):
+        job,store=self.queued_analysis()
+        with store.db() as db:
+            db.execute("UPDATE jobs SET state='partial' WHERE id=?",(job,))
+            db.execute("UPDATE items SET state='failed',output=?,error=? WHERE job_id=? AND kind='report'",
+                (json.dumps({'result':{'observation':'stale'},'request':'private input'}),
+                 json.dumps({'type':'ModelResponseError','message':'private input'}),job))
+        status=self.service.batch_status(self.body.request_id)
+        self.assertEqual(status['analysis']['state'],'partial')
+        self.assertIsNone(status['analysis']['report'])
+        self.assertEqual(next(i for i in status['analysis']['items'] if i['kind']=='report')['error_type'],'ModelResponseError')
+        self.assertNotIn('private input',json.dumps(status))
+        store.control(job,'retry')
+        status=self.service.batch_status(self.body.request_id)
+        self.assertEqual(status['analysis']['state'],'pending')
+        self.assertIsNone(status['analysis']['report'])
+        self.assertNotIn('stale',json.dumps(status))
+
+    def test_legacy_report_and_exchange_results_are_withheld_without_rewriting(self):
+        job,store=self.queued_analysis()
+        output=json.dumps({'prompt_version':'completed-round-batch-v1','result':{'observation':'legacy unrestricted advice','decision':'cue'}})
+        with store.db() as db:
+            db.execute("UPDATE jobs SET state='complete' WHERE id=?",(job,))
+            db.execute("UPDATE items SET state='complete',output=? WHERE job_id=?",(output,job))
+        status=self.service.batch_status(self.body.request_id)
+        self.assertEqual(status['analysis']['state'],'legacy_unreviewed')
+        self.assertIsNone(status['analysis']['report'])
+        self.assertTrue(all('result' not in item for item in status['analysis']['items']))
+        self.assertNotIn('legacy unrestricted advice',json.dumps(status))
+        with store.db() as db:
+            self.assertTrue(all(row[0]==output for row in db.execute('SELECT output FROM items WHERE job_id=?',(job,))))
+
+    def test_current_version_still_requires_bounded_report_gate_and_correct_language(self):
+        job,store=self.queued_analysis()
+        for gate in ({},{'evidence_status':'unreviewed','language':'en'},
+                     {'evidence_status':'counts_only_not_technique_or_adherence_evaluation','language':'fr'}):
+            with store.db() as db:
+                db.execute("UPDATE jobs SET state='complete' WHERE id=?",(job,))
+                db.execute("UPDATE items SET state='complete',output=? WHERE job_id=? AND kind='report'",
+                    (json.dumps({'prompt_version':VERSION,'result':{'observation':'withheld'},'output_gate':gate}),job))
+            status=self.service.batch_status(self.body.request_id)
+            self.assertEqual(status['analysis']['state'],'legacy_unreviewed')
+            self.assertIsNone(status['analysis']['report'])
+            self.assertNotIn('"observation": "withheld"',json.dumps(status))
+
+    def test_identity_mismatch_never_returns_other_origin_or_session(self):
+        job,store=self.queued_analysis()
+        original=store.inspect(job)[0]['provenance']
+        for key,value in [('origin','synthetic'),('session_id',str(uuid.uuid4())),('request_id',str(uuid.uuid4()))]:
+            with store.db() as db:db.execute('UPDATE jobs SET provenance=? WHERE id=?',(json.dumps(dict(original,**{key:value})),job))
+            status=self.service.batch_status(self.body.request_id)
+            self.assertEqual(status['analysis']['state'],'identity_mismatch')
+            self.assertEqual(status['analysis']['items'],[])
+        from fastapi import HTTPException
+        with self.assertRaises(HTTPException) as caught:self.service.batch_status(self.body.request_id,uuid.uuid4())
+        self.assertEqual(caught.exception.status_code,404)
+
+    def test_uppercase_ios_session_uuid_matches_and_keeps_source_spelling(self):
+        job,store=self.queued_analysis()
+        uppercase=str(self.body.session_id).upper()
+        with self.service.db() as db:
+            row=db.execute('SELECT payload FROM batch_enqueues WHERE request_id=?',(str(self.body.request_id),)).fetchone()
+            record=json.loads(row[0]);record['session_id']=uppercase
+            db.execute('UPDATE batch_enqueues SET payload=? WHERE request_id=?',(json.dumps(record),str(self.body.request_id)))
+        # Queue metadata and the receipt may legitimately differ in letter case.
+        provenance=store.inspect(job)[0]['provenance']
+        provenance['request_id']=provenance['request_id'].upper()
+        report={'observation':'One exchange.','focus':'Follow source.','limitations':'Candidate evidence.'}
+        with store.db() as db:
+            db.execute('UPDATE jobs SET provenance=?,state=? WHERE id=?',(json.dumps(provenance),'complete',job))
+            db.execute("UPDATE items SET state='complete',output=? WHERE job_id=? AND kind='report'",(json.dumps(bounded_output(report)),job))
+        status=self.service.batch_status(self.body.request_id,uuid.UUID(uppercase))
+        self.assertEqual(status['session_id'],uppercase)
+        self.assertEqual(status['analysis']['state'],'complete')
+        self.assertEqual(status['analysis']['report'],report)
+        from fastapi import HTTPException
+        with self.assertRaises(HTTPException) as caught:self.service.batch_status(self.body.request_id,uuid.uuid4())
+        self.assertEqual(caught.exception.status_code,404)
+
+    def test_missing_request_and_missing_job_are_explicit(self):
+        from fastapi import HTTPException
+        with self.assertRaises(HTTPException) as caught:self.service.batch_status(uuid.uuid4())
+        self.assertEqual(caught.exception.status_code,404)
+        job,store=self.queued_analysis()
+        with store.db() as db:db.execute('DELETE FROM jobs WHERE id=?',(job,))
+        self.assertEqual(self.service.batch_status(self.body.request_id)['analysis']['state'],'missing')
 
     def test_status_endpoint_requires_authorization(self):
         import asyncio

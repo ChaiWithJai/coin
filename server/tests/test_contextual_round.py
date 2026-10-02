@@ -12,6 +12,7 @@ class ContextualReportTests(unittest.TestCase):
         with patch.object(harness,'_post',return_value={'model':'actual-9b','choices':[{'message':{'content':'{"interpretation":"Counts describe activity, not form."}'}}]}) as call:
             response,stages,facts=harness.run(summary)
         self.assertEqual(response['models'],['actual-9b'])
+        self.assertEqual(response['observation'], '1 exchange and 1 punch onset observed.')
         self.assertEqual(response['labels'],[])
         self.assertFalse(facts['quality_evaluated'])
         self.assertNotIn('fault_counts',facts)
@@ -24,6 +25,7 @@ class ContextualReportTests(unittest.TestCase):
         with patch.object(harness,'_post',return_value={'choices':[{'message':{'content':'{"interpretation":"La technique reste à vérifier."}'}}]}) as call:
             response,stages,facts=harness.run(summary)
         self.assertEqual(response['drill'],'Stance drill')
+        self.assertEqual(response['observation'], '0 échanges et 0 départs de coups repérés.')
         self.assertIn('programme',response['constraint'])
         self.assertIn('French',call.call_args.args[1]['messages'][0]['content'])
         self.assertIn('Stance drill',call.call_args.args[1]['messages'][1]['content'])
@@ -37,6 +39,7 @@ class ContextualReportTests(unittest.TestCase):
             response,stages,_=harness.run(summary)
         self.assertEqual(response['interpretation'],
                          'Ces détections décrivent l’activité repérée ; la technique reste à vérifier.')
+        self.assertEqual(response['observation'], '1 échange et 1 départ de coup repérés.')
         self.assertEqual(stages[-2]['outputs']['raw'],raw)
         self.assertTrue(stages[-1]['outputs']['used_fallback'])
 

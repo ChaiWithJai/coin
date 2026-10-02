@@ -1,12 +1,22 @@
 import json
+import io
 import sys
 import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
+from contextlib import redirect_stdout
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from batch_jobs import Store, ModelClient, report_context
+from batch_jobs import Store, ModelClient, report_context, exchange_context, main
+
+
+class Response:
+    def __init__(self, content):
+        self.raw = {'choices': [{'message': {'content': content}}], 'usage': {'total_tokens': 4}}
+    def __enter__(self): return self
+    def __exit__(self, *args): pass
+    def read(self): return json.dumps(self.raw).encode()
 
 
 def sample():
@@ -67,6 +77,135 @@ class BatchTests(unittest.TestCase):
         self.assertEqual(ex['workout_mode'], 'freestyle')
         self.assertIsNone(ex['drill_id'])
         self.assertEqual(ex['source']['origin'], 'synthetic')
+
+    def test_program_source_context_preserved_without_unrelated_faults(self):
+        record = sample()
+        record.update(language='fr', workout_mode='program', drill_id='probe-combine-angle-v1',
+                      source_id='basic-w1-d1', source_title='Squat preparation',
+                      source_instructions='12 JUMP SQUATS')
+        record['exchanges'][0].update(opener='commit', lateralShift=0, cue='exit_angle')
+        record['exchanges'][0]['punches'][0]['rearHandLow'] = True
+        job = self.store.submit(record, self.provenance)
+        self.store.step(self.client, job_id=job)
+        data = self.client.calls[0][1]
+        self.assertEqual(data['language'], 'fr')
+        self.assertEqual(data['source_instructions'], '12 JUMP SQUATS')
+        self.assertEqual(data['assessment_scope'], 'observed_events_only')
+        self.assertNotIn('opener', data['exchange'])
+        self.assertNotIn('resetMs', data['exchange'])
+        self.assertNotIn('lateralShift', data['exchange'])
+        self.assertNotIn('rearHandLow', data['exchange']['punches'][0])
+        with self.store.db() as db:
+            original = json.loads(db.execute('SELECT input FROM jobs WHERE id=?', (job,)).fetchone()[0])
+        self.assertEqual(original, record)
+
+    def test_already_queued_v1_item_rebuilds_context_from_original_round(self):
+        record = sample()
+        record.update(language='fr', source_instructions='Move in all directions')
+        job = self.store.submit(record, self.provenance)
+        with self.store.db() as db:
+            db.execute('UPDATE items SET input=? WHERE job_id=? AND kind=?',
+                       (json.dumps({'exchange': {'id': 0, 'opener': 'commit'}, 'workout_mode': 'unknown'}), job, 'exchange'))
+        self.store.step(self.client, job_id=job)
+        self.assertEqual(self.client.calls[0][1]['language'], 'fr')
+        self.assertEqual(self.client.calls[0][1]['source_instructions'], 'Move in all directions')
+        self.assertNotIn('opener', self.client.calls[0][1]['exchange'])
+
+    def test_explicit_drill_keeps_candidates_but_free_mode_overrides(self):
+        record = sample()
+        record.update(workout_mode='drill', drill_id='probe-combine-angle-v1')
+        ex = dict(record['exchanges'][0], opener='commit')
+        data = exchange_context(record, ex, self.provenance)
+        self.assertEqual(data['assessment_scope'], 'assigned_drill_candidates')
+        self.assertEqual(data['exchange']['opener'], 'commit')
+        record['workout_mode'] = 'freestyle'
+        self.assertEqual(exchange_context(record, ex, self.provenance)['assessment_scope'], 'observed_events_only')
+
+    def test_unsupported_cue_proposal_is_review_and_raw_choice_retained(self):
+        record = sample()
+        data = exchange_context(record, record['exchanges'][0], self.provenance)
+        with patch('urllib.request.urlopen', return_value=Response('A')):
+            out = ModelClient('http://fixture').run('exchange', data)
+        self.assertEqual(out['result']['decision'], 'review')
+        self.assertEqual(out['result']['proposed_decision'], 'cue')
+        self.assertTrue(out['result']['evidence_gate_applied'])
+        self.assertEqual(out['raw_response']['choices'][0]['message']['content'], 'A')
+
+    def test_report_contains_source_context_and_accounts_for_missing_items(self):
+        record = sample()
+        record.update(source_title='Bag work', source_instructions='Six rounds', source_id='block1')
+        context = report_context(record, [{'item_id': 'exchange:0', 'kind': 'exchange', 'state': 'complete',
+                                          'output': json.dumps({'result': {'decision': 'cue', 'valid_choice': False}})}])
+        self.assertEqual(context['round']['source_instructions'], 'Six rounds')
+        self.assertEqual(context['classification_counts']['review'], 1)
+        self.assertEqual(context['classification_counts']['pending'], 1)
+        self.assertEqual(sum(context['classification_counts'].values()), 2)
+        self.assertNotIn('fault_counts', context)
+
+    def test_french_report_rejects_wrong_language_and_unsupported_technique(self):
+        record = sample()
+        record.update(language='fr', workout_mode='program', source_instructions='Jab and exit')
+        context = report_context(record, [])
+        proposal = json.dumps({'observation': 'You missed the jab', 'focus': 'Reset the angle',
+                               'limitations': 'Your guard is poor'})
+        with patch('urllib.request.urlopen', return_value=Response(proposal)):
+            out = ModelClient('http://fixture').run('report', context)
+        self.assertEqual(out['result']['observation'], '2 échanges et 2 départs de coups repérés.')
+        self.assertEqual(out['result']['focus'], 'Continue la consigne de ton programme au prochain round.')
+        self.assertIn('Analyse de 2 échanges indisponible', out['result']['limitations'])
+        self.assertTrue(out['output_gate']['used_fallback'])
+        self.assertEqual(out['raw_response']['choices'][0]['message']['content'], proposal)
+
+    def test_zero_detections_never_claim_inactivity(self):
+        record = sample()
+        record['exchanges'] = []
+        with patch('urllib.request.urlopen', return_value=Response('[]')):
+            out = ModelClient('http://fixture').run('report', report_context(record, []))
+        self.assertIn('does not establish inactivity', out['result']['limitations'])
+        self.assertEqual(out['result']['focus'], 'Choose one focus for your next freestyle round.')
+        self.assertTrue(out['output_gate']['used_fallback'])
+
+    def test_one_detected_exchange_uses_singular_english_and_french(self):
+        for language, expected in (
+            ('fr', '1 échange et 1 départ de coup repérés.'),
+            ('en', '1 exchange and 1 punch onset detected.'),
+        ):
+            record = sample()
+            record['language'] = language
+            record['exchanges'] = record['exchanges'][:1]
+            with self.subTest(language=language), patch('urllib.request.urlopen', return_value=Response('{}')):
+                out = ModelClient('http://fixture').run('report', report_context(record, []))
+            self.assertEqual(out['result']['observation'], expected)
+
+    def test_job_selector_preserves_older_queued_job_and_cli_result(self):
+        first = self.submit(job_id='older')
+        selected = self.submit(job_id='selected')
+        output = io.StringIO()
+        with patch('sys.argv', ['batch_jobs.py', '--db', str(self.store.path), 'work', '--job-id', selected, '--max-items', '3']), \
+             patch('batch_jobs.ModelClient', return_value=self.client), redirect_stdout(output):
+            main()
+        self.assertEqual(json.loads(output.getvalue())['processed_items'], 3)
+        self.assertEqual(self.store.inspect(first)[0]['state'], 'pending')
+        self.assertTrue(all(i['attempts'] == 0 for i in self.store.inspect(first)[0]['items']))
+        self.assertEqual(self.store.result(selected)['report'], {'observation': 'fixture'})
+        output = io.StringIO()
+        with patch('sys.argv', ['batch_jobs.py', '--db', str(self.store.path), 'result', selected]), redirect_stdout(output):
+            main()
+        self.assertEqual(json.loads(output.getvalue())['state'], 'complete')
+        with self.assertRaises(ValueError):
+            self.store.step(self.client, job_id='missing')
+
+    def test_retry_does_not_return_a_stale_report(self):
+        job = self.submit()
+        self.client.fail = {0}
+        self.drain()
+        self.assertEqual(self.store.result(job)['state'], 'partial')
+        self.assertIsNotNone(self.store.result(job)['report'])
+        self.store.control(job, 'retry')
+        result = self.store.result(job)
+        self.assertEqual(result['report_state'], 'pending')
+        self.assertIsNone(result['report'])
+        self.assertIsNone(result['report_model'])
 
     def test_resume_after_last_inflight_item_finished_while_paused(self):
         data = sample()
