@@ -121,13 +121,19 @@ def report(summary, labels, language):
              'small_model_opener_agreement': round(agree / max(n, 1), 2),
              'flagged_for_review': [l['id'] for l in labels if l['intervention'] == 'review']}
     drill_id = main_issue(fault_counts, n - probes, n)
-    plain = {'no_reset': 'not back to guard', 'no_exit': 'stayed on the line after the combination',
-             'rear_hand_low': 'rear hand dropped on the jab', 'commit_without_probe': 'opened without a jab'}
+    plain = {'en': {'no_reset': 'not back to guard', 'no_exit': 'stayed on the line after the combination',
+                    'rear_hand_low': 'rear hand dropped on the jab', 'commit_without_probe': 'opened without a jab'},
+             'fr': {'no_reset': 'pas de retour en garde', 'no_exit': 'resté sur la ligne après la combinaison',
+                    'rear_hand_low': 'main arrière basse sur le jab', 'commit_without_probe': 'ouverture sans jab'}}[language]
     facts['fault_counts'] = {plain[k]: v for k, v in fault_counts.items()}
     facts['main_issue'] = plain[DRILLS[drill_id]['fault']]
     lang = 'French' if language == 'fr' else 'English'
-    schema = {'type': 'object', 'required': ['observation', 'interpretation', 'prediction'],
-              'properties': {'observation': {'type': 'string'}, 'interpretation': {'type': 'string'}, 'prediction': {'type': 'string'}}}
+    issue_count = (n - probes) if drill_id == 'probe_then_commit' else fault_counts.get(DRILLS[drill_id]['fault'], 0)
+    target = max(0, issue_count // 2)
+    observation = {'fr': f"{facts['main_issue'].capitalize()} : {issue_count} échanges sur {n}.",
+                   'en': f"{facts['main_issue'].capitalize()}: {issue_count} of {n} exchanges."}[language]
+    prediction = {'fr': f"Au prochain round : {target} sur {n} au plus.", 'en': f"Next round: {target} of {n} or fewer."}[language]
+    schema = {'type': 'object', 'required': ['interpretation'], 'properties': {'interpretation': {'type': 'string'}}}
     body = {'model': 'bonsai-9b', 'temperature': 0.2, 'max_tokens': 300, 'chat_template_kwargs': {'enable_thinking': False},
             'response_format': {'type': 'json_schema', 'json_schema': {'name': 'round_report', 'schema': schema}},
             'messages': [
@@ -143,7 +149,7 @@ def report(summary, labels, language):
     model = 'bonsai-9b'
     raw = _post(REPORT_URL, body, 60)
     out = json.loads(raw['choices'][0]['message']['content'])
-    out.update(constraint=CONSTRAINTS[drill_id][language], drill_id=drill_id, _model=model)
+    out.update(observation=observation, prediction=prediction, constraint=CONSTRAINTS[drill_id][language], drill_id=drill_id, _model=model)
     stage = {'name': f'{model}.round_report', 'span_type': 'LLM', 'inputs': body, 'outputs': out,
              'duration_ms': (time.perf_counter() - t) * 1000}
     return out, facts, stage
