@@ -130,6 +130,8 @@ final class WorkoutCamera: NSObject, ObservableObject, AVCaptureVideoDataOutputS
     @Published var poseSample: LivePoseSample?
     @Published var position: AVCaptureDevice.Position = .front
     @Published var videoSize: CGSize = .zero
+    @Published var latestExchange: LabeledExchange?
+    private var tracker = ExchangeTracker()
     private let queue = DispatchQueue(label: "coin.workout.camera")
     private let frameQueue = DispatchQueue(label: "coin.workout.pose")
     private var landmarker: PoseLandmarker?
@@ -227,6 +229,17 @@ final class WorkoutCamera: NSObject, ObservableObject, AVCaptureVideoDataOutputS
             self.session.commitConfiguration()
         }
     }
+    /// Closes any open exchange and hands over the round's exchanges; the tracker starts fresh.
+    func takeRoundExchanges() -> [LabeledExchange] {
+        motionLock.lock(); defer { motionLock.unlock() }
+        _ = tracker.finish(atMs: Int(ProcessInfo.processInfo.systemUptime * 1000))
+        let result = tracker.exchanges
+        tracker = ExchangeTracker()
+        return result
+    }
+    func resetExchanges() {
+        motionLock.lock(); tracker = ExchangeTracker(); motionLock.unlock()
+    }
     func stop() {
         queue.async {
             if self.session.isRunning { self.session.stopRunning() }
@@ -275,7 +288,11 @@ final class WorkoutCamera: NSObject, ObservableObject, AVCaptureVideoDataOutputS
         motionLock.lock()
         let previousFrame = lastMotionFrame
         lastMotionFrame = (timestampInMilliseconds, joints)
+        let exchangeEvents = error == nil ? tracker.feed(timeMs: timestampInMilliseconds, joints: joints) : []
         motionLock.unlock()
+        for case .exchange(let exchange) in exchangeEvents {
+            DispatchQueue.main.async { self.latestExchange = exchange }
+        }
         let gap = timestampInMilliseconds - (previousFrame?.timestamp ?? timestampInMilliseconds)
         let wristTravel: Double?
         if let previousFrame, (80...400).contains(gap) {
@@ -447,6 +464,9 @@ struct LiveWorkoutView: View {
     @StateObject private var camera = WorkoutCamera()
     @StateObject private var voice = WorkoutSpeechController()
     @StateObject private var poseSender = PoseWindowSender()
+    @StateObject private var roundReports = RoundReportClient()
+    @State private var cuePolicy = ExchangeCuePolicy()
+    @State private var roundExchanges: [LabeledExchange] = []
     @State private var segmentIndex = 0
     @State private var remaining = 0
     @State private var running = false
@@ -559,6 +579,9 @@ struct LiveWorkoutView: View {
                                 .foregroundStyle(Noir.ink)
                                 .lineLimit(2)
                         }
+                        Text(exchangeLine)
+                            .font(.system(size: 11, weight: .medium, design: .monospaced))
+                            .foregroundStyle(Noir.muted)
                     } else if current.block.kind == .warmup {
                         Text(TrainingCopy.text(current.activity?.key ?? "mobility", language))
                             .font(.system(size: 17, weight: .medium, design: .serif))
@@ -567,7 +590,14 @@ struct LiveWorkoutView: View {
                                 .font(.system(size: 12, weight: .medium, design: .monospaced))
                         }
                     } else if current.isRest {
-                        Text(TrainingCopy.text("rest_instruction", language)).font(.subheadline)
+                        if let report = roundReports.latest {
+                            Text(report.constraint)
+                                .font(.system(size: 17, weight: .medium, design: .serif))
+                                .lineLimit(3)
+                            Text(report.observation).font(.caption).foregroundStyle(Noir.muted).lineLimit(3)
+                        } else {
+                            Text(TrainingCopy.text("rest_instruction", language)).font(.subheadline)
+                        }
                     }
                     HStack(spacing: 14) {
                         Button {
@@ -647,6 +677,20 @@ struct LiveWorkoutView: View {
                 }
                 if remaining % 5 == 0 { training.saveRuntime(sessionID: sessionID, segmentIndex: segmentIndex, remainingSeconds: remaining) }
             }
+        }
+        .onReceive(camera.$latestExchange) { exchange in
+            guard let exchange, running, let current, current.block.kind == .boxing, !current.isRest else { return }
+            var labeled = exchange
+            if let key = cuePolicy.cue(for: exchange, nowMs: Int(ProcessInfo.processInfo.systemUptime * 1000)),
+               let line = ExchangeCuePolicy.lines[key]?[language] {
+                speak(line, cueKey: key, trigger: "exchange_rule")
+                labeled.cue = key
+            }
+            roundExchanges.append(labeled)
+        }
+        .onReceive(roundReports.$latest) { report in
+            guard let report, let current, current.isRest else { return }
+            speak(report.constraint, cueKey: "round_report", trigger: "round_report")
         }
         .onReceive(camera.$stateKey) { state in
             if state == "camera_on", scenePhase == .active, workout?.state == .active { begin() }
@@ -733,6 +777,7 @@ struct LiveWorkoutView: View {
                                exitReason: remaining == 0 ? "timer_elapsed" : "skipped")
         voice.stop()
         flushPoseWindows()
+        if current.block.kind == .boxing && !current.isRest { submitRound(current) }
         if remaining <= 0 {
             if current.isRest { training.recordRestElapsed(sessionID: sessionID, blockID: current.block.id) }
             else if !segments.indices.contains(segmentIndex + 1) || segments[segmentIndex + 1].block.id != current.block.id || segments[segmentIndex + 1].isRest {
@@ -741,6 +786,9 @@ struct LiveWorkoutView: View {
         }
         segmentIndex += 1
         squatTracker = SquatTracker()
+        if let next = self.current, next.block.kind == .boxing, !next.isRest {
+            camera.resetExchanges(); roundExchanges = []; cuePolicy = ExchangeCuePolicy()
+        }
         remaining = self.current?.seconds ?? 0
         deadline = running ? Date().addingTimeInterval(TimeInterval(remaining)) : nil
         training.saveRuntime(sessionID: sessionID, segmentIndex: segmentIndex, remainingSeconds: remaining)
@@ -748,8 +796,26 @@ struct LiveWorkoutView: View {
             finishWorkout()
         } else if running { announceCurrent() }
     }
+    private var exchangeLine: String {
+        let faults = roundExchanges.flatMap(\.faults).count
+        let last = roundExchanges.last.map { language == "fr" ? ($0.opener == "probe" ? "sonde" : "engagement") : $0.opener } ?? "—"
+        return language == "fr" ? "ÉCHANGES \(roundExchanges.count) · DERNIER \(last) · FAUTES \(faults)"
+                                : "EXCHANGES \(roundExchanges.count) · LAST \(last) · FAULTS \(faults)"
+    }
+    /// Sends the finished round's exchanges to the harness; never blocks the workout.
+    private func submitRound(_ segment: Segment) {
+        var byID = Dictionary(uniqueKeysWithValues: roundExchanges.map { ($0.id, $0) })
+        for exchange in camera.takeRoundExchanges() where byID[exchange.id] == nil { byID[exchange.id] = exchange }
+        let exchanges = byID.values.sorted { $0.id < $1.id }
+        roundExchanges = []; cuePolicy = ExchangeCuePolicy()
+        guard !exchanges.isEmpty else { return }
+        roundReports.submit(RoundSummary(requestID: UUID().uuidString, language: language, stance: "orthodox",
+                                         drillID: segment.block.drillID, round: segment.block.roundNumber ?? 0,
+                                         durationS: max(0, segment.seconds - remaining), exchanges: exchanges))
+    }
     private func finishWorkout() {
         guard workout?.state == .active else { return }
+        if let current, current.block.kind == .boxing, !current.isRest { submitRound(current) }
         captureElapsedFromDeadline()
         flushTimedSeconds()
         if let current {

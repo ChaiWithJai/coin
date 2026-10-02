@@ -31,6 +31,7 @@ targets:
       - TrainingViews.swift
       - LiveWorkout.swift
       - ExchangeTracker.swift
+      - RoundReport.swift
       - VoiceCues/en_cooldown_speech.mp3
       - VoiceCues/en_free_late_cue.mp3
       - VoiceCues/en_free_mid_cue.mp3
