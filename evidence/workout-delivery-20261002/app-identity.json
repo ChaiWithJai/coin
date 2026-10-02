@@ -9,7 +9,9 @@
     "catalog_workouts": 70,
     "device_app_installed": true,
     "observed_process_executable": "Coin.app/Coin",
-    "observed_process_pid": 33453
+    "observed_process_pid": 33453,
+    "simulator_id": "CB5D7882-F35E-469E-980B-5729D3C0F7D4",
+    "simulator_screenshot_verified": "Coin French home with Programme and Libre"
   },
   "separate_app": {
     "name": "Free Alpha",
@@ -18,6 +20,7 @@
     "bundle_identifier": "com.prismml.freealpha",
     "device_app_installed": true
   },
-  "mixup_cause": "not established; user asked which surface displayed AI Engineer app",
-  "code_or_service_deployments": false
+  "mixup_cause": "Multiple booted simulators are a plausible source: Free Alpha on iPhone 17 and 17 Pro, Coin on Coin iPhone 11. Exact original mixup not established.",
+  "code_or_service_deployments": false,
+  "ui_action": "Selected Coin simulator explicitly; no app reinstall or service deployment"
 }

@@ -17,3 +17,5 @@ Commit implementation and evidence at major checkpoints. Verify repository visib
 Coin is the boxing app. Its repository is `ChaiWithJai/coin`, its iOS target and scheme are `Coin`, and its installed bundle identifier is `com.coinboxing.prototype`. Its workout source is `https://boxing.dharmicdata.org`.
 
 Free Alpha is a separate AI Engineer conference app at `/Users/jaibhagat/code/free-alpha`, with bundle identifier `com.prismml.freealpha`. Shared local files, models, telemetry, browser tabs, or connected devices do not make that app part of Coin. Before building, installing, launching, or reviewing a UI, verify the repository, target, bundle identifier, and service identity explicitly. Do not select an app from recency or a shared port alone.
+
+For simulator work, target Coin iPhone 11 explicitly: `CB5D7882-F35E-469E-980B-5729D3C0F7D4`. Do not use the generic `booted` selector: Free Alpha also runs in other booted simulators. Verify a Coin screenshot after selecting the device.
