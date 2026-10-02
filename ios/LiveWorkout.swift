@@ -366,16 +366,27 @@ struct WorkoutCameraView: UIViewRepresentable {
     }
 }
 
-@MainActor final class WorkoutSpeechController: ObservableObject {
+@MainActor final class WorkoutSpeechController: NSObject, ObservableObject, AVSpeechSynthesizerDelegate, AVAudioPlayerDelegate {
     private let synthesizer = AVSpeechSynthesizer()
     private var player: AVAudioPlayer?
+    private var fx: AVAudioPlayer?
+    private var releaseTask: Task<Void, Never>?
+
+    override init() {
+        super.init()
+        synthesizer.delegate = self
+        // Mix with the boxer's own music (Spotify, Apple Music) and dip it only while Coin is speaking.
+        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .spokenAudio, options: [.mixWithOthers, .duckOthers])
+    }
 
     func speak(_ line: String, locale: String, cueKey: String, language: String) {
         player?.stop()
         if synthesizer.isSpeaking { synthesizer.stopSpeaking(at: .immediate) }
+        activate()
         if let url = Bundle.main.url(forResource: "\(language)_\(cueKey)", withExtension: "mp3"),
            let recording = try? AVAudioPlayer(contentsOf: url) {
             player = recording
+            recording.delegate = self
             recording.play()
             return
         }
@@ -384,9 +395,65 @@ struct WorkoutCameraView: UIViewRepresentable {
         synthesizer.speak(utterance)
     }
 
+    /// Short tone after each exchange: a high tick when clean, a low double tone when it has a fault.
+    func exchangeSound(fault: Bool) {
+        guard !synthesizer.isSpeaking, player?.isPlaying != true else { return }
+        let data = fault ? Self.tone([(440, 0.09), (0, 0.05), (440, 0.09)]) : Self.tone([(1320, 0.06)])
+        guard let sound = try? AVAudioPlayer(data: data) else { return }
+        activate()
+        fx = sound
+        sound.delegate = self
+        sound.volume = 0.6
+        sound.play()
+    }
+
     func stop() {
         player?.stop()
+        fx?.stop()
         synthesizer.stopSpeaking(at: .immediate)
+        scheduleRelease()
+    }
+
+    private func activate() {
+        releaseTask?.cancel()
+        try? AVAudioSession.sharedInstance().setActive(true)
+    }
+    private func scheduleRelease() {
+        releaseTask?.cancel()
+        releaseTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 400_000_000)
+            guard !Task.isCancelled, !synthesizer.isSpeaking, player?.isPlaying != true, fx?.isPlaying != true else { return }
+            try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        }
+    }
+    nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
+        Task { @MainActor in self.scheduleRelease() }
+    }
+    nonisolated func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+        Task { @MainActor in self.scheduleRelease() }
+    }
+
+    /// 16-bit mono WAV built in memory from (frequency Hz, seconds) segments; frequency 0 is silence.
+    static func tone(_ segments: [(Double, Double)]) -> Data {
+        let rate = 44_100.0
+        var samples: [Int16] = []
+        for (frequency, seconds) in segments {
+            let count = Int(rate * seconds)
+            for i in 0..<count {
+                let envelope = min(1, Double(i) / 300, Double(count - i) / 300)
+                let value = frequency > 0 ? sin(2 * .pi * frequency * Double(i) / rate) * envelope : 0
+                samples.append(Int16(value * 12_000))
+            }
+        }
+        var data = Data()
+        func u32(_ v: UInt32) { var x = v.littleEndian; data.append(Data(bytes: &x, count: 4)) }
+        func u16(_ v: UInt16) { var x = v.littleEndian; data.append(Data(bytes: &x, count: 2)) }
+        let bytes = UInt32(samples.count * 2)
+        data.append("RIFF".data(using: .ascii)!); u32(36 + bytes); data.append("WAVEfmt ".data(using: .ascii)!)
+        u32(16); u16(1); u16(1); u32(44_100); u32(88_200); u16(2); u16(16)
+        data.append("data".data(using: .ascii)!); u32(bytes)
+        samples.withUnsafeBufferPointer { data.append(Data(buffer: $0)) }
+        return data
     }
 }
 
@@ -599,9 +666,7 @@ struct LiveWorkoutView: View {
                                 .foregroundStyle(Noir.ink)
                                 .lineLimit(2)
                         }
-                        Text(exchangeLine)
-                            .font(.system(size: 11, weight: .medium, design: .monospaced))
-                            .foregroundStyle(Noir.muted)
+                        exchangeCounter
                     } else if current.block.kind == .warmup {
                         Text(TrainingCopy.text(current.activity?.key ?? "mobility", language))
                             .font(.system(size: 17, weight: .medium, design: .serif))
@@ -610,7 +675,7 @@ struct LiveWorkoutView: View {
                             Text("\(shadowTheme + 1)/\(ShadowboxingGuide.themes.count) · \(theme.title[language] ?? "")")
                                 .font(.system(size: 12, weight: .bold, design: .monospaced)).foregroundStyle(Noir.gold)
                             Text(theme.line[language] ?? "").font(.subheadline).lineLimit(3)
-                            Text(exchangeLine).font(.system(size: 11, weight: .medium, design: .monospaced)).foregroundStyle(Noir.muted)
+                            exchangeCounter
                         }
                         if current.activity?.key == "squats" || current.activity?.key == "lunges" {
                             Text(TrainingCopy.format(current.activity?.key == "lunges" ? "lunge_observed_reps" : "squat_observed_reps", language, squatTracker.count))
@@ -715,7 +780,7 @@ struct LiveWorkoutView: View {
         }
         .onReceive(camera.$latestExchange) { exchange in
             guard let exchange, running, let current, !current.isRest else { return }
-            if current.activity?.key == "shadowboxing" { roundExchanges.append(exchange); return }
+            if current.activity?.key == "shadowboxing" { roundExchanges.append(exchange); voice.exchangeSound(fault: !exchange.faults.isEmpty); return }
             guard current.block.kind == .boxing else { return }
             var labeled = exchange
             if let key = cuePolicy.cue(for: exchange, nowMs: Int(ProcessInfo.processInfo.systemUptime * 1000)),
@@ -723,6 +788,7 @@ struct LiveWorkoutView: View {
                 speak(line, cueKey: key, trigger: "exchange_rule")
                 labeled.cue = key
             }
+            if labeled.cue == nil { voice.exchangeSound(fault: !exchange.faults.isEmpty) }
             roundExchanges.append(labeled)
         }
         .onReceive(roundReports.$latest) { report in
@@ -839,6 +905,27 @@ struct LiveWorkoutView: View {
         if self.current == nil {
             finishWorkout()
         } else if running { announceCurrent() }
+    }
+    /// Big enough to read from across the room while boxing.
+    private var exchangeCounter: some View {
+        let faults = roundExchanges.filter { !$0.faults.isEmpty }.count
+        let lastFault = roundExchanges.last.map { !$0.faults.isEmpty } ?? false
+        return HStack(alignment: .firstTextBaseline, spacing: 14) {
+            Text("\(roundExchanges.count)")
+                .font(.system(size: 64, weight: .bold, design: .monospaced)).monospacedDigit()
+                .foregroundStyle(lastFault ? Noir.red : Noir.gold)
+                .contentTransition(.numericText())
+            VStack(alignment: .leading, spacing: 2) {
+                Text(language == "fr" ? "ÉCHANGES" : "EXCHANGES")
+                    .font(.system(size: 11, weight: .bold, design: .monospaced)).tracking(2)
+                Text(language == "fr" ? "\(faults) avec faute" : "\(faults) with a fault")
+                    .font(.system(size: 13, weight: .medium, design: .monospaced))
+                    .foregroundStyle(faults > 0 ? Noir.red : Noir.muted)
+                Text(roundExchanges.last.map { language == "fr" ? ($0.opener == "probe" ? "dernier : sonde" : "dernier : engagement") : "last: \($0.opener)" } ?? " ")
+                    .font(.system(size: 11, design: .monospaced)).foregroundStyle(Noir.muted)
+            }
+        }
+        .animation(.easeOut(duration: 0.2), value: roundExchanges.count)
     }
     private var exchangeLine: String {
         let faults = roundExchanges.flatMap(\.faults).count
