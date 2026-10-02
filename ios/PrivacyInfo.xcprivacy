@@ -9,7 +9,7 @@
 	<key>NSPrivacyCollectedDataTypes</key>
 	<array>
 		<dict>
-			<!-- Timestamped notes are sent to the boxer's private server only when they request a plan. -->
+			<!-- Completed round summaries and requested reviews are sent to the boxer's private server. Images stay on the device. -->
 			<key>NSPrivacyCollectedDataType</key>
 			<string>NSPrivacyCollectedDataTypeOtherUserContent</string>
 			<key>NSPrivacyCollectedDataTypeLinked</key>

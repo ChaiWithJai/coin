@@ -100,3 +100,24 @@ import XCTest
     {"schemaVersion":1,"workouts":[{"id":"source-test","program":"boxing","week":1,"day":1,"title":"Source workout","sourceURL":"https://boxing.dharmicdata.org/test","sourceSHA256":"source-hash","blocks":[{"id":"a","title":"Shadowboxing","instructions":"Two rounds, 45 seconds each. Rest 15 seconds between rounds.","kind":"boxing","drillID":"free-boxing-v1","rounds":2,"durationSeconds":45,"restSeconds":15,"completion":"timed"},{"id":"b","title":"Push-ups","instructions":"3 sets of 10 push-ups. Rest as needed.","kind":"exercise","activityKey":"pushups","reps":"10 reps","sets":3,"completion":"manual","demoURLs":["https://example.org/demo"]}]}]}
     """ }
 }
+
+@MainActor final class RoundReportRecoveryTests: XCTestCase {
+    func testOnlyUnreportedSummariesResumeWithOriginalIdentity() throws {
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let summary = RoundSummary(requestID: "pending", language: "fr", stance: "orthodox", drillID: "free-boxing-v1",
+                                   round: 1, durationS: 180, exchanges: [], sessionID: "same-session", workoutMode: "freestyle")
+        try JSONEncoder().encode(summary).write(to: folder.appendingPathComponent("pending-summary.json"))
+        var completed = summary
+        completed.requestID = "complete"
+        try JSONEncoder().encode(completed).write(to: folder.appendingPathComponent("complete-summary.json"))
+        try Data("{}".utf8).write(to: folder.appendingPathComponent("complete-report.json"))
+        try Data("corrupt".utf8).write(to: folder.appendingPathComponent("bad-summary.json"))
+        let pending = RoundReportClient.pendingSummaries(in: folder)
+        XCTAssertEqual(pending.count, 1)
+        XCTAssertEqual(pending.first?.requestID, "pending")
+        XCTAssertEqual(pending.first?.sessionID, "same-session")
+        XCTAssertEqual(pending.first?.workoutMode, "freestyle")
+    }
+}

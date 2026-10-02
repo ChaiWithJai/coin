@@ -1,0 +1,37 @@
+{
+  "info" : {
+    "arguments" : [
+      "devicectl",
+      "device",
+      "install",
+      "app",
+      "--device",
+      "DCB3F4A7-4528-5743-9F8B-DA1230DB95B6",
+      "/tmp/coin-workout-phone/Build/Products/Debug-iphoneos/Coin.app",
+      "--json-output",
+      "/tmp/coin-workout-final-install.json"
+    ],
+    "commandType" : "devicectl.device.install.app",
+    "environment" : {
+      "TERM" : "dumb"
+    },
+    "jsonVersion" : 3,
+    "outcome" : "success",
+    "version" : "518.33"
+  },
+  "result" : {
+    "deviceIdentifier" : "DCB3F4A7-4528-5743-9F8B-DA1230DB95B6",
+    "installedApplications" : [
+      {
+        "bundleID" : "com.coinboxing.prototype",
+        "databaseSequenceNumber" : 3420,
+        "databaseUUID" : "7C3BE253-338A-4808-96CB-FA6B0F4523A4",
+        "installationURL" : "file:///private/var/containers/Bundle/Application/08D889FA-7981-4433-8FBB-712AE8AD15A0/Coin.app/",
+        "launchServicesIdentifier" : "unknown",
+        "options" : {
+
+        }
+      }
+    ]
+  }
+}

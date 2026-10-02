@@ -10,6 +10,15 @@ enum Noir {
 }
 
 private enum SessionCopy {
+    static func clockSummary(_ session: TrainingSession, language: String) -> String {
+        if session.sourceTitle != nil {
+            return language == "fr"
+                ? "\(session.elapsedClock) au chrono · \(session.timedRoundCount) reprises terminées"
+                : "\(session.elapsedClock) timed · \(session.timedRoundCount) rounds finished"
+        }
+        return TrainingCopy.format("recap_clock_summary", language, session.elapsedClock,
+                                   session.plannedMinutes, session.timedRoundCount)
+    }
     static func milestone(_ kind: CampMilestoneKind, language: String) -> String {
         switch kind {
         case .weighIn: return TrainingCopy.text("milestone_weigh_in", language)
@@ -46,7 +55,7 @@ struct TrainingHomeView: View {
     @AppStorage("language") private var language = "fr"
     @State private var path: [UUID] = []
     @State private var selectedMinutes = 30
-    @State private var freestyle = false
+    @State private var freestyle = true
     @State private var selectedLesson: WorkoutLesson?
     @State private var showPrograms = false
     @StateObject private var voice = WorkoutSpeechController()
@@ -133,7 +142,10 @@ struct TrainingHomeView: View {
                     Button { path.append(training.resumeOrStart(selectedTemplate)) } label: {
                         HStack {
                             Image(systemName: "camera.fill")
-                            Text(activeSession.map { TrainingCopy.format("resume_session", language, $0.plannedMinutes) }
+                            Text(activeSession.map { session in
+                                session.sourceTitle.map { (language == "fr" ? "Reprendre : " : "Resume: ") + $0 }
+                                    ?? TrainingCopy.format("resume_session", language, session.plannedMinutes)
+                            }
                                  ?? TrainingCopy.text("home_enter", language)).tracking(1)
                             Spacer()
                             Image(systemName: "arrow.up.right")
@@ -224,7 +236,7 @@ struct TrainingSessionView: View {
         List {
             if let session {
                 Section {
-                    Text(TrainingCopy.format("recap_clock_summary", language, session.elapsedClock, session.plannedMinutes, session.timedRoundCount))
+                    Text(SessionCopy.clockSummary(session, language: language))
                         .font(.headline)
                     Text(TrainingCopy.text("session_evidence_note", language))
                         .font(.caption).foregroundStyle(.secondary)
@@ -406,8 +418,7 @@ struct WorkoutRecapView: View {
                     Text(TrainingCopy.text(fullyTimed ? "recap_title" : "recap_early_title", language))
                         .font(.system(size: 38, weight: .regular, design: .serif)).foregroundStyle(Noir.ink)
                     if let session {
-                        Text(TrainingCopy.format("recap_clock_summary", language,
-                                                 session.elapsedClock, session.plannedMinutes, session.timedRoundCount))
+                        Text(SessionCopy.clockSummary(session, language: language))
                             .font(.title3).foregroundStyle(Noir.ink)
                         Rectangle().fill(Noir.gold.opacity(0.4)).frame(height: 1)
                         let reachedRounds = session.blocks.filter { block in
@@ -695,7 +706,7 @@ struct WorkoutProgramPicker: View {
                                         Image(systemName: "checkmark.circle.fill").foregroundStyle(Noir.gold)
                                     } else { Image(systemName: "arrow.right").foregroundStyle(Noir.muted) }
                                 }.padding(.vertical, 5)
-                            }.accessibilityIdentifier("lesson-\(lesson.id)")
+                            }.accessibilityIdentifier("lesson-\(lesson.id)").listRowBackground(Noir.panel)
                         }
                     }
                 }

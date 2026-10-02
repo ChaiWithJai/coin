@@ -717,7 +717,8 @@ struct LiveWorkoutView: View {
                                 .font(.system(size: 12, weight: .medium, design: .monospaced))
                         }
                     } else if current.isRest {
-                        if let report = roundReports.latest {
+                        if let report = roundReports.latest, roundReports.latestSessionID == sessionID.uuidString,
+                           roundReports.latestRound == current.block.roundNumber {
                             Text(report.constraint)
                                 .font(.system(size: 17, weight: .medium, design: .serif))
                                 .lineLimit(3)
@@ -783,6 +784,7 @@ struct LiveWorkoutView: View {
             originalIdleTimerDisabled = UIApplication.shared.isIdleTimerDisabled
             if workout?.state == .active { camera.start() }
             if poseTelemetryEnabled { poseSender.sendPending(from: training) }
+            roundReports.flush()
             if let workout {
                 segmentIndex = workout.runtimeSegmentIndex ?? 0
                 remaining = workout.runtimeRemainingSeconds ?? (current?.seconds ?? 0)
@@ -804,6 +806,7 @@ struct LiveWorkoutView: View {
         }
         .onChange(of: scenePhase) { phase in
             if phase != .active { pause() }
+            else { roundReports.flush() }
         }
         .onChange(of: poseTelemetryEnabled) { enabled in
             if enabled { poseSender.sendPending(from: training) }
@@ -848,7 +851,7 @@ struct LiveWorkoutView: View {
         }
         .onReceive(camera.$latestExchange) { exchange in
             guard let exchange, running, let current, !current.isRest else { return }
-            if current.activityKey == "shadowboxing" { roundExchanges.append(exchange); voice.exchangeSound(fault: !exchange.faults.isEmpty); return }
+            if current.activityKey == "shadowboxing" { roundExchanges.append(exchange); voice.exchangeSound(fault: current.block.sourceTitle == nil && !exchange.faults.isEmpty); return }
             guard current.block.kind == .boxing else { return }
             var labeled = exchange
             if current.block.drillID == "probe-combine-angle-v1",
@@ -861,11 +864,14 @@ struct LiveWorkoutView: View {
             roundExchanges.append(labeled)
         }
         .onReceive(camera.$latestEvidence) { cards in
-            guard let current, current.block.kind == .boxing, !current.isRest else { return }
+            guard let current, current.block.kind == .boxing, !current.isRest,
+                  current.block.drillID == "probe-combine-angle-v1" else { return }
             roundEvidence += cards
         }
         .onReceive(roundReports.$latest) { report in
-            guard let report, let current, current.isRest else { return }
+            guard let report, let current, current.isRest,
+                  roundReports.latestSessionID == sessionID.uuidString,
+                  roundReports.latestRound == current.block.roundNumber else { return }
             speak(report.constraint, cueKey: "round_report", trigger: "round_report")
         }
         .onReceive(camera.$stateKey) { state in
@@ -1028,8 +1034,10 @@ struct LiveWorkoutView: View {
                 Text(!judgingDrill ? (language == "fr" ? "à ton rythme" : "your rhythm") : (language == "fr" ? "\(faults) avec faute" : "\(faults) with a fault"))
                     .font(.system(size: 13, weight: .medium, design: .monospaced))
                     .foregroundStyle(faults > 0 ? Noir.red : Noir.muted)
-                Text(roundExchanges.last.map { language == "fr" ? ($0.opener == "probe" ? "dernier : sonde" : "dernier : engagement") : "last: \($0.opener)" } ?? " ")
-                    .font(.system(size: 11, design: .monospaced)).foregroundStyle(Noir.muted)
+                if judgingDrill {
+                    Text(roundExchanges.last.map { language == "fr" ? ($0.opener == "probe" ? "dernier : sonde" : "dernier : engagement") : "last: \($0.opener)" } ?? " ")
+                        .font(.system(size: 11, design: .monospaced)).foregroundStyle(Noir.muted)
+                }
             }
         }
         .animation(.easeOut(duration: 0.2), value: roundExchanges.count)
@@ -1050,7 +1058,12 @@ struct LiveWorkoutView: View {
         guard !exchanges.isEmpty else { return }
         roundReports.submit(RoundSummary(requestID: UUID().uuidString, language: language, stance: "orthodox",
                                          drillID: segment.block.drillID, round: segment.block.roundNumber ?? 0,
-                                         durationS: segment.isManual ? manualElapsed : max(0, segment.seconds - remaining), exchanges: exchanges))
+                                         durationS: segment.isManual ? manualElapsed : max(0, segment.seconds - remaining), exchanges: exchanges,
+                                         sessionID: sessionID.uuidString,
+                                         workoutMode: segment.block.sourceURL != nil ? "program" : (segment.block.drillID == "free-boxing-v1" ? "freestyle" : "drill"),
+                                         sourceTitle: segment.block.sourceTitle,
+                                         sourceInstructions: segment.block.sourceInstructions.map { String($0.prefix(6000)) },
+                                         sourceID: segment.block.sourceBlockID))
     }
     private func finishWorkout() {
         guard workout?.state == .active else { return }

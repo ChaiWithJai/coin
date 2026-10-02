@@ -1,0 +1,10 @@
+{
+  "installed": {
+    "service.py": "f673050d38146397f7a09ed33ae8d0e9d527a3335496b6713249d4456a0e545b",
+    "round_harness.py": "ff67fad7e31f4337aa219e1e40e7f41fa3f49fa025df68ab61768ffc0e7f03cd",
+    "batch_jobs.py": "fb359d3362d21a207500cc387022bf5e7fc7c72b1bf85dd17203ca9a3b373e68"
+  },
+  "pid": 2556064,
+  "backup": "/home/chaiwithjai/Documents/code/coin-boxing/backups/20261002T2150-batch-integration",
+  "stage_pid_stopped": 2552587
+}

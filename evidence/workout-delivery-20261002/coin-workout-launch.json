@@ -1,0 +1,59 @@
+{
+  "info" : {
+    "arguments" : [
+      "devicectl",
+      "device",
+      "process",
+      "launch",
+      "--device",
+      "DCB3F4A7-4528-5743-9F8B-DA1230DB95B6",
+      "--json-output",
+      "/tmp/coin-workout-launch.json",
+      "com.coinboxing.prototype",
+      "--",
+      "-noAutoStart"
+    ],
+    "commandType" : "devicectl.device.process.launch",
+    "environment" : {
+      "TERM" : "dumb"
+    },
+    "jsonVersion" : 3,
+    "outcome" : "success",
+    "version" : "518.33"
+  },
+  "result" : {
+    "deviceIdentifier" : "DCB3F4A7-4528-5743-9F8B-DA1230DB95B6",
+    "launchOptions" : {
+      "activatedWhenStarted" : true,
+      "arguments" : [
+        "--",
+        "-noAutoStart"
+      ],
+      "environmentVariables" : {
+        "TERM" : "dumb"
+      },
+      "platformSpecificOptions" : {
+
+      },
+      "startStopped" : false,
+      "terminateExistingInstances" : false,
+      "user" : {
+        "active" : true
+      }
+    },
+    "process" : {
+      "auditToken" : [
+        4294967295,
+        501,
+        501,
+        501,
+        501,
+        33453,
+        0,
+        91176
+      ],
+      "executable" : "file:///private/var/containers/Bundle/Application/08D889FA-7981-4433-8FBB-712AE8AD15A0/Coin.app/Coin",
+      "processIdentifier" : 33453
+    }
+  }
+}

@@ -166,9 +166,15 @@ struct RoundSummary: Codable {
     var round: Int
     var durationS: Int
     var exchanges: [LabeledExchange]
+    var sessionID: String? = nil
+    var workoutMode: String? = nil
+    var sourceTitle: String? = nil
+    var sourceInstructions: String? = nil
+    var sourceID: String? = nil
 
     enum CodingKeys: String, CodingKey {
         case requestID = "request_id", language, stance, drillID = "drill_id", round, durationS = "duration_s", exchanges
+        case sessionID = "session_id", workoutMode = "workout_mode", sourceTitle = "source_title", sourceInstructions = "source_instructions", sourceID = "source_id"
     }
 }
 

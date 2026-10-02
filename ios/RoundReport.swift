@@ -25,13 +25,30 @@ struct RoundReport: Codable, Equatable {
 /// Sends a finished round to the harness. Never blocks the workout; failures leave the round summary for a retry.
 @MainActor final class RoundReportClient: ObservableObject {
     @Published private(set) var latest: RoundReport?
+    private(set) var latestSessionID: String?
+    private(set) var latestRound: Int?
     @Published private(set) var sending = false
     @Published private(set) var failed = false
     private var pending: [RoundSummary] = []
 
+    init() {
+        pending = Self.pendingSummaries(in: Self.folder)
+    }
+
+    static func pendingSummaries(in folder: URL) -> [RoundSummary] {
+        let files = (try? FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: [.creationDateKey])) ?? []
+        return files.filter { $0.lastPathComponent.hasSuffix("-summary.json") }
+            .sorted { $0.lastPathComponent < $1.lastPathComponent }
+            .compactMap { url in
+                guard let data = try? Data(contentsOf: url), let summary = try? JSONDecoder().decode(RoundSummary.self, from: data),
+                      !FileManager.default.fileExists(atPath: folder.appendingPathComponent("\(summary.requestID)-report.json").path) else { return nil }
+                return summary
+            }
+    }
+
     func submit(_ summary: RoundSummary) {
         Self.save(summary, name: "\(summary.requestID)-summary")
-        pending.append(summary)
+        if !pending.contains(where: { $0.requestID == summary.requestID }) { pending.append(summary) }
         flush()
     }
 
@@ -51,6 +68,8 @@ struct RoundReport: Codable, Equatable {
                 let report = try await send(next)
                 Self.save(report, name: "\(next.requestID)-report")
                 pending.removeFirst()
+                latestSessionID = next.sessionID
+                latestRound = next.round
                 latest = report
                 failed = false
                 sending = false

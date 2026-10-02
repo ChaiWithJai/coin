@@ -66,7 +66,7 @@ enum TrainingCopy {
         "pose_sharing_offline": ["fr": "Serveur de pose indisponible", "en": "Pose server unavailable"],
         "connection_private_server": ["fr": "Serveur privé", "en": "Private server"],
         "connection_access_key": ["fr": "Clé d’accès", "en": "Access key"],
-        "connection_key_note": ["fr": "La clé reste dans le trousseau de cet iPhone. Les notes partent uniquement quand tu demandes un plan.", "en": "The key stays in this iPhone’s Keychain. Notes are sent only when you request a plan."],
+        "connection_key_note": ["fr": "La clé reste dans le trousseau de cet iPhone. Les résumés de rounds et tes demandes d’analyse vont à ton serveur privé. Les images restent sur cet iPhone.", "en": "The key stays in this iPhone’s Keychain. Completed round summaries and requested reviews go to your private server. Images stay on this iPhone."],
         "connection_pose_tracking": ["fr": "Suivi de pose", "en": "Pose tracking"],
         "connection_pose_share": ["fr": "Partager les données de pose pendant la séance", "en": "Share pose data during workouts"],
         "connection_pose_note": ["fr": "Si activé, l'app envoie environ un échantillon toutes les dix secondes à ton serveur privé : nombre de points suivis, cadrage, visibilité du bas du corps, mouvement des poignets et délai de traitement. Aucune image ni vidéo n'est envoyée. La séance continue si le serveur est indisponible.", "en": "When enabled, the app sends about one sample every ten seconds to your private server: tracked point counts, framing, lower-body visibility, wrist movement and processing delay. No image or video is sent. Your workout continues if the server is offline."],

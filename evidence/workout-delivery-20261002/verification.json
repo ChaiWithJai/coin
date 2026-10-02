@@ -1,0 +1,20 @@
+{
+  "status": "installed_and_launched",
+  "catalog_days": 70,
+  "physical_workout_acceptance": "not_yet_observed",
+  "test_scope": {
+    "unit_tests": 40,
+    "ui_tests": 3,
+    "server_tests": 20,
+    "source_import_tests": 8
+  },
+  "hashes": {
+    "Coin": "a6e3e02624103ee0f2b6c5d946ed6ade976bdcee02331b757d88caab5bd72143",
+    "WorkoutCatalog.json": "39e5592bfb6fe1f635325c99c8fb2e67866da8eeb0119968bb96ed7aea5d3a2c"
+  },
+  "installed_source_matches": true,
+  "source_language": "English originals; French/English app controls",
+  "full_batch": "v2.1 running; originalv1 preserved and not promoted",
+  "actual_cost_usd": null,
+  "physical_process_id": 33453
+}
