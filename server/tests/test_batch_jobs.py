@@ -68,6 +68,21 @@ class BatchTests(unittest.TestCase):
         self.assertIsNone(ex['drill_id'])
         self.assertEqual(ex['source']['origin'], 'synthetic')
 
+    def test_resume_after_last_inflight_item_finished_while_paused(self):
+        data = sample()
+        data['exchanges'] = []
+        job = self.store.submit(data, self.provenance)
+        original = self.client.run
+        def pausing_client(kind, data):
+            self.store.control(job, 'pause')
+            return original(kind, data)
+        self.client.run = pausing_client
+        self.store.step(self.client)
+        self.assertEqual(self.store.inspect(job)[0]['state'], 'paused')
+        self.store.control(job, 'resume')
+        self.assertEqual(self.store.inspect(job)[0]['state'], 'complete')
+        self.assertFalse(self.store.step(self.client))
+
     def test_partial_failure_retry_only_failed_exchange_and_report(self):
         job = self.submit()
         self.client.fail = {0}
@@ -89,6 +104,10 @@ class BatchTests(unittest.TestCase):
         self.submit(job_id='second')
         self.drain()
         self.assertEqual(len(self.client.calls), 3)
+        cached = json.loads(self.store.inspect('second')[0]['items'][0]['output'])
+        self.assertEqual(cached['usage']['total_tokens'], 0)
+        self.assertFalse(cached['inference_performed'])
+        self.assertEqual(cached['duration_ms'], 0)
         self.client.model = 'fixture-model-v2'
         self.submit(job_id='third')
         self.drain()
@@ -145,17 +164,38 @@ class BatchTests(unittest.TestCase):
         self.assertEqual(json.dumps(catalog, sort_keys=True), before)
         self.assertEqual(self.store.inspect(job)[0]['state'], 'complete')
 
-    def test_catalog_rejects_hallucinated_evidence(self):
-        raw = {'choices': [{'message': {'content': json.dumps({
-            'activity': 'bag_work', 'phase': 'unspecified', 'cue_id': 'follow_source',
-            'evidence_quote': 'Reset the angle'})}}]}
+    def test_catalog_explicit_exercise_uses_source_without_model(self):
+        with patch('urllib.request.urlopen', side_effect=AssertionError('No model needed')):
+            result = ModelClient('http://fixture').run('workout', {'block': {'sourceText': '12 JUMP SQUATS', 'kind': 'exercise'}})
+        self.assertEqual(result['result']['activity'], 'strength')
+        self.assertEqual(result['result']['cue_id'], 'follow_source')
+        self.assertFalse(result['inference_performed'])
+        self.assertEqual(result['usage']['total_tokens'], 0)
+
+    def test_catalog_unsupported_model_choice_is_unknown(self):
+        raw = {'choices': [{'message': {'content': 'C'}}]}
         class Response:
             def __enter__(self): return self
             def __exit__(self, *args): pass
             def read(self): return json.dumps(raw).encode()
         with patch('urllib.request.urlopen', return_value=Response()):
-            with self.assertRaises(ValueError):
-                ModelClient('http://fixture').run('workout', {'block': {'sourceText': 'BAG WORK', 'kind': 'boxing'}})
+            result = ModelClient('http://fixture').run('workout', {'block': {'sourceText': 'STANCE DRILL', 'kind': 'boxing'}})
+        self.assertEqual(result['result']['activity'], 'unknown')
+        self.assertEqual(result['result']['phase'], 'unspecified')
+        self.assertEqual(result['result']['cue_id'], 'follow_source')
+
+    def test_source_typo_preserved_in_supported_model_annotation(self):
+        raw = {'choices': [{'message': {'content': 'A'}}]}
+        class Response:
+            def __enter__(self): return self
+            def __exit__(self, *args): pass
+            def read(self): return json.dumps(raw).encode()
+        source = 'MOVE AND THROW PUCNHES WITH A STEP'
+        with patch('urllib.request.urlopen', return_value=Response()):
+            result = ModelClient('http://fixture').run('workout', {'block': {'sourceText': source, 'kind': 'boxing'}})
+        self.assertEqual(result['result']['activity'], 'shadowboxing')
+        self.assertEqual(result['result']['evidence_quote'], 'PUCNH')
+        self.assertIn(result['result']['evidence_quote'], source)
 
     def test_invalid_choice_abstains_without_invented_confidence(self):
         raw = {'choices': [{'message': {'content': 'X'}, 'logprobs': None}],

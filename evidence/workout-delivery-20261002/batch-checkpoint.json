@@ -1,0 +1,30 @@
+{
+  "batch_id": "80386470c1590fecb7d02e43e34dae734e2233b811e308c18e8f4d8203ae5829",
+  "counts": {
+    "complete": 531
+  },
+  "annotation_sources": {
+    "model_proposal": 270,
+    "source_rule_annotation": 261
+  },
+  "activities": {
+    "unknown": 147,
+    "shadowboxing": 166,
+    "strength": 86,
+    "footwork": 26,
+    "bag_work": 32,
+    "conditioning": 14,
+    "mobility": 27,
+    "partner_work": 16,
+    "recovery": 17
+  },
+  "actual_model_calls": 191,
+  "cache_hits": 156,
+  "observed_prompt_tokens": 29456,
+  "observed_completion_tokens": 191,
+  "actual_cost_usd": null,
+  "quality_scope": "8 corrected development cases; full corpus processing is not full corpus accuracy",
+  "promotion": "not promoted",
+  "source_path": "outputs/batch-catalog-full/1790978065968604000",
+  "mlflow_export": "in progress"
+}

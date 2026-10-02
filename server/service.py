@@ -9,11 +9,12 @@ from telemetry import Outbox
 from drills import eligible,render_selection,VERSION
 import round_harness
 ROOT=Path(__file__).resolve().parent
-DATA=ROOT/'state';DATA.mkdir(exist_ok=True)
+DATA=Path(os.environ.get('COIN_STATE_DIR',str(ROOT/'state')));DATA.mkdir(parents=True,exist_ok=True)
 TOKEN=Path(os.environ.get('COIN_TOKEN_FILE',str(ROOT/'service-token'))).read_text().strip()
 if len(TOKEN)<32:raise RuntimeError('Strong service token required')
 OUTBOX=Outbox(DATA/'events.sqlite3')
 LAYA_LOCK=threading.Lock();REVIEW_LOCK=threading.Lock();ROUND_LOCK=threading.Lock()
+ROUND_BATCH_WAKE=threading.Event()
 agent=None
 
 def authorize(authorization:str=Header(default='')):
@@ -72,12 +73,71 @@ class RoundSummary(BaseModel):
     round:int=Field(ge=0,le=100)
     duration_s:int=Field(ge=0,le=3600)
     exchanges:list[Exchange]=Field(min_length=1,max_length=200)
+    session_id:uuid.UUID|None=None
+    workout_mode:Literal['program','freestyle','drill']|None=None
+    origin:Literal['live','replay','synthetic']='live'
+    source_title:str|None=Field(default=None,max_length=500)
+    source_instructions:str|None=Field(default=None,max_length=6000)
+    source_id:str|None=Field(default=None,max_length=200)
 
 
 def db():
     c=sqlite3.connect(DATA/'requests.sqlite3',timeout=2)
     c.execute('CREATE TABLE IF NOT EXISTS requests (id TEXT PRIMARY KEY, payload TEXT, state TEXT, result TEXT)')
+    c.execute('CREATE TABLE IF NOT EXISTS batch_enqueues (request_id TEXT PRIMARY KEY, job_id TEXT NOT NULL, payload TEXT NOT NULL, state TEXT NOT NULL, attempts INTEGER NOT NULL DEFAULT 0, last_error TEXT, updated_at REAL NOT NULL)')
     return c
+
+def schedule_round_batch(body):
+    """Persist intent beside the already durable input; never call a model here."""
+    key=str(body.request_id);job_id='live-round:'+key
+    try:
+        with db() as c:
+            c.execute('INSERT OR IGNORE INTO batch_enqueues(request_id,job_id,payload,state,updated_at) VALUES (?,?,?,?,?)',
+                      (key,job_id,body.model_dump_json(),'pending',time.time()))
+            saved=c.execute('SELECT payload FROM batch_enqueues WHERE request_id=?',(key,)).fetchone()
+            if saved[0]!=body.model_dump_json():
+                return {'accepted':False,'state':'conflict','processing':'offline_only'}
+            row=c.execute('SELECT state FROM batch_enqueues WHERE request_id=?',(key,)).fetchone()
+        ROUND_BATCH_WAKE.set()
+        return {'accepted':True,'job_id':job_id,'state':row[0],
+                'processing':'offline_only'}
+    except Exception as exc:
+        # Reporting still works when the offline queue is unavailable. A retry
+        # of this request attempts the durable enqueue again.
+        return {'accepted':False,'state':'unavailable','error_type':type(exc).__name__,
+                'processing':'offline_only'}
+
+def enqueue_pending_rounds(limit=16):
+    """Enqueue saved inputs only. The separate batch CLI owns all inference."""
+    from batch_jobs import Store
+    with db() as c:
+        rows=c.execute('SELECT request_id,job_id,payload FROM batch_enqueues WHERE state!=? ORDER BY updated_at LIMIT ?',
+                       ('enqueued',limit)).fetchall()
+    if not rows:return 0
+    store=Store(DATA/'batch-jobs.sqlite3')
+    for key,job_id,payload in rows:
+        try:
+            record=json.loads(payload)
+            provenance={'origin':record.get('origin','live'),'source_id':record.get('source_id') or key,
+                        'request_id':key,'session_id':record.get('session_id'),
+                        'workout_mode':record.get('workout_mode'),
+                        'source_title':record.get('source_title'),
+                        'drill_id':record.get('drill_id')}
+            store.submit(record,provenance,job_id=job_id)
+            state,error='enqueued',None
+        except Exception as exc:
+            state,error='pending',type(exc).__name__
+        with db() as c:
+            c.execute('UPDATE batch_enqueues SET state=?,attempts=attempts+1,last_error=?,updated_at=? WHERE request_id=?',
+                      (state,error,time.time(),key))
+    return len(rows)
+
+def batch_enqueue_loop(stop):
+    while not stop.is_set():
+        try:enqueue_pending_rounds()
+        except Exception:pass  # Durable pending rows survive storage failures.
+        ROUND_BATCH_WAKE.wait(5)
+        ROUND_BATCH_WAKE.clear()
 
 def begin_request(body):
     key=str(body.request_id);payload=body.model_dump_json()
@@ -121,15 +181,30 @@ async def lifespan(app):
     path=snapshot_download(manifest['repo'],revision=manifest['revision'],local_files_only=True,allow_patterns=['*.json','*.safetensors','*.txt','*.model'])
     agent=laya.load(path,device='cpu')
     stop=threading.Event();worker=None
+    batch_worker=threading.Thread(target=batch_enqueue_loop,args=(stop,),daemon=True)
+    batch_worker.start()
     if os.environ.get('COIN_EXPORT_MODE')=='push':
         worker=threading.Thread(target=deliver_loop,args=(stop,),daemon=True);worker.start()
     yield
     stop.set()
+    ROUND_BATCH_WAKE.set()
+    batch_worker.join(timeout=2)
     if worker:worker.join(timeout=2)
 
 app=FastAPI(title='Coin private development service',lifespan=lifespan,dependencies=[Depends(authorize)])
 @app.get('/health')
 def health():return {'ready':agent is not None,'visual_perception':False,'live_policy_promoted':False,'outbox':OUTBOX.counts()}
+
+@app.get('/v1/batch/status')
+def batch_status(request_id:uuid.UUID|None=None):
+    with db() as c:
+        if request_id is None:
+            counts=dict(c.execute('SELECT state,count(*) FROM batch_enqueues GROUP BY state').fetchall())
+            return {'processing':'offline_only','enqueue_counts':counts}
+        row=c.execute('SELECT job_id,state,attempts,last_error,updated_at FROM batch_enqueues WHERE request_id=?',
+                      (str(request_id),)).fetchone()
+    if row is None:raise HTTPException(404,'No offline analysis receipt for request')
+    return dict(zip(('job_id','state','attempts','last_error','updated_at'),row),processing='offline_only')
 
 @app.post('/v1/live/pose-window')
 def pose_window(body:PoseWindow):
@@ -186,19 +261,24 @@ def decide(body:Decision):
 
 @app.post('/v1/round')
 def round_report(body:RoundSummary):
-    """Phone rules -> small-model labels per exchange -> 27B round report. Traced through the outbox."""
+    """Phone rules -> current model harness, plus durable offline analysis input."""
     prior=begin_request(body)
-    if prior:return prior
+    offline=schedule_round_batch(body)
+    if prior:
+        prior['offline_analysis']=offline
+        return prior
     if not ROUND_LOCK.acquire(timeout=60):
         with db() as c:c.execute('DELETE FROM requests WHERE id=?',(str(body.request_id),))
         raise HTTPException(429,'Another round report is running')
     start=time.perf_counter()
     try:
         response,stages,facts=round_harness.run(body.model_dump(mode='json'))
-        payload={'session_id':str(body.request_id),'window_id':str(body.request_id),'received_at':time.time(),
-                 'model_versions':{'small':'bonsai-2-4b','large':'bonsai-2-27b','rules':'exchange-tracker-v1'},
+        payload={'session_id':str(body.session_id or body.request_id),'window_id':str(body.request_id),'received_at':time.time(),
+                 'model_versions':{'served':response.get('models',[]),'rules':'exchange-tracker-v1'},
+                 'workout_mode':body.workout_mode,'source_title':body.source_title,'origin':body.origin,
                  'decision':{'status':'complete','constraint':response['constraint'],'facts':facts},'stages':stages}
         response['event_id']=OUTBOX.enqueue(payload,event_id=str(body.request_id))
+        response['offline_analysis']=offline
         finish_request(body,response);return response
     except Exception as e:
         with db() as c:c.execute('DELETE FROM requests WHERE id=?',(str(body.request_id),))
