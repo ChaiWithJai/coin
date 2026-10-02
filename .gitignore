@@ -19,3 +19,4 @@ server/service-token
 *.MOV
 ios/.derivedData/
 ios/LocalConfig.json
+ios/.derivedData-device/

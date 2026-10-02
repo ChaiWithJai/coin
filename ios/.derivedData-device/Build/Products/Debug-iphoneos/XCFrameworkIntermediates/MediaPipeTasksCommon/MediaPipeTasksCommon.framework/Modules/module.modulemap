@@ -1,6 +1,0 @@
-framework module MediaPipeTasksCommon {
-  umbrella header "MediaPipeTasksCommon.h"
-
-  export *
-  module * { export * }
-}
