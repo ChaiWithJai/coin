@@ -1,0 +1,23 @@
+{
+  "checked_at": "2026-10-02T22:26:29.451887+00:00",
+  "scope": "read-only local identity audit after user correction",
+  "coin": {
+    "repository": "https://github.com/ChaiWithJai/coin.git",
+    "scheme": "Coin",
+    "bundle_identifier": "com.coinboxing.prototype",
+    "workout_source": "https://boxing.dharmicdata.org",
+    "catalog_workouts": 70,
+    "device_app_installed": true,
+    "observed_process_executable": "Coin.app/Coin",
+    "observed_process_pid": 33453
+  },
+  "separate_app": {
+    "name": "Free Alpha",
+    "purpose": "AI Engineer conference app",
+    "path": "/Users/jaibhagat/code/free-alpha",
+    "bundle_identifier": "com.prismml.freealpha",
+    "device_app_installed": true
+  },
+  "mixup_cause": "not established; user asked which surface displayed AI Engineer app",
+  "code_or_service_deployments": false
+}

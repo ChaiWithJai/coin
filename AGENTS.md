@@ -11,3 +11,9 @@ Trace the separate processing stages in MLflow. Distinguish actual charges, esti
 Coordinate shared files before parallel edits. Preserve unrelated GB10 processes and the existing model and LAN/tailnet forwarders. Use narrowly scoped deployment with backups and verify the actual phone build, server response, and source provenance. A simulator test does not establish physical-camera recognition quality.
 
 Commit implementation and evidence at major checkpoints. Verify repository visibility before pushing: it was public on October 2, and public publication remains unauthorized pending the user’s explicit visibility decision.
+
+## App identity in this shared workspace
+
+Coin is the boxing app. Its repository is `ChaiWithJai/coin`, its iOS target and scheme are `Coin`, and its installed bundle identifier is `com.coinboxing.prototype`. Its workout source is `https://boxing.dharmicdata.org`.
+
+Free Alpha is a separate AI Engineer conference app at `/Users/jaibhagat/code/free-alpha`, with bundle identifier `com.prismml.freealpha`. Shared local files, models, telemetry, browser tabs, or connected devices do not make that app part of Coin. Before building, installing, launching, or reviewing a UI, verify the repository, target, bundle identifier, and service identity explicitly. Do not select an app from recency or a shared port alone.
