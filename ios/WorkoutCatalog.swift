@@ -69,6 +69,7 @@ struct WorkoutLesson: Decodable, Identifiable {
                                  durationSeconds: 0, restAfterSeconds: 0,
                                  sourceTitle: step.item.text, sourceInstructions: step.instructions,
                                  sourceURL: source.sourceURL ?? sourceURL, sourceDemoURLs: step.item.demoURLs,
+                                 sourceActivityKey: source.reviewedActivityKey(for: step.item),
                                  sourceBlockID: source.id, sourceItemID: step.item.id,
                                  repetitionText: step.prescription, completionMode: .manual)
                 }
@@ -95,7 +96,8 @@ struct WorkoutLesson: Decodable, Identifiable {
                                     sourceActivityKey: source.activityKey,
                                     sourceBlockID: source.id, sourceItemID: roundItem?.id,
                                     repetitionText: prescription.isEmpty ? nil : prescription,
-                                    completionMode: source.completion)
+                                    completionMode: source.completion,
+                                    activityChoiceFamily: source.reviewedChoiceFamily)
             }
         }
         let seconds = sessionBlocks.reduce(0) { $0 + $1.effectiveSeconds + $1.effectiveRestSeconds }
@@ -132,6 +134,32 @@ struct WorkoutSourceItem: Decodable {
 }
 
 private extension WorkoutSourceBlock {
+    /// These source sections name a conditioning slot but no movement. Runtime
+    /// choice is product metadata, not an edit to the source prescription.
+    var reviewedChoiceFamily: String? {
+        let genericConditioning: Set<String> = [
+            "basic-w2-d1-p10-s7-2", "basic-w2-d5-p14-s6-2",
+            "basic-w3-d1-p17-s7-2", "basic-w3-d5-p21-s6-2",
+            "basic-w4-d1-p24-s7-2",
+        ]
+        guard genericConditioning.contains(id), title.hasPrefix("CONDITIONING DRILL"),
+              instructions == title else { return nil }
+        return "conditioning"
+    }
+
+    /// An exact item can select a candidate counter; a word inside a mixed
+    /// section cannot. These four IDs were reviewed against the source snapshot.
+    func reviewedActivityKey(for item: WorkoutSourceItem) -> String? {
+        let exact: [String: (itemID: String, text: String, key: String)] = [
+            "basic-w1-d6-p8-s1-1": ("p8-b6", "Squat", "squats"),
+            "competitive-w1-d2-p6-s8-1": ("p6-b50", "Long Step Lunge", "lunges"),
+            "competitive-w3-d2-p22-s8-1": ("p22-b38", "Reverse Lunges", "lunges"),
+            "competitive-w4-d2-p30-s9-1": ("p30-b53", "Long Step Lunge", "lunges"),
+        ]
+        guard let match = exact[id], match.itemID == item.id, match.text == item.text else { return nil }
+        return match.key
+    }
+
     /// These five source lists were checked for one complete instruction per
     /// round. Cardinality alone is unsafe: other lists contain wrapped sentences.
     /// A changed snapshot must be reviewed again before receiving this mapping.

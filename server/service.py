@@ -77,6 +77,23 @@ class CompletionBlock(BaseModel):
     observed_visible_pose_samples:int|None=Field(default=None,ge=0)
     observed_rep_candidates:int|None=Field(default=None,ge=0)
 
+class CompletionMeasurement(BaseModel):
+    id:str=Field(max_length=80)
+    version:str=Field(max_length=40)
+    capability:Literal['rep_candidate','exchange_candidate','elapsed_only','unsupported']
+    validation_status:Literal['unvalidated','not_applicable']
+
+class CompletionActivityInstance(BaseModel):
+    instance_id:uuid.UUID
+    block_id:uuid.UUID
+    preparation_index:int|None=Field(default=None,ge=0)
+    source_block_id:str|None=Field(default=None,max_length=200)
+    source_item_id:str|None=Field(default=None,max_length=100)
+    exercise_key:str|None=Field(default=None,max_length=100)
+    selection_provenance:Literal['source_specified','user_selected','unchosen']
+    measurement:CompletionMeasurement
+    selected_at_ms:int|None=Field(default=None,ge=0)
+
 class WorkoutCompletion(BaseModel):
     schema_version:Literal['workout-completion-v1']
     request_id:uuid.UUID
@@ -88,6 +105,7 @@ class WorkoutCompletion(BaseModel):
     completion_evidence:Literal['session_ended_not_verified_adherence']
     pose_sharing_enabled:bool
     blocks:list[CompletionBlock]=Field(max_length=500)
+    activity_instances:list[CompletionActivityInstance]|None=Field(default=None,max_length=1000)
 
 class Punch(BaseModel):
     hand:Literal['lead','rear']
@@ -322,6 +340,12 @@ def workout_completion(body:WorkoutCompletion):
         raise HTTPException(422,'Invalid completion source')
     if len({block.block_id for block in body.blocks})!=len(body.blocks):
         raise HTTPException(422,'Duplicate block identifier')
+    if body.activity_instances is not None:
+        block_ids={block.block_id for block in body.blocks}
+        if any(item.block_id not in block_ids for item in body.activity_instances):
+            raise HTTPException(422,'Activity instance references unknown block')
+        if len({item.instance_id for item in body.activity_instances})!=len(body.activity_instances):
+            raise HTTPException(422,'Duplicate activity instance')
     record=body.model_dump(mode='json')
     payload={'session_id':str(body.session_id),'window_id':str(body.request_id),
              'captured_at':body.ended_at_ms/1000,'origin':body.runtime_origin,
@@ -332,7 +356,8 @@ def workout_completion(body:WorkoutCompletion):
                         'inputs':{'schema_version':body.schema_version,'runtime_origin':body.runtime_origin,
                                   'source_version':body.source_version,
                                   'started_at_ms':body.started_at_ms,'ended_at_ms':body.ended_at_ms},
-                        'outputs':{'blocks':record['blocks'],'completion_evidence':body.completion_evidence},
+                        'outputs':{'blocks':record['blocks'],'activity_instances':record.get('activity_instances'),
+                                   'completion_evidence':body.completion_evidence},
                         'duration_ms':0}]}
     try:
         event_id=OUTBOX.enqueue(payload,event_id=str(body.request_id))

@@ -94,6 +94,22 @@ private final class PoseWindowURLProtocol: URLProtocol {
         XCTAssertFalse(PoseFraming.fullBodyInFrame(joints))
         XCTAssertEqual(PoseMotion.squatKneeAngle(joints) ?? -1, 180, accuracy: 0.001)
     }
+
+    func testKneeAnglesUsePixelAspectAndAbstainOnInvalidGeometry() {
+        var joints = Array(repeating: PoseJoint(x: 0.5, y: 0.5, visibility: 0), count: 33)
+        joints[23] = PoseJoint(x: 0.3, y: 0.3, visibility: 0.9)
+        joints[25] = PoseJoint(x: 0.5, y: 0.5, visibility: 0.9)
+        joints[27] = PoseJoint(x: 0.5, y: 0.8, visibility: 0.9)
+        XCTAssertEqual(PoseMotion.squatKneeAngle(joints) ?? -1, 135, accuracy: 0.001)
+        XCTAssertEqual(PoseMotion.squatKneeAngle(joints, aspect: 0.5) ?? -1, 153.434949, accuracy: 0.001)
+        XCTAssertEqual(PoseMotion.lungeKneeAngle(joints, aspect: 2) ?? -1, 116.565051, accuracy: 0.001)
+        for aspect in [0, -1, Double.nan, Double.infinity] {
+            XCTAssertNil(PoseMotion.squatKneeAngle(joints, aspect: aspect))
+            XCTAssertNil(PoseMotion.lungeKneeAngle(joints, aspect: aspect))
+        }
+        joints[27] = PoseJoint(x: 0.5, y: 0.8, visibility: 0.1)
+        XCTAssertNil(PoseMotion.squatKneeAngle(joints, aspect: 0.5))
+    }
     func testTrainingCopyHasFrenchEnglishParityAndMatchingFormatArguments() {
         XCTAssertTrue(Set(TrainingCopy.table.keys).isDisjoint(with: Set(TrainingCopy.base.keys)))
         for (key, variants) in TrainingCopy.table.merging(TrainingCopy.base, uniquingKeysWith: { first, _ in first }) {
@@ -168,6 +184,26 @@ private final class PoseWindowURLProtocol: URLProtocol {
         XCTAssertGreaterThan(PoseMotion.wristTravelBodyWidths(previous: first, current: moving) ?? 0, 0.4)
         moving[15] = PoseJoint(x: 0.49, y: 0.48, visibility: 0.1)
         XCTAssertNil(PoseMotion.wristTravelBodyWidths(previous: first, current: moving))
+    }
+
+    func testWristMotionUsesOnePixelMetricForTravelAndShoulderScale() {
+        var first = Array(repeating: PoseJoint(x: 0.5, y: 0.5, visibility: 1), count: 33)
+        first[11] = PoseJoint(x: 0.35, y: 0.35, visibility: 1)
+        first[12] = PoseJoint(x: 0.65, y: 0.35, visibility: 1)
+        first[15] = PoseJoint(x: 0.35, y: 0.45, visibility: 1)
+        var current = first
+        current[15] = PoseJoint(x: 0.35, y: 0.6, visibility: 1)
+        XCTAssertEqual(PoseMotion.wristTravelBodyWidths(previous: first, current: current) ?? -1, 0.5, accuracy: 0.001)
+        XCTAssertEqual(PoseMotion.wristTravelBodyWidths(previous: first, current: current, aspect: 0.5) ?? -1, 1, accuracy: 0.001)
+        // Represent the same pixels on a square canvas: corrected travel must agree.
+        let squareFirst = first.map { PoseJoint(x: $0.x * 0.5, y: $0.y, visibility: $0.visibility) }
+        let squareCurrent = current.map { PoseJoint(x: $0.x * 0.5, y: $0.y, visibility: $0.visibility) }
+        XCTAssertEqual(PoseMotion.wristTravelBodyWidths(previous: squareFirst, current: squareCurrent),
+                       PoseMotion.wristTravelBodyWidths(previous: first, current: current, aspect: 0.5))
+        let translated = first.map { PoseJoint(x: $0.x + 0.05, y: $0.y + 0.02, visibility: $0.visibility) }
+        XCTAssertEqual(PoseMotion.wristTravelBodyWidths(previous: first, current: translated, aspect: 0.5) ?? -1, 0, accuracy: 0.001)
+        XCTAssertNil(PoseMotion.wristTravelBodyWidths(previous: first, current: current, aspect: .nan))
+        XCTAssertNil(PoseMotion.wristTravelBodyWidths(previous: first, current: current, aspect: 0))
     }
 
     func testRoundPromptsMatchAssignedDrillInBothLanguages() {

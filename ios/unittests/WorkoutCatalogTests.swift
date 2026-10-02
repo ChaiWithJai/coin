@@ -117,7 +117,7 @@ import XCTest
             XCTAssertEqual(block.effectiveSeconds, 0)
             XCTAssertEqual(block.effectiveRestSeconds, 0)
             XCTAssertNil(block.roundNumber)
-            XCTAssertNil(block.sourceActivityKey)
+            XCTAssertEqual(block.sourceActivityKey, index == 0 ? "squats" : nil)
         }
     }
 
@@ -198,6 +198,40 @@ import XCTest
         XCTAssertEqual(expandedItems, 218)
         XCTAssertEqual(roundSections, 5)
         XCTAssertEqual(roundItems, 25)
+    }
+
+    func testOnlyFourReviewedSourceItemsEnableExistingRepCandidates() throws {
+        let expected: [String: String] = [
+            "basic-w1-d6-p8-s1-1:p8-b6": "squats",
+            "competitive-w1-d2-p6-s8-1:p6-b50": "lunges",
+            "competitive-w3-d2-p22-s8-1:p22-b38": "lunges",
+            "competitive-w4-d2-p30-s9-1:p30-b53": "lunges",
+        ]
+        let active = WorkoutCatalog.shared.lessons.flatMap { $0.template().blocks }
+            .compactMap { block -> (String, String)? in
+                guard let section = block.sourceBlockID, let item = block.sourceItemID,
+                      let key = block.sourceActivityKey else { return nil }
+                return (section + ":" + item, key)
+            }
+        XCTAssertEqual(Dictionary(uniqueKeysWithValues: active), expected)
+        XCTAssertEqual(active.count, expected.count)
+        let excluded = try XCTUnwrap(WorkoutCatalog.shared.lessons.first { $0.id == "basic-w1-d1" })
+        let jump = try XCTUnwrap(excluded.blocks.first { $0.id == "basic-w1-d1-p3-s6-2" })
+        XCTAssertTrue(try XCTUnwrap(jump.sourceItems).contains { $0.text == "12 JUMP SQUATS" })
+        XCTAssertTrue(excluded.template().blocks.filter { $0.sourceBlockID == jump.id }
+            .allSatisfy { $0.sourceActivityKey == nil })
+    }
+
+    func testOnlyGenericConditioningSectionsOfferRuntimeMovementChoice() throws {
+        let expected: Set<String> = ["basic-w2-d1-p10-s7-2", "basic-w2-d5-p14-s6-2",
+            "basic-w3-d1-p17-s7-2", "basic-w3-d5-p21-s6-2", "basic-w4-d1-p24-s7-2"]
+        let offered = WorkoutCatalog.shared.lessons.flatMap { $0.template().blocks }
+            .filter { $0.activityChoiceFamily == "conditioning" }
+        XCTAssertEqual(Set(offered.compactMap(\.sourceBlockID)), expected)
+        XCTAssertTrue(offered.allSatisfy { $0.sourceActivityKey == nil })
+        let mixed = try XCTUnwrap(WorkoutCatalog.shared.lessons.first { $0.id == "basic-w1-d1" })
+        XCTAssertTrue(mixed.template().blocks.filter { $0.sourceBlockID == "basic-w1-d1-p3-s9-2" }
+            .allSatisfy { $0.activityChoiceFamily == nil })
     }
 
     func testReviewedPadRoundsUseExactOrderedFocusAndKeepPrescription() throws {

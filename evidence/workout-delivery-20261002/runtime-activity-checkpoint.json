@@ -1,0 +1,24 @@
+{
+  "checkpoint": "runtime-activity-instances",
+  "date_local": "2026-10-02 19:45 America/New_York",
+  "coin_bundle_id": "com.coinboxing.prototype",
+  "simulator_test_result": "/tmp/coin-workout-derived/Logs/Test/Test-Coin-2026.10.02_19-39-21--0400.xcresult",
+  "simulator_tests_passed": 72,
+  "server_tests_passed": 45,
+  "phone_install_url": "/private/var/containers/Bundle/Application/64199234-9F88-49EC-9F05-A82B4E5F4A33/Coin.app/",
+  "phone_binary_sha256": "a140330f4c689d05fecfaf6895068601545443df3dea21d43973cd2210b71760",
+  "phone_launch": "denied_locked",
+  "gb10_service_sha256": "5260a3c55f774840b28e6da909173c9e1f9ab80d2031b628b463b3a438bfe700",
+  "gb10_forwarder_pid": 2526383,
+  "synthetic_request_id": "cc27339b-def0-40cd-870b-3fc5536b2cd4",
+  "mlflow_run_id": "02f7b621a61e482ba75b3638649a6b27",
+  "mlflow_trace_id": "tr-32389f81969fffdbc89f9c7920fb7785",
+  "codex_usage_run_id": "3ebc310f6f4649fdaa564b5ad9f3e4db",
+  "limitations": [
+    "No actual movement-recognition validation",
+    "No physical workout completion in this checkpoint",
+    "Phone install verified but launch denied while locked",
+    "Actual billed cost unknown"
+  ],
+  "phone_install_time_local": "2026-10-02 19:49 America/New_York"
+}

@@ -31,12 +31,12 @@ enum PoseFraming {
 }
 
 enum PoseMotion {
-    static func squatKneeAngle(_ joints: [PoseJoint]) -> Double? {
-        guard joints.count > 28 else { return nil }
+    static func squatKneeAngle(_ joints: [PoseJoint], aspect: Double = 1) -> Double? {
+        guard joints.count > 28, aspect.isFinite, aspect > 0 else { return nil }
         func angle(_ hip: Int, _ knee: Int, _ ankle: Int) -> Double? {
             guard [hip, knee, ankle].allSatisfy({ joints[$0].inFrame }) else { return nil }
-            let a = (joints[hip].x - joints[knee].x, joints[hip].y - joints[knee].y)
-            let b = (joints[ankle].x - joints[knee].x, joints[ankle].y - joints[knee].y)
+            let a = ((joints[hip].x - joints[knee].x) * aspect, joints[hip].y - joints[knee].y)
+            let b = ((joints[ankle].x - joints[knee].x) * aspect, joints[ankle].y - joints[knee].y)
             let lengths = hypot(a.0, a.1) * hypot(b.0, b.1)
             guard lengths > 0.002 else { return nil }
             return acos(max(-1, min(1, (a.0 * b.0 + a.1 * b.1) / lengths))) * 180 / .pi
@@ -50,24 +50,24 @@ enum PoseMotion {
         }
     }
     /// Lunge depth: the most bent visible knee (the front leg), so one leg in view is enough.
-    static func lungeKneeAngle(_ joints: [PoseJoint]) -> Double? {
-        guard joints.count > 28 else { return nil }
+    static func lungeKneeAngle(_ joints: [PoseJoint], aspect: Double = 1) -> Double? {
+        guard joints.count > 28, aspect.isFinite, aspect > 0 else { return nil }
         func angle(_ hip: Int, _ knee: Int, _ ankle: Int) -> Double? {
             guard [hip, knee, ankle].allSatisfy({ joints[$0].inFrame }) else { return nil }
-            let a = (joints[hip].x - joints[knee].x, joints[hip].y - joints[knee].y)
-            let b = (joints[ankle].x - joints[knee].x, joints[ankle].y - joints[knee].y)
+            let a = ((joints[hip].x - joints[knee].x) * aspect, joints[hip].y - joints[knee].y)
+            let b = ((joints[ankle].x - joints[knee].x) * aspect, joints[ankle].y - joints[knee].y)
             let lengths = hypot(a.0, a.1) * hypot(b.0, b.1)
             guard lengths > 0.002 else { return nil }
             return acos(max(-1, min(1, (a.0 * b.0 + a.1 * b.1) / lengths))) * 180 / .pi
         }
         return [angle(23, 25, 27), angle(24, 26, 28)].compactMap { $0 }.min()
     }
-    static func wristTravelBodyWidths(previous: [PoseJoint], current: [PoseJoint]) -> Double? {
+    static func wristTravelBodyWidths(previous: [PoseJoint], current: [PoseJoint], aspect: Double = 1) -> Double? {
         let required = [11, 12, 15, 16, 23, 24]
-        guard previous.count > 24, current.count > 24,
+        guard previous.count > 24, current.count > 24, aspect.isFinite, aspect > 0,
               required.allSatisfy({ previous[$0].inFrame && current[$0].inFrame }) else { return nil }
         let widths = [previous, current].map { frame in
-            hypot(frame[11].x - frame[12].x, frame[11].y - frame[12].y)
+            hypot((frame[11].x - frame[12].x) * aspect, frame[11].y - frame[12].y)
         }
         let scale = (widths[0] + widths[1]) / 2
         guard scale >= 0.08 else { return nil }
@@ -81,7 +81,7 @@ enum PoseMotion {
             let oldY = previous[index].y - oldTorso.1
             let newX = current[index].x - newTorso.0
             let newY = current[index].y - newTorso.1
-            return hypot(newX - oldX, newY - oldY) / scale
+            return hypot((newX - oldX) * aspect, newY - oldY) / scale
         }
         let travel = max(wristTravel(15), wristTravel(16))
         return travel.isFinite ? min(10, max(0, travel)) : nil
@@ -161,10 +161,10 @@ final class WorkoutCamera: NSObject, ObservableObject, AVCaptureVideoDataOutputS
     private var lastSubmitted = 0
     private var lastVideoSize: CGSize = .zero
     private var framingBeganAtMs: Int?
-    private var lastMotionFrame: (timestamp: Int, joints: [PoseJoint])?
+    private var lastMotionFrame: (timestamp: Int, joints: [PoseJoint], pixelSize: CGSize)?
     private let motionLock = NSLock()
     private let timingLock = NSLock()
-    private var submittedAt: [Int: (uptime: TimeInterval, epoch: Int)] = [:]
+    private var submittedAt: [Int: (uptime: TimeInterval, epoch: Int, pixelSize: CGSize)] = [:]
     private var epoch = 0
 
     func start() {
@@ -279,14 +279,14 @@ final class WorkoutCamera: NSObject, ObservableObject, AVCaptureVideoDataOutputS
         if shouldSubmit { lastSubmitted = timestamp }
         timingLock.unlock()
         guard shouldSubmit else { return }
-        if let buffer = CMSampleBufferGetImageBuffer(sampleBuffer) {
-            let size = CGSize(width: CVPixelBufferGetWidth(buffer), height: CVPixelBufferGetHeight(buffer))
-            if size != lastVideoSize {
-                lastVideoSize = size
-                DispatchQueue.main.async { self.videoSize = size }
-            }
+        guard let buffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
+        let size = CGSize(width: CVPixelBufferGetWidth(buffer), height: CVPixelBufferGetHeight(buffer))
+        guard size.width > 0, size.height > 0 else { return }
+        if size != lastVideoSize {
+            lastVideoSize = size
+            DispatchQueue.main.async { self.videoSize = size }
         }
-        if timestamp - lastSnapshot >= 250, let buffer = CMSampleBufferGetImageBuffer(sampleBuffer) {
+        if timestamp - lastSnapshot >= 250 {
             // Low-resolution evidence frames (about 4 per second, last 5 s) so a fault can be shown after the round.
             lastSnapshot = timestamp
             let frame = CIImage(cvPixelBuffer: buffer)
@@ -296,7 +296,7 @@ final class WorkoutCamera: NSObject, ObservableObject, AVCaptureVideoDataOutputS
         }
         guard let image = try? MPImage(sampleBuffer: sampleBuffer, orientation: .up) else { return }
         timingLock.lock()
-        submittedAt[timestamp] = (receivedAt, epoch)
+        submittedAt[timestamp] = (receivedAt, epoch, size)
         if submittedAt.count > 32 {
             for old in submittedAt.keys.sorted().prefix(submittedAt.count - 32) { submittedAt.removeValue(forKey: old) }
         }
@@ -314,10 +314,13 @@ final class WorkoutCamera: NSObject, ObservableObject, AVCaptureVideoDataOutputS
         timingLock.unlock()
         guard let submitted, submitted.epoch == currentEpoch else { return }
         let latencyMs = max(0, (ProcessInfo.processInfo.systemUptime - submitted.uptime) * 1000)
+        // MPImage uses the portrait-oriented buffer with .up. Keep image-normalized
+        // joints for the overlay; metric calculations use this exact frame's aspect.
+        let aspect = Double(submitted.pixelSize.width / submitted.pixelSize.height)
         let joints = result?.landmarks.first?.map { PoseJoint(x: Double($0.x), y: Double($0.y), visibility: $0.visibility?.doubleValue ?? 0) } ?? []
         motionLock.lock()
         let previousFrame = lastMotionFrame
-        lastMotionFrame = (timestampInMilliseconds, joints)
+        lastMotionFrame = (timestampInMilliseconds, joints, submitted.pixelSize)
         let exchangeEvents = error == nil ? tracker.feed(timeMs: timestampInMilliseconds, joints: joints) : []
         motionLock.unlock()
         if !joints.isEmpty { evidence.setJoints(t: timestampInMilliseconds, joints: joints) }
@@ -331,8 +334,9 @@ final class WorkoutCamera: NSObject, ObservableObject, AVCaptureVideoDataOutputS
         }
         let gap = timestampInMilliseconds - (previousFrame?.timestamp ?? timestampInMilliseconds)
         let wristTravel: Double?
-        if let previousFrame, (80...400).contains(gap) {
-            wristTravel = PoseMotion.wristTravelBodyWidths(previous: previousFrame.joints, current: joints)
+        if let previousFrame, (80...400).contains(gap),
+           abs(Double(previousFrame.pixelSize.width / previousFrame.pixelSize.height) - aspect) < 0.000001 {
+            wristTravel = PoseMotion.wristTravelBodyWidths(previous: previousFrame.joints, current: joints, aspect: aspect)
         } else {
             wristTravel = nil
         }
@@ -346,14 +350,15 @@ final class WorkoutCamera: NSObject, ObservableObject, AVCaptureVideoDataOutputS
             self.landmarks = points
             self.poseStatusKey = error != nil ? "pose_error" : (joints.isEmpty ? "pose_absent" : (sustainedReady ? "pose_visible" : "pose_partial"))
             if error == nil {
-                let squatAngle = PoseMotion.squatKneeAngle(joints)
+                let squatAngle = PoseMotion.squatKneeAngle(joints, aspect: aspect)
+                let lungeAngle = PoseMotion.lungeKneeAngle(joints, aspect: aspect)
                 self.poseSample = LivePoseSample(sampledAt: Date(), landmarkCount: joints.count,
                                                  visibleLandmarkCount: points.count, framingReady: sustainedReady,
                                                  captureToPoseMs: latencyMs,
                                                  wristTravelBodyWidths: wristTravel,
                                                  squatKneeAngle: squatAngle,
-                                                 lungeKneeAngle: PoseMotion.lungeKneeAngle(joints),
-                                                 lowerBodyVisible: squatAngle != nil || PoseMotion.lungeKneeAngle(joints) != nil)
+                                                 lungeKneeAngle: lungeAngle,
+                                                 lowerBodyVisible: squatAngle != nil || lungeAngle != nil)
             }
         }
     }
@@ -631,6 +636,8 @@ struct LiveWorkoutView: View {
     @State private var manualElapsed = 0
     @State private var manualAnchor: Date?
     @State private var showSource = false
+    @State private var showActivityChoice = false
+    @State private var customActivityName = ""
     @State private var running = false
     @State private var muted = false
     @State private var deadline: Date?
@@ -649,6 +656,7 @@ struct LiveWorkoutView: View {
         let block: SessionBlock
         let isRest: Bool
         let activity: PreparationActivity?
+        let preparationIndex: Int?
         var seconds: Int { activity.map { $0.minutes * 60 } ?? (isRest ? block.effectiveRestSeconds : block.effectiveSeconds) }
         var isManual: Bool { !isRest && activity == nil && block.isManual }
         var activityKey: String? { activity?.key ?? block.sourceActivityKey }
@@ -657,12 +665,31 @@ struct LiveWorkoutView: View {
     private var segments: [Segment] {
         workout?.blocks.flatMap { block in
             let work: [Segment] = (block.activities?.isEmpty == false)
-                ? (block.activities ?? []).map { Segment(block: block, isRest: false, activity: $0) }
-                : [Segment(block: block, isRest: false, activity: nil)]
-            return work + (block.effectiveRestSeconds > 0 ? [Segment(block: block, isRest: true, activity: nil)] : [])
+                ? (block.activities ?? []).enumerated().map { Segment(block: block, isRest: false, activity: $0.element, preparationIndex: $0.offset) }
+                : [Segment(block: block, isRest: false, activity: nil, preparationIndex: nil)]
+            return work + (block.effectiveRestSeconds > 0 ? [Segment(block: block, isRest: true, activity: nil, preparationIndex: nil)] : [])
         } ?? []
     }
     private var current: Segment? { segments.indices.contains(segmentIndex) ? segments[segmentIndex] : nil }
+    private func activityInstance(for segment: Segment) -> WorkoutActivityInstance? {
+        workout?.activityInstance(blockID: segment.block.id, preparationIndex: segment.preparationIndex)
+    }
+    private func activityKey(for segment: Segment) -> String? {
+        if let instance = activityInstance(for: segment) { return instance.exerciseKey }
+        return segment.activityKey
+    }
+    private var canChooseActivity: Bool {
+        guard let current, !current.isRest else { return false }
+        return current.block.activityChoiceFamily == "conditioning" || current.activityKey == "mobility"
+    }
+    private func chooseActivity(_ key: String?) {
+        guard let current, training.selectActivity(sessionID: sessionID, blockID: current.block.id,
+            preparationIndex: current.preparationIndex, exerciseKey: key,
+            customName: key == "custom" ? customActivityName : nil) else { return }
+        squatTracker = SquatTracker()
+        camera.resetExchanges()
+        showActivityChoice = false
+    }
     private var boxingFocus: String? {
         guard let current, current.block.kind == .boxing, !current.isRest, current.block.sourceTitle == nil else { return nil }
         let key = DrillLibrary.focusCueKey(current.block.drillID ?? "", remainingSeconds: remaining)
@@ -746,6 +773,12 @@ struct LiveWorkoutView: View {
                                 .font(.caption).foregroundStyle(Noir.gold)
                         }.accessibilityIdentifier("workout-source")
                     }
+                    if canChooseActivity {
+                        Button { showActivityChoice = true } label: {
+                            Label(language == "fr" ? "Mouvement · \(activityInstance(for: current)?.customName ?? activityKey(for: current) ?? "à choisir")" : "Movement · \(activityInstance(for: current)?.customName ?? activityKey(for: current) ?? "choose")", systemImage: "figure.mixed.cardio")
+                                .font(.caption).foregroundStyle(Noir.gold)
+                        }.accessibilityIdentifier("workout-activity-choice")
+                    }
                     if current.block.kind == .boxing && !current.isRest {
                         if let boxingFocus {
                             Text(boxingFocus)
@@ -755,17 +788,17 @@ struct LiveWorkoutView: View {
                         }
                         exchangeCounter
                     } else if current.block.kind == .warmup && !current.isRest && current.block.sourceTitle == nil {
-                        Text(TrainingCopy.text(current.activityKey ?? "mobility", language))
+                        Text(TrainingCopy.text(activityKey(for: current) ?? "mobility", language))
                             .font(.system(size: 17, weight: .medium, design: .serif))
-                        if current.activityKey == "shadowboxing", shadowTheme >= 0 {
+                        if activityKey(for: current) == "shadowboxing", shadowTheme >= 0 {
                             let theme = ShadowboxingGuide.themes[shadowTheme]
                             Text("\(shadowTheme + 1)/\(ShadowboxingGuide.themes.count) · \(theme.title[language] ?? "")")
                                 .font(.system(size: 12, weight: .bold, design: .monospaced)).foregroundStyle(Noir.gold)
                             Text(theme.line[language] ?? "").font(.subheadline).lineLimit(3)
                             exchangeCounter
                         }
-                        if current.activityKey == "squats" || current.activityKey == "lunges" {
-                            Text(TrainingCopy.format(current.activityKey == "lunges" ? "lunge_observed_reps" : "squat_observed_reps", language, squatTracker.count))
+                        if activityKey(for: current) == "squats" || activityKey(for: current) == "lunges" {
+                            Text(TrainingCopy.format(activityKey(for: current) == "lunges" ? "lunge_observed_reps" : "squat_observed_reps", language, squatTracker.count))
                                 .font(.system(size: 12, weight: .medium, design: .monospaced))
                         }
                     } else if current.isRest {
@@ -792,8 +825,8 @@ struct LiveWorkoutView: View {
                         }
                     }
                     if current.block.sourceTitle != nil, !current.isRest,
-                       current.activityKey == "squats" || current.activityKey == "lunges" {
-                        Text(TrainingCopy.format(current.activityKey == "lunges" ? "lunge_observed_reps" : "squat_observed_reps", language, squatTracker.count))
+                       activityKey(for: current) == "squats" || activityKey(for: current) == "lunges" {
+                        Text(TrainingCopy.format(activityKey(for: current) == "lunges" ? "lunge_observed_reps" : "squat_observed_reps", language, squatTracker.count))
                             .font(.system(size: 12, weight: .medium, design: .monospaced))
                     }
                     HStack(spacing: 14) {
@@ -833,6 +866,7 @@ struct LiveWorkoutView: View {
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
         .onAppear {
+            training.ensureActivityInstances(sessionID: sessionID)
             originalIdleTimerDisabled = UIApplication.shared.isIdleTimerDisabled
             if workout?.state == .active { camera.start() }
             if poseTelemetryEnabled { poseSender.sendPending(from: training) }
@@ -842,10 +876,11 @@ struct LiveWorkoutView: View {
                 segmentIndex = workout.runtimeSegmentIndex ?? 0
                 remaining = workout.runtimeRemainingSeconds ?? (current?.seconds ?? 0)
                 manualElapsed = workout.runtimeElapsedSeconds ?? 0
-                if let current, let key = current.activityKey, key == "squats" || key == "lunges" {
+                if let current, let key = activityKey(for: current), key == "squats" || key == "lunges" {
                     squatTracker = SquatTracker()
                     squatTracker.restoreCount((workout.exerciseReps ?? []).filter {
                         $0.blockID == current.block.id && $0.activityKey == key
+                            && ($0.activityInstanceID == nil || $0.activityInstanceID == activityInstance(for: current)?.id)
                     }.count)
                 }
             }
@@ -884,7 +919,7 @@ struct LiveWorkoutView: View {
             if pendingTimedSeconds >= 5 { flushTimedSeconds() }
             if remaining == 0 { advance() }
             else {
-                if let current, current.activityKey == "shadowboxing", !current.isRest, current.block.sourceTitle == nil {
+                if let current, activityKey(for: current) == "shadowboxing", !current.isRest, current.block.sourceTitle == nil {
                     let index = ShadowboxingGuide.index(elapsed: current.seconds - remaining, total: current.seconds)
                     if index != shadowTheme {
                         shadowTheme = index
@@ -904,7 +939,7 @@ struct LiveWorkoutView: View {
         }
         .onReceive(camera.$latestExchange) { exchange in
             guard let exchange, running, let current, !current.isRest else { return }
-            if current.activityKey == "shadowboxing" { roundExchanges.append(exchange); voice.exchangeSound(fault: current.block.sourceTitle == nil && !exchange.faults.isEmpty); return }
+            if activityKey(for: current) == "shadowboxing" { roundExchanges.append(exchange); voice.exchangeSound(fault: current.block.sourceTitle == nil && !exchange.faults.isEmpty); return }
             guard current.block.kind == .boxing else { return }
             var labeled = exchange
             if current.block.drillID == "probe-combine-angle-v1",
@@ -932,11 +967,12 @@ struct LiveWorkoutView: View {
         }
         .onReceive(camera.$poseSample) { sample in
             guard running, let current, !current.isRest, let sample else { return }
-            if let key = current.activityKey, key == "squats" || key == "lunges" {
+            if let key = activityKey(for: current), key == "squats" || key == "lunges" {
                 let angle = key == "lunges" ? sample.lungeKneeAngle : sample.squatKneeAngle
                 if squatTracker.observe(angle: angle, at: sample.sampledAt) {
                     training.recordExerciseRep(sessionID: sessionID, blockID: current.block.id,
                                                activityKey: key, sourceVersion: "mediapipe-\(key == "lunges" ? "lunge" : "squat")-angle-v1",
+                                               activityInstanceID: activityInstance(for: current)?.id,
                                                at: sample.sampledAt)
                 }
             }
@@ -981,6 +1017,38 @@ struct LiveWorkoutView: View {
                 .toolbar { ToolbarItem(placement: .confirmationAction) { Button(language == "fr" ? "Fermer" : "Close") { showSource = false } } }
             }.tint(Noir.gold).preferredColorScheme(.dark)
         }
+        .sheet(isPresented: $showActivityChoice) {
+            NavigationStack {
+                List {
+                    Section(language == "fr" ? "Mouvement pour ce segment" : "Movement for this segment") {
+                        ForEach(["jumping_jacks", "burpees", "box_jumps", "squat_jumps", "squats", "lunges", "mobility"], id: \.self) { key in
+                            Button {
+                                chooseActivity(key)
+                            } label: {
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text(activityLabel(key))
+                                    Text(key == "squats" || key == "lunges"
+                                         ? (language == "fr" ? "Répétitions candidates · non validées" : "Candidate reps · unvalidated")
+                                         : (language == "fr" ? "Durée seulement · aucun comptage de pose" : "Time only · no pose count"))
+                                        .font(.caption).foregroundStyle(Noir.muted)
+                                }
+                            }
+                        }
+                        TextField(language == "fr" ? "Autre mouvement" : "Other movement", text: $customActivityName)
+                            .textInputAutocapitalization(.words)
+                            .accessibilityIdentifier("custom-activity-name")
+                        Button(language == "fr" ? "Choisir mon mouvement" : "Choose my movement") { chooseActivity("custom") }
+                            .disabled(customActivityName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    }
+                    Section {
+                        Text(language == "fr" ? "Le choix précise ce que tu fais. La consigne d'origine reste visible. « Libre » mesure la durée, pas le mouvement." : "Your choice names the movement. The original instruction remains visible. Custom tracks time, not movement.")
+                            .font(.caption).foregroundStyle(Noir.muted)
+                    }
+                }
+                .navigationTitle(language == "fr" ? "Choisir le mouvement" : "Choose movement")
+                .toolbar { ToolbarItem(placement: .confirmationAction) { Button(language == "fr" ? "Fermer" : "Close") { showActivityChoice = false } } }
+            }.tint(Noir.gold).preferredColorScheme(.dark)
+        }
         .fullScreenCover(isPresented: $showRecap) {
             WorkoutRecapView(sessionID: sessionID) {
                 showRecap = false
@@ -1006,6 +1074,19 @@ struct LiveWorkoutView: View {
         }
         return camera.poseSample?.lowerBodyVisible == true ? "pose_legs_visible" : "pose_show_legs"
     }
+    private func activityLabel(_ key: String) -> String {
+        let labels: [String: [String: String]] = [
+            "jumping_jacks": ["fr": "Jumping jacks", "en": "Jumping jacks"],
+            "burpees": ["fr": "Burpees", "en": "Burpees"],
+            "box_jumps": ["fr": "Sauts sur caisse", "en": "Box jumps"],
+            "squat_jumps": ["fr": "Squats sautés", "en": "Squat jumps"],
+            "squats": ["fr": "Squats", "en": "Squats"],
+            "lunges": ["fr": "Fentes", "en": "Lunges"],
+            "mobility": ["fr": "Mobilité", "en": "Mobility"],
+            "custom": ["fr": "Libre", "en": "Custom"]
+        ]
+        return labels[key]?[language] ?? key
+    }
     private func clock(_ seconds: Int) -> String { String(format: "%02d:%02d", max(0, seconds) / 60, max(0, seconds) % 60) }
     private func announceCurrent() {
         guard let current else { return }
@@ -1013,6 +1094,12 @@ struct LiveWorkoutView: View {
         let key: String
         if current.isRest { key = "rest_speech"; line = TrainingCopy.text(key, language) }
         else if let title = current.block.sourceTitle {
+            if let instance = activityInstance(for: current), instance.selectionProvenance == .userSelected {
+                let movement = instance.customName ?? activityLabel(instance.exerciseKey ?? "custom")
+                speak(language == "fr" ? "Commence : \(movement)." : "Begin: \(movement).",
+                      cueKey: "activity_selected", trigger: "stage_start")
+                return
+            }
             let instruction = [title, current.block.repetitionText].compactMap { $0 }.joined(separator: ". ")
             // Original program copy is English. Keep its voice locale explicit.
             guard !muted else { return }
@@ -1020,12 +1107,21 @@ struct LiveWorkoutView: View {
             training.recordCueRequest(sessionID: sessionID, blockID: current.block.id, cueKey: "source_instruction", language: "en", trigger: "stage_start")
             return
         }
-        else if current.activityKey == "shadowboxing" {
+        else if activityKey(for: current) == "shadowboxing" {
             let theme = ShadowboxingGuide.themes[ShadowboxingGuide.index(elapsed: current.seconds - remaining, total: current.seconds)]
             shadowTheme = ShadowboxingGuide.themes.firstIndex { $0.key == theme.key } ?? 0
             key = theme.key; line = theme.line[language] ?? ""
         }
-        else if current.block.kind == .warmup { key = "\(current.activityKey ?? "mobility")_cue"; line = TrainingCopy.text(key, language) }
+        else if current.block.kind == .warmup {
+            if let instance = activityInstance(for: current), instance.selectionProvenance == .userSelected {
+                key = "activity_selected"
+                let movement = instance.customName ?? activityLabel(instance.exerciseKey ?? "custom")
+                line = language == "fr" ? "Commence : \(movement)." : "Begin: \(movement)."
+            } else {
+                key = "\(activityKey(for: current) ?? "mobility")_cue"
+                line = TrainingCopy.text(key, language)
+            }
+        }
         else if current.block.kind == .cooldown { key = "cooldown_speech"; line = TrainingCopy.text(key, language) }
         else { key = DrillLibrary.speechKey(current.block.drillID ?? ""); line = TrainingCopy.text(key, language) }
         speak(line, cueKey: key, trigger: "stage_start")
@@ -1043,7 +1139,7 @@ struct LiveWorkoutView: View {
         captureElapsedFromDeadline()
         flushTimedSeconds()
         training.recordSegment(sessionID: sessionID, blockID: current.block.id,
-                               activityKey: current.activityKey, isRest: current.isRest,
+                               activityKey: activityKey(for: current), isRest: current.isRest,
                                plannedSeconds: current.seconds,
                                elapsedSeconds: current.isManual ? manualElapsed : max(0, current.seconds - remaining),
                                exitReason: current.isManual ? (completed ? "manual_completed" : "skipped") : (remaining == 0 ? "timer_elapsed" : "skipped"))
@@ -1125,12 +1221,12 @@ struct LiveWorkoutView: View {
         flushTimedSeconds()
         if let current {
             let alreadyLogged = workout?.segmentLogs?.last.map {
-                $0.blockID == current.block.id && $0.activityKey == current.activityKey
+                $0.blockID == current.block.id && $0.activityKey == activityKey(for: current)
                     && $0.isRest == current.isRest && $0.exitReason == "timer_elapsed"
             } ?? false
             if !alreadyLogged {
                 training.recordSegment(sessionID: sessionID, blockID: current.block.id,
-                                       activityKey: current.activityKey, isRest: current.isRest,
+                                       activityKey: activityKey(for: current), isRest: current.isRest,
                                        plannedSeconds: current.seconds,
                                        elapsedSeconds: current.isManual ? manualElapsed : max(0, current.seconds - remaining),
                                        exitReason: "session_finished")

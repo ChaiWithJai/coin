@@ -69,6 +69,20 @@ class WorkoutCompletionTests(unittest.TestCase):
         self.assertEqual(failure.exception.status_code,422)
         self.assertEqual(self.service.OUTBOX.counts(),{})
 
+    def test_activity_lineage_is_kept_without_claiming_recognition(self):
+        selected=dict(instance_id=uuid.uuid4(),block_id=self.block_id,source_block_id='basic-w1-d6-p8-s1-1',
+                      source_item_id='p8-b6',exercise_key='custom',selection_provenance='user_selected',
+                      measurement=dict(id='session-clock',version='v1',capability='elapsed_only',validation_status='not_applicable'),
+                      selected_at_ms=2000)
+        self.service.workout_completion(self.receipt(activity_instances=[selected]))
+        with self.service.OUTBOX.connect() as db:
+            row=db.execute('SELECT payload FROM events').fetchone()
+        import json
+        output=json.loads(row[0])['stages'][0]['outputs']['activity_instances'][0]
+        self.assertEqual(output['exercise_key'],'custom')
+        self.assertEqual(output['measurement']['capability'],'elapsed_only')
+        self.assertNotIn('custom_name',output)
+
     def test_conflicting_retry_cannot_replace_receipt(self):
         from fastapi import HTTPException
         body=self.receipt()
