@@ -14,14 +14,22 @@ class MLflowSink:
         existing=self.client.search_runs([self.experiment.experiment_id],filter_string=f"tags.event_id = '{event_id}' and attributes.status = 'FINISHED'",max_results=1)
         if existing:return
         decision=payload.get('decision',{})
-        with mlflow.start_run(run_name='queued-coaching-event',experiment_id=self.experiment.experiment_id,tags={
+        names=[st.get('name','') for st in payload.get('stages',[])]
+        kind='round_report' if any(n.endswith('round_report') for n in names) else 'coaching_event'
+        facts=decision.get('facts',{}) if isinstance(decision,dict) else {}
+        run_name=f"round {facts.get('round','?')} · {facts.get('exchanges','?')} exchanges · {facts.get('main_issue','')}" if kind=='round_report' else 'queued-coaching-event'
+        with mlflow.start_run(run_name=run_name,experiment_id=self.experiment.experiment_id,tags={
             'event_id':event_id,
             'record_kind':'durable_event',
             'run_scope':'telemetry_export',
             'delivery_semantics':'at_least_once',
             'product_event_status':str(decision.get('status',decision.get('action','recorded'))),
+            'event_kind':kind,
+            'main_issue':str(facts.get('main_issue','')),
         }) as run:
-            with mlflow.start_span(name='coaching_event',span_type='CHAIN') as span:
+            for k in ('exchanges','punches','probe_openers','commit_openers','reset_rate','small_model_opener_agreement'):
+                if isinstance(facts.get(k),(int,float)):mlflow.log_metric(k,facts[k])
+            with mlflow.start_span(name=kind,span_type='CHAIN') as span:
                 mlflow.update_current_trace(metadata={'mlflow.trace.session':payload['session_id'],'event_id':event_id})
                 span.set_inputs({'window_id':payload.get('window_id'),'captured_at':payload.get('captured_at'),'model_versions':payload.get('model_versions',{})})
                 span.set_outputs(decision)
