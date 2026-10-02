@@ -1,0 +1,129 @@
+{
+  "" : {
+    "diagnostics" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/Coin-primary.dia",
+    "emit-module-dependencies" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/Coin-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/Coin-primary-emit-module.dia",
+    "pch" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/Coin-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/Coin-primary.swiftdeps"
+  },
+  "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "const-values" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftconstvalues",
+    "dependencies" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/GeneratedAssetSymbols.d",
+    "diagnostics" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/GeneratedAssetSymbols.dia",
+    "index-unit-output-path" : "/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "swift-dependencies" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftdeps",
+    "swiftmodule" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/GeneratedAssetSymbols~partial.swiftmodule"
+  },
+  "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/CoachingClient.swift" : {
+    "const-values" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/CoachingClient.swiftconstvalues",
+    "dependencies" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/CoachingClient.d",
+    "diagnostics" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/CoachingClient.dia",
+    "index-unit-output-path" : "/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/CoachingClient.o",
+    "llvm-bc" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/CoachingClient.bc",
+    "object" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/CoachingClient.o",
+    "swift-dependencies" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/CoachingClient.swiftdeps",
+    "swiftmodule" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/CoachingClient~partial.swiftmodule"
+  },
+  "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/CoachingCopy.swift" : {
+    "const-values" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/CoachingCopy.swiftconstvalues",
+    "dependencies" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/CoachingCopy.d",
+    "diagnostics" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/CoachingCopy.dia",
+    "index-unit-output-path" : "/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/CoachingCopy.o",
+    "llvm-bc" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/CoachingCopy.bc",
+    "object" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/CoachingCopy.o",
+    "swift-dependencies" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/CoachingCopy.swiftdeps",
+    "swiftmodule" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/CoachingCopy~partial.swiftmodule"
+  },
+  "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/CoinApp.swift" : {
+    "const-values" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/CoinApp.swiftconstvalues",
+    "dependencies" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/CoinApp.d",
+    "diagnostics" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/CoinApp.dia",
+    "index-unit-output-path" : "/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/CoinApp.o",
+    "llvm-bc" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/CoinApp.bc",
+    "object" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/CoinApp.o",
+    "swift-dependencies" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/CoinApp.swiftdeps",
+    "swiftmodule" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/CoinApp~partial.swiftmodule"
+  },
+  "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/ExchangeTracker.swift" : {
+    "const-values" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/ExchangeTracker.swiftconstvalues",
+    "dependencies" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/ExchangeTracker.d",
+    "diagnostics" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/ExchangeTracker.dia",
+    "index-unit-output-path" : "/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/ExchangeTracker.o",
+    "llvm-bc" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/ExchangeTracker.bc",
+    "object" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/ExchangeTracker.o",
+    "swift-dependencies" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/ExchangeTracker.swiftdeps",
+    "swiftmodule" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/ExchangeTracker~partial.swiftmodule"
+  },
+  "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/GuardReview.swift" : {
+    "const-values" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/GuardReview.swiftconstvalues",
+    "dependencies" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/GuardReview.d",
+    "diagnostics" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/GuardReview.dia",
+    "index-unit-output-path" : "/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/GuardReview.o",
+    "llvm-bc" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/GuardReview.bc",
+    "object" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/GuardReview.o",
+    "swift-dependencies" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/GuardReview.swiftdeps",
+    "swiftmodule" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/GuardReview~partial.swiftmodule"
+  },
+  "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/LiveWorkout.swift" : {
+    "const-values" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/LiveWorkout.swiftconstvalues",
+    "dependencies" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/LiveWorkout.d",
+    "diagnostics" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/LiveWorkout.dia",
+    "index-unit-output-path" : "/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/LiveWorkout.o",
+    "llvm-bc" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/LiveWorkout.bc",
+    "object" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/LiveWorkout.o",
+    "swift-dependencies" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/LiveWorkout.swiftdeps",
+    "swiftmodule" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/LiveWorkout~partial.swiftmodule"
+  },
+  "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/PoseAnalysis.swift" : {
+    "const-values" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/PoseAnalysis.swiftconstvalues",
+    "dependencies" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/PoseAnalysis.d",
+    "diagnostics" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/PoseAnalysis.dia",
+    "index-unit-output-path" : "/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/PoseAnalysis.o",
+    "llvm-bc" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/PoseAnalysis.bc",
+    "object" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/PoseAnalysis.o",
+    "swift-dependencies" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/PoseAnalysis.swiftdeps",
+    "swiftmodule" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/PoseAnalysis~partial.swiftmodule"
+  },
+  "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/ReviewRequestStore.swift" : {
+    "const-values" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/ReviewRequestStore.swiftconstvalues",
+    "dependencies" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/ReviewRequestStore.d",
+    "diagnostics" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/ReviewRequestStore.dia",
+    "index-unit-output-path" : "/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/ReviewRequestStore.o",
+    "llvm-bc" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/ReviewRequestStore.bc",
+    "object" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/ReviewRequestStore.o",
+    "swift-dependencies" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/ReviewRequestStore.swiftdeps",
+    "swiftmodule" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/ReviewRequestStore~partial.swiftmodule"
+  },
+  "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/RoundReport.swift" : {
+    "const-values" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/RoundReport.swiftconstvalues",
+    "dependencies" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/RoundReport.d",
+    "diagnostics" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/RoundReport.dia",
+    "index-unit-output-path" : "/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/RoundReport.o",
+    "llvm-bc" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/RoundReport.bc",
+    "object" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/RoundReport.o",
+    "swift-dependencies" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/RoundReport.swiftdeps",
+    "swiftmodule" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/RoundReport~partial.swiftmodule"
+  },
+  "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/TrainingModel.swift" : {
+    "const-values" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/TrainingModel.swiftconstvalues",
+    "dependencies" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/TrainingModel.d",
+    "diagnostics" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/TrainingModel.dia",
+    "index-unit-output-path" : "/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/TrainingModel.o",
+    "llvm-bc" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/TrainingModel.bc",
+    "object" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/TrainingModel.o",
+    "swift-dependencies" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/TrainingModel.swiftdeps",
+    "swiftmodule" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/TrainingModel~partial.swiftmodule"
+  },
+  "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/TrainingViews.swift" : {
+    "const-values" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/TrainingViews.swiftconstvalues",
+    "dependencies" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/TrainingViews.d",
+    "diagnostics" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/TrainingViews.dia",
+    "index-unit-output-path" : "/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/TrainingViews.o",
+    "llvm-bc" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/TrainingViews.bc",
+    "object" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/TrainingViews.o",
+    "swift-dependencies" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/TrainingViews.swiftdeps",
+    "swiftmodule" : "/Users/jaibhagat/Documents/Codex/2026-09-25/i-x20/outputs/coin/ios/.derivedData-device/Build/Intermediates.noindex/Coin.build/Debug-iphoneos/Coin.build/Objects-normal/arm64/TrainingViews~partial.swiftmodule"
+  }
+}

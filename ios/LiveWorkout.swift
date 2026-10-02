@@ -40,9 +40,13 @@ enum PoseMotion {
             guard lengths > 0.002 else { return nil }
             return acos(max(-1, min(1, (a.0 * b.0 + a.1 * b.1) / lengths))) * 180 / .pi
         }
-        guard let left = angle(23, 25, 27), let right = angle(24, 26, 28),
-              abs(left - right) < 28 else { return nil }
-        return (left + right) / 2
+        // Side-on framing often hides the far leg: use whichever leg is visible, average when both agree.
+        switch (angle(23, 25, 27), angle(24, 26, 28)) {
+        case let (left?, right?): return abs(left - right) < 28 ? (left + right) / 2 : min(left, right)
+        case let (left?, nil): return left
+        case let (nil, right?): return right
+        default: return nil
+        }
     }
     static func wristTravelBodyWidths(previous: [PoseJoint], current: [PoseJoint]) -> Double? {
         let required = [11, 12, 15, 16, 23, 24]
@@ -82,7 +86,7 @@ struct SquatTracker {
               lastSampleAt.map({ date.timeIntervalSince($0) <= 0.5 }) ?? true else {
             phase = 0; stableFrames = 0; return false
         }
-        let target = angle >= 155 ? 1 : (angle <= 105 ? 2 : 0)
+        let target = angle >= 150 ? 1 : (angle <= 115 ? 2 : 0)
         guard target != 0 else { stableFrames = 0; return false }
         stableFrames = target == (phase == 2 ? 1 : phase == 1 ? 2 : 1) ? stableFrames + 1 : 1
         guard stableFrames >= 3 else { return false }

@@ -1,0 +1,9 @@
+Target dependency graph (4 targets)
+Target 'Coin' in project 'Coin'
+➜ Implicit dependency on target 'Pods-Coin' in project 'Pods' via file 'Pods_Coin.framework' in build phase 'Link Binary'
+Target 'Pods-Coin' in project 'Pods'
+➜ Explicit dependency on target 'MediaPipeTasksCommon' in project 'Pods'
+➜ Explicit dependency on target 'MediaPipeTasksVision' in project 'Pods'
+Target 'MediaPipeTasksVision' in project 'Pods'
+➜ Explicit dependency on target 'MediaPipeTasksCommon' in project 'Pods'
+Target 'MediaPipeTasksCommon' in project 'Pods' (no dependencies)
