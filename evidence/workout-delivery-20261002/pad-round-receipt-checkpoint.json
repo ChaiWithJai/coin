@@ -1,0 +1,73 @@
+{
+  "checkpoint": "round-specific-source-and-workout-completion-receipts",
+  "date_local": "2026-10-02 19:22 America/New_York",
+  "base_commit": "c880eda",
+  "app_bundle_id": "com.coinboxing.prototype",
+  "source_mapping": {
+    "reviewed_virtual_pad_sections": 5,
+    "timed_rounds_with_exact_focus": 25,
+    "source_preservation": "Exact item text and ID, parent section ID, original 180-second round prescription, rests, source URL and catalog hash. The heading demo is shared section context, not an exact clip for each focus.",
+    "fallback": "Changed or ambiguous source lists remain whole. The existing 22 manual sections and 218 source-item steps remain intact."
+  },
+  "completion_receipt": {
+    "endpoint": "/v1/workout/completion",
+    "schema_version": "workout-completion-v1",
+    "semantics": "Session ended, not verified exercise adherence; voice cues are requests, not confirmed playback. Works with zero exchanges and without a model call.",
+    "lineage": "Explicit runtime origin, session ID, source version, parent section and source item IDs, segment exits and cue request IDs.",
+    "privacy": "No pose counts, landmarks, footage, transcripts or free-text reflection in v1 completion receipts. Separate pose telemetry remains opt-in.",
+    "delivery": "Phone stores a stable receipt and retries asynchronously. Server accepts duplicate identical input once and queues an MLflow event."
+  },
+  "validation": {
+    "catalog_focus": "/tmp/coin-workout-derived/Logs/Test/Test-Coin-2026.10.02_19-09-41--0400.xcresult",
+    "combined_run": "/tmp/coin-workout-derived/Logs/Test/Test-Coin-2026.10.02_19-14-50--0400.xcresult",
+    "combined_unit_tests_passed": 53,
+    "combined_ui_tests_passed": 5,
+    "focused_virtual_pad_ui": "/tmp/coin-workout-derived/Logs/Test/Test-Coin-2026.10.02_19-18-29--0400.xcresult",
+    "focused_virtual_pad_ui_tests_passed": 1,
+    "server_tests_passed": 44,
+    "failed_attempts": "Initial integration build lost CocoaPods linkage after xcodegen; pod install restored it. New virtual-pad UI test first used the wrong Skip accessibility label and then queried the absent source title on a rest segment. Corrected focused UI test passed."
+  },
+  "synthetic_integration": {
+    "origin": "synthetic",
+    "request_id": "c59edb5d-3db7-4f48-82a8-58f2b541079a",
+    "idempotent_responses": 2,
+    "server_outbox_state": "delivered",
+    "mlflow_experiment_id": "40",
+    "mlflow_run_id": "01165b440b3141cea018729d1a1eca8e",
+    "mlflow_trace_id": "tr-ba2382ebe156db4f8ceae9b90a81574d",
+    "mlflow_trace_state": "OK",
+    "mlflow_spans": ["coaching_event", "workout_completion"]
+  },
+  "gb10": {
+    "service_pid": 2783808,
+    "forwarder_pid_preserved": 2526383,
+    "service_sha256": "508903f23087fa65516e03e97fae9464a7fcf72919ec59c7075dd3d1e3314a2d",
+    "backup": "/home/chaiwithjai/Documents/code/coin-boxing/service.py.before-completion-time-fix-20261002"
+  },
+  "final_service_smoke": {
+    "origin": "synthetic",
+    "event_id": "523a6023-93ab-471c-959e-78abde835a16",
+    "idempotent_responses": 2,
+    "mlflow_run_id": "6ff9ba07ed3343b886e2c4e207bcbff1",
+    "mlflow_trace_id": "tr-a2320aa0743799163b4cd37ddc2d7798",
+    "mlflow_trace_state": "OK",
+    "captured_at_seconds": 1790983575.338
+  },
+  "physical_install": {
+    "device": "Lakshmi iPhone 11 Pro",
+    "device_id": "DCB3F4A7-4528-5743-9F8B-DA1230DB95B6",
+    "signed_build": "/tmp/coin-pad-receipt-phone/Build/Products/Debug-iphoneos/Coin.app",
+    "bundle_install_path": "/private/var/containers/Bundle/Application/0FA492B2-56CD-4B4A-98EF-F29B95340898/Coin.app/",
+    "launch_pid": 34009,
+    "result": "Installed and launched"
+  },
+  "development_usage": {
+    "mlflow_experiment_id": "39",
+    "mlflow_run_id": "500951a0e29e4828a208b3fa79d50a03",
+    "exposed_response_records": 2205,
+    "actual_billed_usd": null,
+    "api_equivalent_usd": null,
+    "coverage": "Exposed per-response usage only; no hidden reasoning or full inference payload capture."
+  },
+  "remaining_validation": "No new completed physical-phone workout or phone-origin completion receipt was observed in this checkpoint. Cue audibility, movement recognition, and drill adherence remain unverified. Source program text remains English. Actual billed USD and equivalent estimates are unknown."
+}

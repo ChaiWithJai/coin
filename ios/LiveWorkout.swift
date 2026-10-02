@@ -559,6 +559,57 @@ struct WorkoutCameraView: UIViewRepresentable {
     }
 }
 
+/// Uses the locally persisted completion receipt as its outbox; failed sends keep the same ID.
+@MainActor final class WorkoutCompletionSender: ObservableObject {
+    private var uploadTask: Task<Void, Never>?
+    private let session: URLSession
+    private let endpointOverride: URL?
+    private let tokenOverride: String?
+    init(session: URLSession = .shared, endpointOverride: URL? = nil, tokenOverride: String? = nil) {
+        self.session = session
+        self.endpointOverride = endpointOverride
+        self.tokenOverride = tokenOverride
+    }
+    func sendPending(from store: TrainingStore) {
+        guard uploadTask == nil else { return }
+        uploadTask = Task {
+            defer { uploadTask = nil }
+            while !Task.isCancelled, let receipt = store.nextPendingWorkoutCompletion() {
+                do {
+                    let eventID = try await send(receipt)
+                    store.recordWorkoutCompletionDelivery(receiptID: receipt.id, eventID: eventID)
+                } catch { break }
+            }
+        }
+    }
+    private func send(_ receipt: WorkoutCompletionReceipt) async throws -> String {
+        #if DEBUG
+        let environment = ProcessInfo.processInfo.environment
+        let base = environment["COIN_SERVICE_URL"] ?? UserDefaults.standard.string(forKey: "serviceURL") ?? ""
+        let credential = environment["COIN_SERVICE_TOKEN"] ?? ServiceCredential.load()
+        #else
+        let base = UserDefaults.standard.string(forKey: "serviceURL") ?? ""
+        let credential = ServiceCredential.load()
+        #endif
+        guard let token = tokenOverride ?? credential, !token.isEmpty,
+              let url = endpointOverride ?? URL(string: base + "/v1/workout/completion"), CoinServer.allowed(url) else {
+            throw URLError(.badURL)
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.timeoutInterval = 3
+        request.setValue("Bearer " + token, forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: receipt.payload())
+        let (data, response) = try await session.data(for: request)
+        guard let http = response as? HTTPURLResponse, http.statusCode == 200,
+              let body = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+              body["accepted"] as? Bool == true, let eventID = body["event_id"] as? String,
+              UUID(uuidString: eventID) == receipt.id else { throw URLError(.badServerResponse) }
+        return eventID
+    }
+}
+
 struct LiveWorkoutView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
@@ -568,6 +619,7 @@ struct LiveWorkoutView: View {
     @StateObject private var camera = WorkoutCamera()
     @StateObject private var voice = WorkoutSpeechController()
     @StateObject private var poseSender = PoseWindowSender()
+    @StateObject private var completionSender = WorkoutCompletionSender()
     @StateObject private var roundReports = RoundReportClient()
     @State private var cuePolicy = ExchangeCuePolicy()
     @State private var roundExchanges: [LabeledExchange] = []
@@ -784,6 +836,7 @@ struct LiveWorkoutView: View {
             originalIdleTimerDisabled = UIApplication.shared.isIdleTimerDisabled
             if workout?.state == .active { camera.start() }
             if poseTelemetryEnabled { poseSender.sendPending(from: training) }
+            completionSender.sendPending(from: training)
             roundReports.flush()
             if let workout {
                 segmentIndex = workout.runtimeSegmentIndex ?? 0
@@ -806,7 +859,7 @@ struct LiveWorkoutView: View {
         }
         .onChange(of: scenePhase) { phase in
             if phase != .active { pause() }
-            else { roundReports.flush() }
+            else { roundReports.flush(); completionSender.sendPending(from: training) }
         }
         .onChange(of: poseTelemetryEnabled) { enabled in
             if enabled { poseSender.sendPending(from: training) }
@@ -1089,6 +1142,7 @@ struct LiveWorkoutView: View {
         voice.stop()
         flushPoseWindows()
         training.finish(sessionID, reflection: "")
+        completionSender.sendPending(from: training)
         camera.stop()
         poseSender.cancel()
         showRecap = true

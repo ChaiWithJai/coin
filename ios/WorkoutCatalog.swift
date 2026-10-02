@@ -74,7 +74,9 @@ struct WorkoutLesson: Decodable, Identifiable {
                 }
             }
             let count = source.completion == .timed ? (source.rounds ?? 1) : 1
+            let roundItems = source.reviewedPadRoundItems
             return (0..<count).map { repetition in
+                let roundItem = roundItems?[repetition]
                 if source.kind == .boxing { roundNumber += 1 }
                 // Rest belongs between repetitions. Do not invent a final rest
                 // before the next source section, or a duration for rep work.
@@ -86,10 +88,12 @@ struct WorkoutLesson: Decodable, Identifiable {
                                     roundNumber: source.kind == .boxing ? roundNumber : nil,
                                     drillID: source.drillID, restAfterMinutes: rest / 60,
                                     durationSeconds: seconds, restAfterSeconds: rest,
-                                    sourceTitle: source.title, sourceInstructions: source.instructions,
-                                    sourceURL: source.sourceURL ?? sourceURL, sourceDemoURLs: source.demoURLs,
+                                    sourceTitle: roundItem?.text ?? source.title,
+                                    sourceInstructions: roundItem.map { source.title + "\n" + $0.text } ?? source.instructions,
+                                    sourceURL: source.sourceURL ?? sourceURL,
+                                    sourceDemoURLs: roundItem.map { source.padRoundDemoURLs(for: $0) } ?? source.demoURLs,
                                     sourceActivityKey: source.activityKey,
-                                    sourceBlockID: source.id,
+                                    sourceBlockID: source.id, sourceItemID: roundItem?.id,
                                     repetitionText: prescription.isEmpty ? nil : prescription,
                                     completionMode: source.completion)
             }
@@ -128,6 +132,46 @@ struct WorkoutSourceItem: Decodable {
 }
 
 private extension WorkoutSourceBlock {
+    /// These five source lists were checked for one complete instruction per
+    /// round. Cardinality alone is unsafe: other lists contain wrapped sentences.
+    /// A changed snapshot must be reviewed again before receiving this mapping.
+    static let reviewedPadRounds: [String: (page: Int, headingIndex: Int, focus: [String])] = [
+        "competitive-w1-d4-p8-s4-1": (8, 17, [
+            "SINGLE PUNCHES", "DOUBLED-UP PUNCHES", "2 PUNCH COMBOS", "3 PUNCH COMBOS", "ATTACK - DEFEND - ATTACK"
+        ]),
+        "competitive-w2-d4-p16-s4-1": (16, 12, [
+            "HEAD MOVEMENT COUNTERS", "FOOTWORK COUNTERS", "HANDS DEFENSE COUNTERS", "SIMULTANIOUS COUNTERS", "PROVOCATION COUNTERS"
+        ]),
+        "competitive-w3-d4-p24-s4-1": (24, 14, [
+            "SETTING TRAPS WITH THE JAB", "SETTING TRAPS WITH THE CROSS", "SETTING TRAPS WITH YOUR RHYTHM", "SETTING TRAPS AT THE CLOSE RANGE", "SETTING UP BODY SHOTS"
+        ]),
+        "competitive-w4-d4-p32-s4-1": (32, 13, [
+            "COMBOS EMPHASISING THE CROSS", "COMBOS EMPHASISING THE HOOKS", "COMBOS EMPHASISING THE UPPERCUTS", "COMBOS EMPHASISING THE BODY SHOTS", "COMBOS EMPHASISING ANY POWER PUNCH"
+        ]),
+        "competitive-w5-d4-p40-s4-1": (40, 13, [
+            "SINGLE PUNCHES", "DOUBLE UP ATTACKS", "2 PUNCH COMBOS", "3 COMBOS AFTER A DEFENSIVE MOVE", "PROVACATION - DEFENCE - COMBO"
+        ]),
+    ]
+
+    var reviewedPadRoundItems: [WorkoutSourceItem]? {
+        guard let snapshot = Self.reviewedPadRounds[id], completion == .timed,
+              kind == .boxing, rounds == 5, durationSeconds == 180,
+              title == "VIRTUAL PAD WORK (5 ROUNDS OF 3 MINUTES)",
+              let items = sourceItems, items.count == 6,
+              items.map(\.text) == [title] + snapshot.focus,
+              items.map(\.id) == (0..<6).map({ "p\(snapshot.page)-b\(snapshot.headingIndex + $0)" }),
+              items.map(\.text).joined(separator: "\n") == instructions,
+              sourceText == instructions else { return nil }
+        return Array(items.dropFirst())
+    }
+
+    func padRoundDemoURLs(for item: WorkoutSourceItem) -> [String] {
+        // The heading video is shared section context, not an exact round clip.
+        var seen = Set<String>()
+        return ((sourceItems?.first?.demoURLs ?? []) + (item.demoURLs ?? []))
+            .filter { seen.insert($0).inserted }
+    }
+
     struct ManualStep {
         let item: WorkoutSourceItem
         let prescription: String

@@ -78,6 +78,28 @@ final class WorkoutFlowTests: XCTestCase {
         attach("source-round-resumed", app: app)
     }
 
+    func testVirtualPadRoundChangesSourceFocusWithoutChangingClock() throws {
+        let app = application(language: "en")
+        app.buttons["choose-program"].tap()
+        app.buttons["Competitive"].tap()
+        let day = app.buttons["lesson-competitive-w1-d4"]
+        reveal(day, in: app)
+        day.tap()
+        app.buttons["start-workout"].tap()
+        let title = app.staticTexts["workout-source-title"]
+        for _ in 0..<25 {
+            if title.exists && title.label == "SINGLE PUNCHES" { break }
+            app.buttons["Skip to next"].tap()
+        }
+        XCTAssertEqual(title.label, "SINGLE PUNCHES")
+        XCTAssertEqual(app.staticTexts["workout-clock"].label, "03:00")
+        attach("virtual-pad-round-one", app: app)
+        app.buttons["Skip to next"].tap()
+        XCTAssertEqual(title.label, "DOUBLED-UP PUNCHES")
+        XCTAssertEqual(app.staticTexts["workout-clock"].label, "03:00")
+        attach("virtual-pad-round-two", app: app)
+    }
+
     func testFreestyleUsesLocalLanguageWithoutImposingProbeDrill() throws {
         for language in ["en", "fr"] {
             let app = application(language: language)

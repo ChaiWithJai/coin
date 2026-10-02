@@ -173,13 +173,20 @@ import XCTest
     func testConservativeItemCoverageLeavesOtherSourceSectionsUnchanged() throws {
         var expandedSections = 0
         var expandedItems = 0
+        var roundSections = 0
+        var roundItems = 0
         for lesson in WorkoutCatalog.shared.lessons {
             let blocks = lesson.template().blocks
             for source in lesson.blocks {
                 let mapped = blocks.filter { $0.sourceBlockID == source.id }
                 if mapped.contains(where: { $0.sourceItemID != nil }) {
-                    expandedSections += 1
-                    expandedItems += mapped.count
+                    if source.completion == .manual {
+                        expandedSections += 1
+                        expandedItems += mapped.count
+                    } else {
+                        roundSections += 1
+                        roundItems += mapped.count
+                    }
                     XCTAssertTrue(mapped.allSatisfy { $0.sourceItemID != nil })
                 } else {
                     XCTAssertEqual(mapped.count, source.completion == .timed ? (source.rounds ?? 1) : 1)
@@ -189,6 +196,98 @@ import XCTest
         }
         XCTAssertEqual(expandedSections, 22)
         XCTAssertEqual(expandedItems, 218)
+        XCTAssertEqual(roundSections, 5)
+        XCTAssertEqual(roundItems, 25)
+    }
+
+    func testReviewedPadRoundsUseExactOrderedFocusAndKeepPrescription() throws {
+        for week in 1...5 {
+            let lesson = try XCTUnwrap(WorkoutCatalog.shared.lessons.first { $0.id == "competitive-w\(week)-d4" })
+            let source = try XCTUnwrap(lesson.blocks.first { $0.title == "VIRTUAL PAD WORK (5 ROUNDS OF 3 MINUTES)" })
+            let items = Array(try XCTUnwrap(source.sourceItems).dropFirst())
+            let template = lesson.template()
+            let rounds = template.blocks.filter { $0.sourceBlockID == source.id }
+            XCTAssertEqual(rounds.count, 5)
+            XCTAssertEqual(rounds.map(\.sourceItemID), items.map { Optional($0.id) })
+            XCTAssertEqual(rounds.map(\.sourceTitle), items.map { Optional($0.text) })
+            XCTAssertEqual(rounds.map(\.effectiveSeconds), Array(repeating: 180, count: 5))
+            XCTAssertEqual(rounds.map(\.effectiveRestSeconds), [0, 0, 0, 0, 0])
+            let firstNumber = try XCTUnwrap(rounds.first?.roundNumber)
+            XCTAssertEqual(rounds.map(\.roundNumber), (firstNumber..<(firstNumber + 5)).map(Optional.some))
+            for (round, item) in zip(rounds, items) {
+                XCTAssertEqual(round.sourceInstructions, source.title + "\n" + item.text)
+                XCTAssertEqual(round.sourceURL, source.sourceURL ?? lesson.sourceURL)
+                XCTAssertEqual(round.sourceDemoURLs, source.sourceItems?.first?.demoURLs)
+                XCTAssertEqual(round.drillID, source.drillID)
+                XCTAssertNil(round.sourceActivityKey)
+                XCTAssertFalse(round.isManual)
+            }
+            XCTAssertEqual(template.sourceVersion, lesson.sourceSHA256)
+        }
+    }
+
+    func testChangedOrUnreviewedPadSnapshotsStayWhole() throws {
+        let changes: [(inout [String: Any]) -> Void] = [
+            { $0["id"] = "unreviewed-pad-list" },
+            { $0["durationSeconds"] = 120 },
+            { $0["rounds"] = 4 },
+            { $0["kind"] = "exercise" },
+            { $0["sourceText"] = "Different extraction" },
+            { block in
+                var items = block["sourceItems"] as! [[String: Any]]
+                items.removeLast()
+                block["sourceItems"] = items
+            },
+            { block in
+                var items = block["sourceItems"] as! [[String: Any]]
+                items[1]["id"] = items[2]["id"]
+                block["sourceItems"] = items
+            },
+            { block in
+                var items = block["sourceItems"] as! [[String: Any]]
+                items[1]["text"] = "CHANGED INSTRUCTION"
+                block["sourceItems"] = items
+                let text = items.map { $0["text"] as! String }.joined(separator: "\n")
+                block["instructions"] = text
+                block["sourceText"] = text
+            },
+        ]
+        for change in changes {
+            let lesson = try padFixture(change)
+            let source = try XCTUnwrap(lesson.blocks.first)
+            let rounds = lesson.template().blocks
+            XCTAssertEqual(rounds.count, source.rounds)
+            XCTAssertTrue(rounds.allSatisfy { $0.sourceItemID == nil && $0.sourceTitle == source.title
+                && $0.sourceInstructions == source.instructions && $0.sourceDemoURLs == source.demoURLs })
+        }
+    }
+
+    func testPadRoundRestAndSharedDemoContextArePreserved() throws {
+        let lesson = try padFixture { block in
+            block["restSeconds"] = 25
+            var items = block["sourceItems"] as! [[String: Any]]
+            let headingURL = (items[0]["demoURLs"] as! [String])[0]
+            items[1]["demoURLs"] = [headingURL, "https://example.org/item-demo"]
+            block["sourceItems"] = items
+        }
+        let rounds = lesson.template().blocks
+        XCTAssertEqual(rounds.map(\.effectiveRestSeconds), [25, 25, 25, 25, 0])
+        XCTAssertEqual(lesson.template().plannedSeconds, 1_000)
+        XCTAssertEqual(rounds.first?.sourceDemoURLs, ["https://youtu.be/zicFYNzPStI", "https://example.org/item-demo"])
+        let restored = try JSONDecoder().decode([SessionBlock].self, from: JSONEncoder().encode(rounds))
+        XCTAssertEqual(restored.map(\.sourceItemID), rounds.map(\.sourceItemID))
+        XCTAssertEqual(restored.map(\.sourceInstructions), rounds.map(\.sourceInstructions))
+    }
+
+    private func padFixture(_ change: (inout [String: Any]) -> Void) throws -> WorkoutLesson {
+        let url = try XCTUnwrap(Bundle.main.url(forResource: "WorkoutCatalog", withExtension: "json"))
+        let catalog = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
+        var lesson = try XCTUnwrap((catalog["workouts"] as? [[String: Any]])?.first { $0["id"] as? String == "competitive-w1-d4" })
+        var block = try XCTUnwrap((lesson["blocks"] as? [[String: Any]])?.first { $0["id"] as? String == "competitive-w1-d4-p8-s4-1" })
+        change(&block)
+        lesson["blocks"] = [block]
+        let data = try JSONSerialization.data(withJSONObject: ["schemaVersion": 1, "workouts": [lesson]])
+        return try XCTUnwrap(WorkoutCatalog.load(data).lessons.first)
     }
 
     private var fixture: String { """

@@ -475,6 +475,65 @@ struct CoachCueRecord: Codable, Identifiable {
     let trigger: String
 }
 
+enum WorkoutRuntimeOrigin: String, Codable {
+    case physicalDevice = "physical_device", simulator, synthetic, replay, unknown
+    static var current: Self {
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["COIN_TEST_ROUND_REVIEW"] == "1" { return .synthetic }
+        #endif
+        #if targetEnvironment(simulator)
+        return .simulator
+        #else
+        return .physicalDevice
+        #endif
+    }
+}
+
+/// A session-end receipt is evidence of app activity, never verified exercise adherence.
+struct WorkoutCompletionReceipt: Codable, Identifiable {
+    struct Block: Codable {
+        let blockID: UUID
+        let sourceBlockID: String?
+        let sourceItemID: String?
+        let completionSources: [String]
+        let segments: [SegmentLog]
+        let cueRequests: [CoachCueRecord]
+    }
+    var id = UUID()
+    let sessionID: UUID
+    let runtimeOrigin: WorkoutRuntimeOrigin
+    let startedAt: Date?
+    let endedAt: Date
+    let sourceVersion: String?
+    let blocks: [Block]
+    var remoteEventID: String? = nil
+
+    func payload() -> [String: Any] {
+        var result: [String: Any] = [
+            "schema_version": "workout-completion-v1", "request_id": id.uuidString,
+            "session_id": sessionID.uuidString, "runtime_origin": runtimeOrigin.rawValue,
+            "ended_at_ms": Int(endedAt.timeIntervalSince1970 * 1000),
+            "completion_evidence": "session_ended_not_verified_adherence", "pose_sharing_enabled": false,
+            "blocks": blocks.map { block -> [String: Any] in
+                var value: [String: Any] = ["block_id": block.blockID.uuidString,
+                    "completion_sources": block.completionSources,
+                    "segments": block.segments.map { ["segment_id": $0.id.uuidString,
+                        "elapsed_seconds": $0.elapsedSeconds, "planned_seconds": $0.plannedSeconds,
+                        "is_rest": $0.isRest, "exit_reason": $0.exitReason] as [String: Any] },
+                    "cue_requests": block.cueRequests.map { ["cue_request_id": $0.id.uuidString,
+                        "cue_key": $0.cueKey, "language": $0.language, "trigger": $0.trigger,
+                        "requested_at_ms": Int($0.requestedAt.timeIntervalSince1970 * 1000),
+                        "evidence": "requested_not_confirmed_playback"] as [String: Any] }]
+                value["source_block_id"] = block.sourceBlockID
+                value["source_item_id"] = block.sourceItemID
+                return value
+            }]
+        result["source_version"] = sourceVersion
+        if let startedAt { result["started_at_ms"] = Int(startedAt.timeIntervalSince1970 * 1000) }
+        return result
+    }
+}
+
 struct TrainingSession: Codable, Identifiable {
     var id = UUID()
     let templateID: String
@@ -501,6 +560,8 @@ struct TrainingSession: Codable, Identifiable {
     var sourceTitle: String? = nil
     var sourceURL: String? = nil
     var sourceVersion: String? = nil
+    var runtimeOrigin: WorkoutRuntimeOrigin? = nil
+    var completionReceipt: WorkoutCompletionReceipt? = nil
     var plannedSeconds: Int { blocks.reduce(0) { $0 + $1.effectiveSeconds + $1.effectiveRestSeconds } }
     var isOpenEnded: Bool { blocks.contains(where: \.isManual) }
     var loggedMinutes: Int {
@@ -583,7 +644,7 @@ struct TrainingData: Codable {
         do { try JSONEncoder().encode(data).write(to: file, options: .atomic) }
         catch { self.error = error.localizedDescription }
     }
-    @discardableResult func start(_ template: TrainingTemplate, at date: Date = Date()) -> UUID {
+    @discardableResult func start(_ template: TrainingTemplate, at date: Date = Date(), origin: WorkoutRuntimeOrigin = .current) -> UUID {
         for index in data.sessions.indices where data.sessions[index].state == .active {
             data.sessions[index].state = .interrupted
             data.sessions[index].endedAt = date
@@ -594,6 +655,7 @@ struct TrainingData: Codable {
         session.sourceURL = template.sourceURL
         session.sourceVersion = template.sourceVersion
         session.startedAt = date
+        session.runtimeOrigin = origin
         session.timerElapsedSeconds = 0
         data.sessions.insert(session, at: 0); persist(); return session.id
     }
@@ -750,6 +812,27 @@ struct TrainingData: Codable {
         data.sessions[index].reflection = reflection.trimmingCharacters(in: .whitespacesAndNewlines)
         data.sessions[index].endedAt = date
         data.sessions[index].state = .completed
+        let session = data.sessions[index]
+        data.sessions[index].completionReceipt = WorkoutCompletionReceipt(
+            sessionID: session.id, runtimeOrigin: session.runtimeOrigin ?? .unknown,
+            startedAt: session.startedAt, endedAt: date, sourceVersion: session.sourceVersion,
+            blocks: session.blocks.map { block in
+                return WorkoutCompletionReceipt.Block(blockID: block.id, sourceBlockID: block.sourceBlockID,
+                    sourceItemID: block.sourceItemID,
+                    completionSources: (session.blockLogs ?? []).filter { $0.blockID == block.id }.map(\.evidenceSource),
+                    segments: (session.segmentLogs ?? []).filter { $0.blockID == block.id },
+                    cueRequests: (session.cueRequests ?? []).filter { $0.blockID == block.id })
+            })
+        persist()
+    }
+    func nextPendingWorkoutCompletion() -> WorkoutCompletionReceipt? {
+        data.sessions.compactMap(\.completionReceipt).filter { $0.remoteEventID == nil }
+            .min { $0.endedAt < $1.endedAt }
+    }
+    func recordWorkoutCompletionDelivery(receiptID: UUID, eventID: String) {
+        guard UUID(uuidString: eventID) == receiptID,
+              let index = data.sessions.firstIndex(where: { $0.completionReceipt?.id == receiptID }) else { return }
+        data.sessions[index].completionReceipt?.remoteEventID = eventID
         persist()
     }
     func updateReflection(_ id: UUID, text: String) {

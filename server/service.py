@@ -51,6 +51,44 @@ class PoseWindow(BaseModel):
     lower_body_visible:bool|None=None
     source_version:Literal['mediapipe-pose-full-v1']
 
+class CompletionSegment(BaseModel):
+    segment_id:uuid.UUID
+    elapsed_seconds:int=Field(ge=0,le=86400)
+    planned_seconds:int=Field(ge=0,le=86400)
+    is_rest:bool
+    exit_reason:Literal['timer_elapsed','manual_completed','skipped','session_finished']
+
+class CompletionCue(BaseModel):
+    cue_request_id:uuid.UUID
+    cue_key:str=Field(min_length=1,max_length=100)
+    language:Literal['fr','en']
+    trigger:Literal['stage_start','timer_pacing','framing']
+    requested_at_ms:int=Field(ge=0)
+    evidence:Literal['requested_not_confirmed_playback']
+
+class CompletionBlock(BaseModel):
+    block_id:uuid.UUID
+    source_block_id:str|None=Field(default=None,max_length=200)
+    source_item_id:str|None=Field(default=None,max_length=100)
+    completion_sources:list[str]=Field(max_length=20)
+    segments:list[CompletionSegment]=Field(max_length=100)
+    cue_requests:list[CompletionCue]=Field(max_length=100)
+    observed_pose_samples:int|None=Field(default=None,ge=0)
+    observed_visible_pose_samples:int|None=Field(default=None,ge=0)
+    observed_rep_candidates:int|None=Field(default=None,ge=0)
+
+class WorkoutCompletion(BaseModel):
+    schema_version:Literal['workout-completion-v1']
+    request_id:uuid.UUID
+    session_id:uuid.UUID
+    source_version:str|None=Field(default=None,max_length=128)
+    runtime_origin:Literal['physical_device','simulator','synthetic','replay','unknown']
+    started_at_ms:int|None=Field(default=None,ge=0)
+    ended_at_ms:int=Field(ge=0)
+    completion_evidence:Literal['session_ended_not_verified_adherence']
+    pose_sharing_enabled:bool
+    blocks:list[CompletionBlock]=Field(max_length=500)
+
 class Punch(BaseModel):
     hand:Literal['lead','rear']
     atMs:int
@@ -268,6 +306,39 @@ def read_round_batch_analysis(job_id,request_id,record,enqueue_state):
                 'report':None if withheld else report,'withheld_unreviewed_results':withheld}
     except (sqlite3.Error,ValueError,TypeError,AttributeError):
         return {'state':'unavailable','items':[],'counts':{}}
+
+@app.post('/v1/workout/completion')
+def workout_completion(body:WorkoutCompletion):
+    """Accept a session-end receipt without inference or an adherence claim."""
+    if body.started_at_ms is not None and body.ended_at_ms<body.started_at_ms:
+        raise HTTPException(422,'Session end precedes start')
+    if not body.pose_sharing_enabled and any(
+        block.observed_pose_samples is not None or block.observed_visible_pose_samples is not None
+        or block.observed_rep_candidates is not None for block in body.blocks
+    ):
+        raise HTTPException(422,'Pose counts require sharing consent')
+    if any(source not in ('manual_completed','timer_elapsed','boxer_check_in','rest_timer_elapsed')
+           for block in body.blocks for source in block.completion_sources):
+        raise HTTPException(422,'Invalid completion source')
+    if len({block.block_id for block in body.blocks})!=len(body.blocks):
+        raise HTTPException(422,'Duplicate block identifier')
+    record=body.model_dump(mode='json')
+    payload={'session_id':str(body.session_id),'window_id':str(body.request_id),
+             'captured_at':body.ended_at_ms/1000,'origin':body.runtime_origin,
+             'model_versions':{},
+             'decision':{'status':'session_ended','evidence':body.completion_evidence,
+                         'pose_sharing_enabled':body.pose_sharing_enabled},
+             'stages':[{'name':'workout_completion','span_type':'TOOL',
+                        'inputs':{'schema_version':body.schema_version,'runtime_origin':body.runtime_origin,
+                                  'source_version':body.source_version,
+                                  'started_at_ms':body.started_at_ms,'ended_at_ms':body.ended_at_ms},
+                        'outputs':{'blocks':record['blocks'],'completion_evidence':body.completion_evidence},
+                        'duration_ms':0}]}
+    try:
+        event_id=OUTBOX.enqueue(payload,event_id=str(body.request_id))
+    except ValueError as exc:
+        raise HTTPException(409,str(exc)) from exc
+    return {'event_id':event_id,'accepted':True}
 
 @app.post('/v1/live/pose-window')
 def pose_window(body:PoseWindow):
