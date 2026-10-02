@@ -160,8 +160,15 @@ struct TrainingHomeView: View {
             .navigationDestination(for: UUID.self) { sessionID in
                 LiveWorkoutView(sessionID: sessionID)
             }
+            .onAppear {
+                // No user input: opening the app goes straight into today's session; the camera starts the timer.
+                guard !Self.autoStarted, path.isEmpty, !ProcessInfo.processInfo.arguments.contains("-noAutoStart") else { return }
+                Self.autoStarted = true
+                path.append(training.resumeOrStart(selectedTemplate))
+            }
         }
     }
+    private static var autoStarted = false
 }
 
 struct TrainingSessionView: View {

@@ -30,23 +30,34 @@ struct RoundReport: Codable, Equatable {
     private var pending: [RoundSummary] = []
 
     func submit(_ summary: RoundSummary) {
+        Self.save(summary, name: "\(summary.requestID)-summary")
         pending.append(summary)
         flush()
+    }
+
+    /// Everything is logged automatically on the phone, next to the server's trace.
+    static let folder = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        .appendingPathComponent("RoundLogs", isDirectory: true)
+    static func save<T: Encodable>(_ value: T, name: String) {
+        try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        if let data = try? JSONEncoder().encode(value) { try? data.write(to: folder.appendingPathComponent(name + ".json"), options: .atomic) }
     }
 
     func flush() {
         guard !sending, let next = pending.first else { return }
         sending = true
         Task {
-            defer { sending = false }
             do {
                 let report = try await send(next)
+                Self.save(report, name: "\(next.requestID)-report")
                 pending.removeFirst()
                 latest = report
                 failed = false
-                if !pending.isEmpty { flush() }
+                sending = false
+                flush()
             } catch {
                 failed = true
+                sending = false
             }
         }
     }

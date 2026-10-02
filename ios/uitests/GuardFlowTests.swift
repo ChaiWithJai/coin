@@ -3,7 +3,7 @@ import XCTest
 final class GuardFlowTests: XCTestCase {
     func testGuardAnalysisOnFirstRound() throws {
         let app = XCUIApplication()
-        app.launchArguments += ["-language", "fr"]
+        app.launchArguments += ["-language", "fr", "-noAutoStart"]
         app.launch()
         let videos = app.tabBars.buttons["Vidéos"]
         if videos.exists { videos.tap() }
