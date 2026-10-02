@@ -31,7 +31,11 @@
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
 	</dict>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Coin sends each finished round to your coaching server on your home network.</string>
 	<key>UIFileSharingEnabled</key>
 	<true/>
 </dict>

@@ -576,6 +576,9 @@ struct LiveWorkoutView: View {
     @State private var lastEvidence: [EvidenceCard] = []
     @State private var segmentIndex = 0
     @State private var remaining = 0
+    @State private var manualElapsed = 0
+    @State private var manualAnchor: Date?
+    @State private var showSource = false
     @State private var running = false
     @State private var muted = false
     @State private var deadline: Date?
@@ -594,7 +597,9 @@ struct LiveWorkoutView: View {
         let block: SessionBlock
         let isRest: Bool
         let activity: PreparationActivity?
-        var seconds: Int { (activity?.minutes ?? (isRest ? block.restAfterMinutes : block.minutes)) * 60 }
+        var seconds: Int { activity.map { $0.minutes * 60 } ?? (isRest ? block.effectiveRestSeconds : block.effectiveSeconds) }
+        var isManual: Bool { !isRest && activity == nil && block.isManual }
+        var activityKey: String? { activity?.key ?? block.sourceActivityKey }
     }
     private var workout: TrainingSession? { training.data.sessions.first { $0.id == sessionID } }
     private var segments: [Segment] {
@@ -602,12 +607,12 @@ struct LiveWorkoutView: View {
             let work: [Segment] = (block.activities?.isEmpty == false)
                 ? (block.activities ?? []).map { Segment(block: block, isRest: false, activity: $0) }
                 : [Segment(block: block, isRest: false, activity: nil)]
-            return work + (block.restAfterMinutes > 0 ? [Segment(block: block, isRest: true, activity: nil)] : [])
+            return work + (block.effectiveRestSeconds > 0 ? [Segment(block: block, isRest: true, activity: nil)] : [])
         } ?? []
     }
     private var current: Segment? { segments.indices.contains(segmentIndex) ? segments[segmentIndex] : nil }
     private var boxingFocus: String? {
-        guard let current, current.block.kind == .boxing, !current.isRest else { return nil }
+        guard let current, current.block.kind == .boxing, !current.isRest, current.block.sourceTitle == nil else { return nil }
         let key = DrillLibrary.focusCueKey(current.block.drillID ?? "", remainingSeconds: remaining)
         return TrainingCopy.text(key, language)
     }
@@ -675,9 +680,19 @@ struct LiveWorkoutView: View {
                             .font(.system(size: 10, weight: .bold, design: .monospaced))
                             .tracking(2).foregroundStyle(Noir.gold)
                         Spacer()
-                        Text(clock(remaining))
+                        Text(clock(current.isManual ? manualElapsed : remaining))
                             .font(.system(size: 28, weight: .light, design: .monospaced))
-                            .monospacedDigit()
+                            .monospacedDigit().accessibilityIdentifier("workout-clock")
+                    }
+                    if !current.isRest, let title = current.block.sourceTitle {
+                        Text(title).font(.system(size: 16, weight: .medium, design: .serif)).lineLimit(2).accessibilityIdentifier("workout-source-title")
+                        if let prescription = current.block.repetitionText {
+                            Text(prescription).font(.caption.monospaced()).foregroundStyle(Noir.gold).lineLimit(2)
+                        }
+                        Button { pause(); showSource = true } label: {
+                            Label(language == "fr" ? "Consigne et démo" : "Instructions & demo", systemImage: "play.rectangle")
+                                .font(.caption).foregroundStyle(Noir.gold)
+                        }.accessibilityIdentifier("workout-source")
                     }
                     if current.block.kind == .boxing && !current.isRest {
                         if let boxingFocus {
@@ -687,18 +702,18 @@ struct LiveWorkoutView: View {
                                 .lineLimit(2)
                         }
                         exchangeCounter
-                    } else if current.block.kind == .warmup {
-                        Text(TrainingCopy.text(current.activity?.key ?? "mobility", language))
+                    } else if current.block.kind == .warmup && !current.isRest && current.block.sourceTitle == nil {
+                        Text(TrainingCopy.text(current.activityKey ?? "mobility", language))
                             .font(.system(size: 17, weight: .medium, design: .serif))
-                        if current.activity?.key == "shadowboxing", shadowTheme >= 0 {
+                        if current.activityKey == "shadowboxing", shadowTheme >= 0 {
                             let theme = ShadowboxingGuide.themes[shadowTheme]
                             Text("\(shadowTheme + 1)/\(ShadowboxingGuide.themes.count) · \(theme.title[language] ?? "")")
                                 .font(.system(size: 12, weight: .bold, design: .monospaced)).foregroundStyle(Noir.gold)
                             Text(theme.line[language] ?? "").font(.subheadline).lineLimit(3)
                             exchangeCounter
                         }
-                        if current.activity?.key == "squats" || current.activity?.key == "lunges" {
-                            Text(TrainingCopy.format(current.activity?.key == "lunges" ? "lunge_observed_reps" : "squat_observed_reps", language, squatTracker.count))
+                        if current.activityKey == "squats" || current.activityKey == "lunges" {
+                            Text(TrainingCopy.format(current.activityKey == "lunges" ? "lunge_observed_reps" : "squat_observed_reps", language, squatTracker.count))
                                 .font(.system(size: 12, weight: .medium, design: .monospaced))
                         }
                     } else if current.isRest {
@@ -723,6 +738,11 @@ struct LiveWorkoutView: View {
                             }
                         }
                     }
+                    if current.block.sourceTitle != nil, !current.isRest,
+                       current.activityKey == "squats" || current.activityKey == "lunges" {
+                        Text(TrainingCopy.format(current.activityKey == "lunges" ? "lunge_observed_reps" : "squat_observed_reps", language, squatTracker.count))
+                            .font(.system(size: 12, weight: .medium, design: .monospaced))
+                    }
                     HStack(spacing: 14) {
                         Button {
                             if running { pause() }
@@ -731,6 +751,13 @@ struct LiveWorkoutView: View {
                             Label(TrainingCopy.text(running ? "pause" : "start", language), systemImage: running ? "pause.fill" : "play.fill")
                                 .frame(maxWidth: .infinity).padding(.vertical, 9)
                                 .background(Noir.red, in: RoundedRectangle(cornerRadius: 7))
+                        }
+                        .accessibilityIdentifier("workout-toggle")
+                        if current.isManual {
+                            Button { advance(completed: true) } label: {
+                                Label(language == "fr" ? "Terminé" : "Done", systemImage: "checkmark")
+                                    .padding(10).background(Noir.gold, in: RoundedRectangle(cornerRadius: 7)).foregroundStyle(Noir.black)
+                            }.accessibilityIdentifier("complete-manual-step")
                         }
                         Button { advance() } label: {
                             Image(systemName: "forward.end.fill").padding(9)
@@ -759,7 +786,8 @@ struct LiveWorkoutView: View {
             if let workout {
                 segmentIndex = workout.runtimeSegmentIndex ?? 0
                 remaining = workout.runtimeRemainingSeconds ?? (current?.seconds ?? 0)
-                if let current, let key = current.activity?.key, key == "squats" || key == "lunges" {
+                manualElapsed = workout.runtimeElapsedSeconds ?? 0
+                if let current, let key = current.activityKey, key == "squats" || key == "lunges" {
                     squatTracker = SquatTracker()
                     squatTracker.restoreCount((workout.exerciseReps ?? []).filter {
                         $0.blockID == current.block.id && $0.activityKey == key
@@ -783,6 +811,14 @@ struct LiveWorkoutView: View {
         }
         .onChange(of: camera.position) { _ in motionWindowMax = nil; squatTracker.resetPosture() }
         .onReceive(timer) { now in
+            if running, current?.isManual == true {
+                captureManualElapsed(at: now)
+                if pendingTimedSeconds >= 5 {
+                    flushTimedSeconds()
+                    training.saveRuntime(sessionID: sessionID, segmentIndex: segmentIndex, remainingSeconds: 0, elapsedSeconds: manualElapsed)
+                }
+                return
+            }
             guard running, let deadline else { return }
             let updated = max(0, Int(ceil(deadline.timeIntervalSince(now))))
             guard updated != remaining else { return }
@@ -792,7 +828,7 @@ struct LiveWorkoutView: View {
             if pendingTimedSeconds >= 5 { flushTimedSeconds() }
             if remaining == 0 { advance() }
             else {
-                if let current, current.activity?.key == "shadowboxing", !current.isRest {
+                if let current, current.activityKey == "shadowboxing", !current.isRest, current.block.sourceTitle == nil {
                     let index = ShadowboxingGuide.index(elapsed: current.seconds - remaining, total: current.seconds)
                     if index != shadowTheme {
                         shadowTheme = index
@@ -800,7 +836,7 @@ struct LiveWorkoutView: View {
                         speak(theme.line[language] ?? "", cueKey: theme.key, trigger: "shadowboxing_theme")
                     }
                 }
-                if let current, current.block.kind == .boxing, !current.isRest {
+                if let current, current.block.kind == .boxing, !current.isRest, current.block.sourceTitle == nil {
                     for boundary in [120, 60] where previous > boundary && updated <= boundary {
                         if let key = DrillLibrary.pacingCueKey(current.block.drillID ?? "", remainingSeconds: boundary) {
                             speak(TrainingCopy.text(key, language), cueKey: key, trigger: "timer_pacing")
@@ -812,15 +848,16 @@ struct LiveWorkoutView: View {
         }
         .onReceive(camera.$latestExchange) { exchange in
             guard let exchange, running, let current, !current.isRest else { return }
-            if current.activity?.key == "shadowboxing" { roundExchanges.append(exchange); voice.exchangeSound(fault: !exchange.faults.isEmpty); return }
+            if current.activityKey == "shadowboxing" { roundExchanges.append(exchange); voice.exchangeSound(fault: !exchange.faults.isEmpty); return }
             guard current.block.kind == .boxing else { return }
             var labeled = exchange
-            if let key = cuePolicy.cue(for: exchange, nowMs: Int(ProcessInfo.processInfo.systemUptime * 1000)),
+            if current.block.drillID == "probe-combine-angle-v1",
+               let key = cuePolicy.cue(for: exchange, nowMs: Int(ProcessInfo.processInfo.systemUptime * 1000)),
                let line = ExchangeCuePolicy.lines[key]?[language] {
                 speak(line, cueKey: key, trigger: "exchange_rule")
                 labeled.cue = key
             }
-            if labeled.cue == nil { voice.exchangeSound(fault: !exchange.faults.isEmpty) }
+            if labeled.cue == nil { voice.exchangeSound(fault: current.block.drillID == "probe-combine-angle-v1" && !exchange.faults.isEmpty) }
             roundExchanges.append(labeled)
         }
         .onReceive(camera.$latestEvidence) { cards in
@@ -836,7 +873,7 @@ struct LiveWorkoutView: View {
         }
         .onReceive(camera.$poseSample) { sample in
             guard running, let current, !current.isRest, let sample else { return }
-            if let key = current.activity?.key, key == "squats" || key == "lunges" {
+            if let key = current.activityKey, key == "squats" || key == "lunges" {
                 let angle = key == "lunges" ? sample.lungeKneeAngle : sample.squatKneeAngle
                 if squatTracker.observe(angle: angle, at: sample.sampledAt) {
                     training.recordExerciseRep(sessionID: sessionID, blockID: current.block.id,
@@ -864,6 +901,27 @@ struct LiveWorkoutView: View {
                 finishWorkout()
             }
         }
+        .sheet(isPresented: $showSource) {
+            NavigationStack {
+                ScrollView {
+                    if let block = current?.block {
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text(block.sourceTitle ?? "").font(.title2)
+                            Text(block.sourceInstructions ?? "").textSelection(.enabled)
+                            if let address = block.sourceURL, let url = URL(string: address) {
+                                Link(language == "fr" ? "Voir la séance source" : "View source workout", destination: url)
+                            }
+                            ForEach(Array((block.sourceDemoURLs ?? []).enumerated()), id: \.offset) { index, address in
+                                if let url = URL(string: address) {
+                                    Link(language == "fr" ? "Démonstration \(index + 1)" : "Demonstration \(index + 1)", destination: url)
+                                }
+                            }
+                        }.padding(24)
+                    }
+                }
+                .toolbar { ToolbarItem(placement: .confirmationAction) { Button(language == "fr" ? "Fermer" : "Close") { showSource = false } } }
+            }.tint(Noir.gold).preferredColorScheme(.dark)
+        }
         .fullScreenCover(isPresented: $showRecap) {
             WorkoutRecapView(sessionID: sessionID) {
                 showRecap = false
@@ -879,10 +937,12 @@ struct LiveWorkoutView: View {
         case .warmup: return TrainingCopy.text("warmup_title", language)
         case .cooldown: return TrainingCopy.text("cooldown_title", language)
         case .boxing: return TrainingCopy.format("round_title", language, segment.block.roundNumber ?? 0)
+        case .exercise: return language == "fr" ? "EXERCICE" : "EXERCISE"
+        case .recovery: return language == "fr" ? "RÉCUPÉRATION" : "RECOVERY"
         }
     }
     private var poseStatusForCurrentActivity: String {
-        guard current?.activity?.key == "squats" || current?.activity?.key == "lunges", camera.poseStatusKey == "pose_partial" || camera.poseStatusKey == "pose_visible" else {
+        guard current?.activityKey == "squats" || current?.activityKey == "lunges", camera.poseStatusKey == "pose_partial" || camera.poseStatusKey == "pose_visible" else {
             return camera.poseStatusKey
         }
         return camera.poseSample?.lowerBodyVisible == true ? "pose_legs_visible" : "pose_show_legs"
@@ -893,12 +953,20 @@ struct LiveWorkoutView: View {
         let line: String
         let key: String
         if current.isRest { key = "rest_speech"; line = TrainingCopy.text(key, language) }
-        else if current.activity?.key == "shadowboxing" {
+        else if let title = current.block.sourceTitle {
+            let instruction = [title, current.block.repetitionText].compactMap { $0 }.joined(separator: ". ")
+            // Original program copy is English. Keep its voice locale explicit.
+            guard !muted else { return }
+            voice.speak(instruction, locale: "en-US", cueKey: "source_instruction", language: "en")
+            training.recordCueRequest(sessionID: sessionID, blockID: current.block.id, cueKey: "source_instruction", language: "en", trigger: "stage_start")
+            return
+        }
+        else if current.activityKey == "shadowboxing" {
             let theme = ShadowboxingGuide.themes[ShadowboxingGuide.index(elapsed: current.seconds - remaining, total: current.seconds)]
             shadowTheme = ShadowboxingGuide.themes.firstIndex { $0.key == theme.key } ?? 0
             key = theme.key; line = theme.line[language] ?? ""
         }
-        else if current.block.kind == .warmup { key = "\(current.activity?.key ?? "mobility")_cue"; line = TrainingCopy.text(key, language) }
+        else if current.block.kind == .warmup { key = "\(current.activityKey ?? "mobility")_cue"; line = TrainingCopy.text(key, language) }
         else if current.block.kind == .cooldown { key = "cooldown_speech"; line = TrainingCopy.text(key, language) }
         else { key = DrillLibrary.speechKey(current.block.drillID ?? ""); line = TrainingCopy.text(key, language) }
         speak(line, cueKey: key, trigger: "stage_start")
@@ -911,41 +979,44 @@ struct LiveWorkoutView: View {
                                       cueKey: cueKey, language: language, trigger: trigger)
         }
     }
-    private func advance() {
+    private func advance(completed: Bool = false) {
         guard let current else { return }
         captureElapsedFromDeadline()
         flushTimedSeconds()
         training.recordSegment(sessionID: sessionID, blockID: current.block.id,
-                               activityKey: current.activity?.key, isRest: current.isRest,
+                               activityKey: current.activityKey, isRest: current.isRest,
                                plannedSeconds: current.seconds,
-                               elapsedSeconds: max(0, current.seconds - remaining),
-                               exitReason: remaining == 0 ? "timer_elapsed" : "skipped")
+                               elapsedSeconds: current.isManual ? manualElapsed : max(0, current.seconds - remaining),
+                               exitReason: current.isManual ? (completed ? "manual_completed" : "skipped") : (remaining == 0 ? "timer_elapsed" : "skipped"))
         voice.stop()
         flushPoseWindows()
         if current.block.kind == .boxing && !current.isRest { submitRound(current) }
-        if remaining <= 0 {
+        if (current.isManual && completed) || (!current.isManual && remaining <= 0) {
             if current.isRest { training.recordRestElapsed(sessionID: sessionID, blockID: current.block.id) }
             else if !segments.indices.contains(segmentIndex + 1) || segments[segmentIndex + 1].block.id != current.block.id || segments[segmentIndex + 1].isRest {
-                training.completeBlock(sessionID: sessionID, blockID: current.block.id, source: "timer_elapsed")
+                training.completeBlock(sessionID: sessionID, blockID: current.block.id, source: current.isManual ? "manual_completed" : "timer_elapsed")
             }
         }
         segmentIndex += 1
         squatTracker = SquatTracker()
         shadowTheme = -1
-        if let next = self.current, !next.isRest, next.block.kind == .boxing || next.activity?.key == "shadowboxing" {
+        if let next = self.current, !next.isRest, next.block.kind == .boxing || next.activityKey == "shadowboxing" {
             camera.resetExchanges(); roundExchanges = []; cuePolicy = ExchangeCuePolicy()
         }
         remaining = self.current?.seconds ?? 0
-        deadline = running ? Date().addingTimeInterval(TimeInterval(remaining)) : nil
-        training.saveRuntime(sessionID: sessionID, segmentIndex: segmentIndex, remainingSeconds: remaining)
+        manualElapsed = 0
+        manualAnchor = running && self.current?.isManual == true ? Date() : nil
+        deadline = running && self.current?.isManual != true ? Date().addingTimeInterval(TimeInterval(remaining)) : nil
+        training.saveRuntime(sessionID: sessionID, segmentIndex: segmentIndex, remainingSeconds: remaining, elapsedSeconds: 0)
         if self.current == nil {
             finishWorkout()
         } else if running { announceCurrent() }
     }
     /// Big enough to read from across the room while boxing.
     private var exchangeCounter: some View {
-        let faults = roundExchanges.filter { !$0.faults.isEmpty }.count
-        let lastFault = roundExchanges.last.map { !$0.faults.isEmpty } ?? false
+        let judgingDrill = current?.block.drillID == "probe-combine-angle-v1"
+        let faults = judgingDrill ? roundExchanges.filter { !$0.faults.isEmpty }.count : 0
+        let lastFault = judgingDrill && (roundExchanges.last.map { !$0.faults.isEmpty } ?? false)
         return HStack(alignment: .firstTextBaseline, spacing: 14) {
             Text("\(roundExchanges.count)")
                 .font(.system(size: 64, weight: .bold, design: .monospaced)).monospacedDigit()
@@ -954,7 +1025,7 @@ struct LiveWorkoutView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(language == "fr" ? "ÉCHANGES" : "EXCHANGES")
                     .font(.system(size: 11, weight: .bold, design: .monospaced)).tracking(2)
-                Text(language == "fr" ? "\(faults) avec faute" : "\(faults) with a fault")
+                Text(!judgingDrill ? (language == "fr" ? "à ton rythme" : "your rhythm") : (language == "fr" ? "\(faults) avec faute" : "\(faults) with a fault"))
                     .font(.system(size: 13, weight: .medium, design: .monospaced))
                     .foregroundStyle(faults > 0 ? Noir.red : Noir.muted)
                 Text(roundExchanges.last.map { language == "fr" ? ($0.opener == "probe" ? "dernier : sonde" : "dernier : engagement") : "last: \($0.opener)" } ?? " ")
@@ -979,23 +1050,23 @@ struct LiveWorkoutView: View {
         guard !exchanges.isEmpty else { return }
         roundReports.submit(RoundSummary(requestID: UUID().uuidString, language: language, stance: "orthodox",
                                          drillID: segment.block.drillID, round: segment.block.roundNumber ?? 0,
-                                         durationS: max(0, segment.seconds - remaining), exchanges: exchanges))
+                                         durationS: segment.isManual ? manualElapsed : max(0, segment.seconds - remaining), exchanges: exchanges))
     }
     private func finishWorkout() {
         guard workout?.state == .active else { return }
-        if let current, current.block.kind == .boxing, !current.isRest { submitRound(current) }
         captureElapsedFromDeadline()
+        if let current, current.block.kind == .boxing, !current.isRest { submitRound(current) }
         flushTimedSeconds()
         if let current {
             let alreadyLogged = workout?.segmentLogs?.last.map {
-                $0.blockID == current.block.id && $0.activityKey == current.activity?.key
+                $0.blockID == current.block.id && $0.activityKey == current.activityKey
                     && $0.isRest == current.isRest && $0.exitReason == "timer_elapsed"
             } ?? false
             if !alreadyLogged {
                 training.recordSegment(sessionID: sessionID, blockID: current.block.id,
-                                       activityKey: current.activity?.key, isRest: current.isRest,
+                                       activityKey: current.activityKey, isRest: current.isRest,
                                        plannedSeconds: current.seconds,
-                                       elapsedSeconds: max(0, current.seconds - remaining),
+                                       elapsedSeconds: current.isManual ? manualElapsed : max(0, current.seconds - remaining),
                                        exitReason: "session_finished")
             }
         }
@@ -1014,20 +1085,22 @@ struct LiveWorkoutView: View {
         flushTimedSeconds()
         if let deadline { remaining = max(0, Int(ceil(deadline.timeIntervalSinceNow))) }
         deadline = nil
+        manualAnchor = nil
         running = false
         UIApplication.shared.isIdleTimerDisabled = originalIdleTimerDisabled
         voice.stop()
         flushPoseWindows()
         motionWindowMax = nil
         squatTracker.resetPosture()
-        training.saveRuntime(sessionID: sessionID, segmentIndex: segmentIndex, remainingSeconds: remaining)
+        training.saveRuntime(sessionID: sessionID, segmentIndex: segmentIndex, remainingSeconds: remaining, elapsedSeconds: manualElapsed)
     }
     private func begin() {
-        guard !running, current != nil, remaining > 0 else { return }
+        guard !running, let current, remaining > 0 || current.isManual else { return }
         announceCurrent()
         running = true
         UIApplication.shared.isIdleTimerDisabled = true
-        deadline = Date().addingTimeInterval(TimeInterval(remaining))
+        deadline = current.isManual ? nil : Date().addingTimeInterval(TimeInterval(remaining))
+        manualAnchor = current.isManual ? Date() : nil
     }
     private func flushPoseWindows() {
         guard !pendingPoseWindows.isEmpty else { return }
@@ -1036,7 +1109,15 @@ struct LiveWorkoutView: View {
         if poseTelemetryEnabled { poseSender.sendPending(from: training) }
         pendingPoseWindows.removeAll()
     }
+    private func captureManualElapsed(at now: Date = Date()) {
+        guard running, current?.isManual == true, let anchor = manualAnchor else { return }
+        let delta = max(0, Int(now.timeIntervalSince(anchor)))
+        manualElapsed += delta
+        pendingTimedSeconds += delta
+        manualAnchor = anchor.addingTimeInterval(TimeInterval(delta))
+    }
     private func captureElapsedFromDeadline() {
+        if current?.isManual == true { captureManualElapsed(); return }
         guard running, let deadline else { return }
         let updated = max(0, Int(ceil(deadline.timeIntervalSinceNow)))
         if updated < remaining {

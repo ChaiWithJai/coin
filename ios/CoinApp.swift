@@ -83,21 +83,24 @@ struct Round: Codable, Identifiable {
         }
     }
 }
-/// Where the phone finds the private coaching server. HTTPS anywhere; plain HTTP only on this phone (127.0.0.1)
-/// or over Tailscale (100.x addresses), where WireGuard already encrypts the path.
+/// Where the phone finds the private coaching server. HTTPS anywhere; plain HTTP only on this phone (127.0.0.1),
+/// on a private home network (192.168.x, 10.x, 172.16-31.x), or over Tailscale (100.x).
 enum CoinServer {
     static func allowed(_ url: URL) -> Bool {
         if url.scheme == "https" { return true }
         guard url.scheme == "http", let host = url.host else { return false }
-        return host == "127.0.0.1" || host.hasPrefix("100.")
+        if host == "127.0.0.1" || host.hasPrefix("100.") || host.hasPrefix("192.168.") || host.hasPrefix("10.") { return true }
+        let parts = host.split(separator: ".").compactMap { Int($0) }
+        return parts.count == 4 && parts[0] == 172 && (16...31).contains(parts[1])
     }
     /// Seeds the server address and token from a bundled LocalConfig.json (git-ignored), so the phone needs no setup.
     static func seedFromBundle() {
         guard let url = Bundle.main.url(forResource: "LocalConfig", withExtension: "json"),
               let data = try? Data(contentsOf: url),
               let config = try? JSONSerialization.jsonObject(with: data) as? [String: String] else { return }
-        if (UserDefaults.standard.string(forKey: "serviceURL") ?? "").isEmpty, let service = config["service_url"] {
+        if let service = config["service_url"], UserDefaults.standard.string(forKey: "seededServiceURL") != service {
             UserDefaults.standard.set(service, forKey: "serviceURL")
+            UserDefaults.standard.set(service, forKey: "seededServiceURL")
         }
         if ServiceCredential.load() == nil, let token = config["service_token"] { ServiceCredential.save(token) }
     }
@@ -105,7 +108,16 @@ enum CoinServer {
 
 @main struct CoinApp: App {
     @StateObject private var store = FilmStore()
-    @StateObject private var training = TrainingStore()
+    @StateObject private var training: TrainingStore = {
+        #if DEBUG
+        if let token = ProcessInfo.processInfo.environment["COIN_TRAINING_DIRECTORY"],
+           !token.isEmpty, token.allSatisfy({ $0.isLetter || $0.isNumber || $0 == "-" }) {
+            let root = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            return TrainingStore(directory: root.appendingPathComponent("UITests").appendingPathComponent(token))
+        }
+        #endif
+        return TrainingStore()
+    }()
     init() { CoinServer.seedFromBundle() }
     var body: some Scene { WindowGroup { TrainingRootView().environmentObject(store).environmentObject(training) } }
 }

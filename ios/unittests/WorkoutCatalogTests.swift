@@ -1,0 +1,102 @@
+import XCTest
+@testable import Coin
+
+@MainActor final class WorkoutCatalogTests: XCTestCase {
+    func testOldBlockDecodesWithoutSourceFields() throws {
+        let old = """
+        {"id":"00000000-0000-0000-0000-000000000001","kind":"boxing","minutes":3,"roundNumber":1,"drillID":"probe-combine-angle-v1","restAfterMinutes":1}
+        """
+        let block = try JSONDecoder().decode(SessionBlock.self, from: Data(old.utf8))
+        XCTAssertEqual(block.effectiveSeconds, 180)
+        XCTAssertEqual(block.effectiveRestSeconds, 60)
+        XCTAssertFalse(block.isManual)
+        XCTAssertNil(block.sourceInstructions)
+    }
+
+    func testFreestyleKeepsExactSecondsAndHasNoFinalRest() throws {
+        let template = try XCTUnwrap(SessionTemplates.freestyle(rounds: 3, roundSeconds: 45, restSeconds: 15))
+        XCTAssertEqual(template.plannedSeconds, 165)
+        XCTAssertEqual(template.plannedMinutes, 3)
+        XCTAssertEqual(template.blocks.map(\.effectiveRestSeconds), [15, 15, 0])
+        XCTAssertTrue(template.blocks.allSatisfy { $0.drillID == "free-boxing-v1" && $0.effectiveSeconds == 45 })
+        XCTAssertNil(SessionTemplates.freestyle(rounds: 0))
+    }
+
+    func testSourceCatalogPreservesPrescriptionAndManualWork() throws {
+        let catalog = try WorkoutCatalog.load(Data(fixture.utf8))
+        let template = try XCTUnwrap(catalog.lessons.first).template()
+        XCTAssertEqual(template.sourceURL, "https://boxing.dharmicdata.org/test")
+        XCTAssertEqual(template.blocks.count, 3)
+        XCTAssertEqual(template.blocks.map(\.effectiveSeconds), [45, 45, 0])
+        XCTAssertEqual(template.blocks.map(\.effectiveRestSeconds), [15, 0, 0])
+        XCTAssertEqual(template.blocks.last?.sourceInstructions, "3 sets of 10 push-ups. Rest as needed.")
+        XCTAssertEqual(template.blocks.last?.sourceDemoURLs, ["https://example.org/demo"])
+        XCTAssertEqual(template.blocks.last?.sourceActivityKey, "pushups")
+        XCTAssertTrue(template.blocks.last?.isManual == true)
+    }
+
+    func testManualProgressSurvivesRestartWithoutInventedDurationOrTimerCompletion() throws {
+        let template = try XCTUnwrap(WorkoutCatalog.load(Data(fixture.utf8)).lessons.first).template()
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let store = TrainingStore(directory: folder)
+        let sessionID = store.start(template)
+        let block = try XCTUnwrap(template.blocks.last)
+        store.recordTimedSeconds(sessionID: sessionID, seconds: 240)
+        store.saveRuntime(sessionID: sessionID, segmentIndex: 2, remainingSeconds: 0, elapsedSeconds: 135)
+        store.recordSegment(sessionID: sessionID, blockID: block.id, activityKey: "pushups", isRest: false,
+                            plannedSeconds: 0, elapsedSeconds: 135, exitReason: "timer_elapsed")
+        XCTAssertTrue(store.data.sessions[0].segmentLogs?.isEmpty == true)
+        store.recordSegment(sessionID: sessionID, blockID: block.id, activityKey: "pushups", isRest: false,
+                            plannedSeconds: 0, elapsedSeconds: 135, exitReason: "manual_completed")
+        store.completeBlock(sessionID: sessionID, blockID: block.id, source: "manual_completed")
+        let restored = try XCTUnwrap(TrainingStore(directory: folder).data.sessions.first)
+        XCTAssertEqual(restored.timerElapsedSeconds, 240)
+        XCTAssertEqual(restored.runtimeElapsedSeconds, 135)
+        XCTAssertEqual(restored.sourceVersion, "source-hash")
+        XCTAssertEqual(restored.segmentLogs?.first?.exitReason, "manual_completed")
+        XCTAssertEqual(restored.segmentLogs?.first?.elapsedSeconds, 135)
+        XCTAssertEqual(restored.blockLogs?.first?.evidenceSource, "manual_completed")
+    }
+
+    func testInvalidTimedSourceDoesNotSilentlyInventDuration() throws {
+        let malformed = fixture.replacingOccurrences(of: "\"durationSeconds\":45", with: "\"durationSeconds\":null")
+        XCTAssertThrowsError(try WorkoutCatalog.load(Data(malformed.utf8)))
+    }
+
+    func testSourceInstructionsKeepTheirActualLanguageInTelemetry() throws {
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let template = try XCTUnwrap(WorkoutCatalog.load(Data(fixture.utf8)).lessons.first).template()
+        let store = TrainingStore(directory: folder)
+        let sessionID = store.start(template)
+        let block = try XCTUnwrap(template.blocks.first)
+        store.recordCueRequest(sessionID: sessionID, blockID: block.id, cueKey: "source_instruction",
+                               language: "fr", trigger: "stage_start")
+        XCTAssertTrue(store.data.sessions[0].cueRequests?.isEmpty == true)
+        store.recordCueRequest(sessionID: sessionID, blockID: block.id, cueKey: "source_instruction",
+                               language: "en", trigger: "stage_start")
+        XCTAssertEqual(store.data.sessions[0].cueRequests?.first?.language, "en")
+    }
+
+    func testBundledCatalogLoadsEverySourceDayWithoutInventingManualDurations() throws {
+        let catalog = WorkoutCatalog.shared
+        XCTAssertNil(catalog.error)
+        XCTAssertEqual(catalog.lessons.count, 70)
+        for lesson in catalog.lessons {
+            let template = lesson.template()
+            XCTAssertEqual(template.sourceVersion, lesson.sourceSHA256)
+            XCTAssertFalse(template.blocks.isEmpty)
+            XCTAssertTrue(template.blocks.filter(\.isManual).allSatisfy { $0.effectiveSeconds == 0 })
+            XCTAssertTrue(template.blocks.allSatisfy { $0.sourceBlockID != nil && $0.sourceInstructions != nil })
+        }
+        let first = try XCTUnwrap(catalog.lessons.first { $0.id == "basic-w1-d1" }).template()
+        let frontal = first.blocks.filter { $0.sourceTitle == "FR0NTAL STANCE DRILL" }
+        XCTAssertEqual(frontal.map(\.effectiveSeconds), [120, 120, 120, 120])
+        XCTAssertEqual(frontal.map(\.effectiveRestSeconds), [30, 30, 30, 0])
+    }
+
+    private var fixture: String { """
+    {"schemaVersion":1,"workouts":[{"id":"source-test","program":"boxing","week":1,"day":1,"title":"Source workout","sourceURL":"https://boxing.dharmicdata.org/test","sourceSHA256":"source-hash","blocks":[{"id":"a","title":"Shadowboxing","instructions":"Two rounds, 45 seconds each. Rest 15 seconds between rounds.","kind":"boxing","drillID":"free-boxing-v1","rounds":2,"durationSeconds":45,"restSeconds":15,"completion":"timed"},{"id":"b","title":"Push-ups","instructions":"3 sets of 10 push-ups. Rest as needed.","kind":"exercise","activityKey":"pushups","reps":"10 reps","sets":3,"completion":"manual","demoURLs":["https://example.org/demo"]}]}]}
+    """ }
+}

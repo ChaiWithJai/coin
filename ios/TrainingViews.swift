@@ -46,10 +46,17 @@ struct TrainingHomeView: View {
     @AppStorage("language") private var language = "fr"
     @State private var path: [UUID] = []
     @State private var selectedMinutes = 30
+    @State private var freestyle = false
+    @State private var selectedLesson: WorkoutLesson?
+    @State private var showPrograms = false
     @StateObject private var voice = WorkoutSpeechController()
-    private var selectedTemplate: TrainingTemplate { SessionTemplates.all.first { $0.durationMinutes == selectedMinutes } ?? SessionTemplates.all[0] }
+    private var selectedTemplate: TrainingTemplate {
+        if let lesson = selectedLesson { return lesson.template() }
+        if freestyle { return SessionTemplates.freestyle()! }
+        return SessionTemplates.all.first { $0.durationMinutes == selectedMinutes } ?? SessionTemplates.all[0]
+    }
     private var activeSession: TrainingSession? { training.data.sessions.first { $0.state == .active } }
-    private var shownDrillID: String { activeSession?.blocks.first(where: { $0.kind == .boxing })?.drillID ?? "probe-combine-angle-v1" }
+    private var shownDrillID: String { activeSession?.blocks.first(where: { $0.kind == .boxing })?.drillID ?? selectedTemplate.blocks.first(where: { $0.kind == .boxing })?.drillID ?? "free-boxing-v1" }
     private var shownRoundCount: Int { activeSession?.blocks.filter { $0.kind == .boxing }.count ?? selectedTemplate.boxingRounds }
     var body: some View {
         NavigationStack(path: $path) {
@@ -85,6 +92,29 @@ struct TrainingHomeView: View {
                         .lineSpacing(2).padding(.top, 8)
                     Spacer(minLength: 18)
                     if activeSession == nil {
+                        HStack(spacing: 8) {
+                            Button { showPrograms = true } label: {
+                                Label(language == "fr" ? "Programme" : "Program", systemImage: "list.bullet.rectangle")
+                                    .frame(maxWidth: .infinity).padding(.vertical, 12)
+                                    .background(selectedLesson != nil ? Noir.gold : Noir.panel)
+                                    .foregroundStyle(selectedLesson != nil ? Noir.black : Noir.ink)
+                            }.accessibilityIdentifier("choose-program")
+                            Button { freestyle = true; selectedLesson = nil } label: {
+                                Label(language == "fr" ? "Libre" : "Freestyle", systemImage: "figure.boxing")
+                                    .frame(maxWidth: .infinity).padding(.vertical, 12)
+                                    .background(freestyle ? Noir.gold : Noir.panel)
+                                    .foregroundStyle(freestyle ? Noir.black : Noir.ink)
+                            }.accessibilityIdentifier("choose-freestyle")
+                        }.font(.system(size: 13, weight: .semibold)).clipShape(RoundedRectangle(cornerRadius: 8))
+                        if let lesson = selectedLesson {
+                            Text(lesson.title).font(.headline).foregroundStyle(Noir.ink).padding(.top, 12)
+                            Text(language == "fr" ? "Le programme conserve les durées, répétitions et démonstrations de la source." : "Source timings, repetitions and demonstrations stay with each exercise.")
+                                .font(.caption).foregroundStyle(Noir.muted).padding(.top, 4)
+                        } else if freestyle {
+                            Text(language == "fr" ? "6 reprises de 3 minutes · repos 1 minute" : "6 rounds of 3 minutes · 1 minute rest")
+                                .font(.caption).foregroundStyle(Noir.muted).padding(.top, 12)
+                        }
+                        if selectedLesson == nil && !freestyle {
                         Text(TrainingCopy.text("choose_duration", language).uppercased())
                             .font(.system(size: 10, weight: .bold, design: .monospaced)).tracking(2).foregroundStyle(Noir.muted)
                         HStack(spacing: 8) {
@@ -98,6 +128,7 @@ struct TrainingHomeView: View {
                                 }.accessibilityLabel("\(template.durationMinutes) min")
                             }
                         }.padding(.top, 8)
+                        }
                     }
                     Button { path.append(training.resumeOrStart(selectedTemplate)) } label: {
                         HStack {
@@ -110,12 +141,12 @@ struct TrainingHomeView: View {
                         .font(.system(size: 14, weight: .bold)).foregroundStyle(.white)
                         .padding(.horizontal, 16).padding(.vertical, 13)
                         .background(Noir.red, in: RoundedRectangle(cornerRadius: 8))
-                    }.padding(.top, 12)
+                    }.accessibilityIdentifier("start-workout").padding(.top, 12)
                     Text(TrainingCopy.text(activeSession == nil ? "home_tonight" : "home_active_session", language))
                         .font(.system(size: 10, weight: .bold, design: .monospaced)).tracking(2.5).foregroundStyle(Noir.gold)
                         .padding(.top, 22)
                     HStack(alignment: .firstTextBaseline) {
-                        Text(DrillLibrary.name(shownDrillID, language: language))
+                        Text(activeSession?.sourceTitle ?? selectedLesson?.title ?? DrillLibrary.name(shownDrillID, language: language))
                             .font(.system(size: 20, weight: .medium, design: .serif)).foregroundStyle(Noir.ink)
                         Spacer()
                         Text(TrainingCopy.format("round_count", language, shownRoundCount))
@@ -160,11 +191,19 @@ struct TrainingHomeView: View {
             .navigationDestination(for: UUID.self) { sessionID in
                 LiveWorkoutView(sessionID: sessionID)
             }
+            .sheet(isPresented: $showPrograms) {
+                WorkoutProgramPicker { lesson in
+                    selectedLesson = lesson
+                    freestyle = false
+                    showPrograms = false
+                }.environmentObject(training)
+            }
             .onAppear {
-                // No user input: opening the app goes straight into today's session; the camera starts the timer.
-                guard !Self.autoStarted, path.isEmpty, !ProcessInfo.processInfo.arguments.contains("-noAutoStart") else { return }
+                // Resume a workout automatically; let a new workout choose its program or freestyle.
+                guard !Self.autoStarted, path.isEmpty, !ProcessInfo.processInfo.arguments.contains("-noAutoStart"),
+                      let activeSession else { return }
                 Self.autoStarted = true
-                path.append(training.resumeOrStart(selectedTemplate))
+                path.append(activeSession.id)
             }
         }
     }
@@ -341,8 +380,20 @@ struct WorkoutRecapView: View {
     @State private var reflection = ""
     private var session: TrainingSession? { training.data.sessions.first { $0.id == sessionID } }
     private var fullyTimed: Bool {
-        guard let session, let seconds = session.timerElapsedSeconds else { return false }
-        return seconds >= session.plannedMinutes * 60
+        guard let session, !session.blocks.isEmpty else { return false }
+        let logs = session.segmentLogs ?? []
+        return session.blocks.allSatisfy { block in
+            guard session.completedBlockIDs.contains(block.id) else { return false }
+            let work = logs.filter { $0.blockID == block.id && !$0.isRest }
+            guard !work.isEmpty,
+                  work.allSatisfy({ $0.exitReason == (block.isManual ? "manual_completed" : "timer_elapsed") }) else { return false }
+            if let activities = block.activities {
+                guard activities.allSatisfy({ activity in work.contains { $0.activityKey == activity.key } }) else { return false }
+            }
+            return block.effectiveRestSeconds == 0 || logs.contains {
+                $0.blockID == block.id && $0.isRest && $0.exitReason == "timer_elapsed"
+            }
+        }
     }
 
     var body: some View {
@@ -609,5 +660,52 @@ struct TrainingDayLogView: View {
         .navigationTitle(day.formatted(Date.FormatStyle().day().month(.wide).year().locale(Locale(identifier: language))))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)
+    }
+}
+
+/// Source lessons remain available offline; demonstrations open only on request.
+struct WorkoutProgramPicker: View {
+    @EnvironmentObject private var training: TrainingStore
+    @Environment(\.dismiss) private var dismiss
+    @AppStorage("language") private var language = "fr"
+    @State private var program = "basic"
+    let choose: (WorkoutLesson) -> Void
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    Picker(language == "fr" ? "Programme" : "Program", selection: $program) {
+                        Text(language == "fr" ? "Fondamentaux" : "Basic").tag("basic")
+                        Text(language == "fr" ? "Compétition" : "Competitive").tag("competitive")
+                    }.pickerStyle(.segmented)
+                    Text(language == "fr" ? "Les instructions originales sont en anglais. Les commandes de Coin restent dans ta langue." : "Original workout instructions are in English. Coin controls follow your language.")
+                        .font(.caption).foregroundStyle(Noir.muted)
+                }
+                ForEach(1...5, id: \.self) { week in
+                    Section(language == "fr" ? "Semaine \(week)" : "Week \(week)") {
+                        ForEach(WorkoutCatalog.shared.lessons.filter { $0.programID == program && $0.week == week }) { lesson in
+                            Button { choose(lesson) } label: {
+                                HStack(alignment: .top, spacing: 12) {
+                                    Text(String(format: "%02d", (week - 1) * 7 + lesson.day))
+                                        .font(.body.monospaced()).foregroundStyle(Noir.gold)
+                                    Text(lesson.title).foregroundStyle(Noir.ink)
+                                    Spacer()
+                                    if training.data.sessions.contains(where: { $0.templateID == lesson.template().id && $0.state == .completed && $0.completedBlockIDs.count == $0.blocks.count }) {
+                                        Image(systemName: "checkmark.circle.fill").foregroundStyle(Noir.gold)
+                                    } else { Image(systemName: "arrow.right").foregroundStyle(Noir.muted) }
+                                }.padding(.vertical, 5)
+                            }.accessibilityIdentifier("lesson-\(lesson.id)")
+                        }
+                    }
+                }
+                if WorkoutCatalog.shared.lessons.isEmpty {
+                    Text(language == "fr" ? "Le programme n’a pas pu être chargé. La séance libre reste disponible." : "The program could not be loaded. Freestyle is still available.")
+                }
+            }
+            .scrollContentBackground(.hidden).background(Noir.black)
+            .navigationTitle(language == "fr" ? "Choisis ta séance" : "Choose your workout")
+            .toolbar { ToolbarItem(placement: .cancellationAction) { Button(language == "fr" ? "Fermer" : "Close") { dismiss() } } }
+        }.tint(Noir.gold).preferredColorScheme(.dark)
     }
 }

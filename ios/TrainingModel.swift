@@ -301,7 +301,8 @@ enum DrillLibrary {
     }
 }
 
-enum SessionBlockKind: String, Codable { case warmup, boxing, cooldown }
+enum SessionBlockKind: String, Codable { case warmup, boxing, cooldown, exercise, recovery }
+enum BlockCompletionMode: String, Codable { case timed, manual }
 
 struct PreparationActivity: Codable, Hashable {
     let key: String
@@ -329,13 +330,32 @@ struct SessionBlock: Codable, Identifiable, Hashable {
     var drillID: String?
     let restAfterMinutes: Int
     var activities: [PreparationActivity]? = nil
+    // Optional fields keep existing saved sessions readable. Source text remains
+    // evidence for the workout prescription, separate from observed performance.
+    var durationSeconds: Int? = nil
+    var restAfterSeconds: Int? = nil
+    var sourceTitle: String? = nil
+    var sourceInstructions: String? = nil
+    var sourceURL: String? = nil
+    var sourceDemoURLs: [String]? = nil
+    var sourceActivityKey: String? = nil
+    var sourceBlockID: String? = nil
+    var repetitionText: String? = nil
+    var completionMode: BlockCompletionMode? = nil
+    var effectiveSeconds: Int { max(0, durationSeconds ?? minutes * 60) }
+    var effectiveRestSeconds: Int { max(0, restAfterSeconds ?? restAfterMinutes * 60) }
+    var isManual: Bool { completionMode == .manual }
 }
 
 struct TrainingTemplate: Codable, Identifiable, Hashable {
     let id: String
     let durationMinutes: Int
     let blocks: [SessionBlock]
-    var plannedMinutes: Int { blocks.reduce(0) { $0 + $1.minutes + $1.restAfterMinutes } }
+    var sourceTitle: String? = nil
+    var sourceURL: String? = nil
+    var sourceVersion: String? = nil
+    var plannedSeconds: Int { blocks.reduce(0) { $0 + $1.effectiveSeconds + $1.effectiveRestSeconds } }
+    var plannedMinutes: Int { Int(ceil(Double(plannedSeconds) / 60)) }
     var boxingRounds: Int { blocks.filter { $0.kind == .boxing }.count }
 }
 
@@ -359,6 +379,19 @@ enum SessionTemplates {
         return TrainingTemplate(id: "standard-\(duration)-v1", durationMinutes: duration, blocks: blocks)
     }
     static var all: [TrainingTemplate] { durations.compactMap(make) }
+    static func freestyle(rounds: Int = 6, roundSeconds: Int = 180, restSeconds: Int = 60) -> TrainingTemplate? {
+        guard (1...30).contains(rounds), (10...3600).contains(roundSeconds),
+              (0...600).contains(restSeconds) else { return nil }
+        let blocks = (1...rounds).map { number in
+            SessionBlock(kind: .boxing, minutes: roundSeconds / 60, roundNumber: number,
+                         drillID: "free-boxing-v1", restAfterMinutes: number == rounds ? 0 : restSeconds / 60,
+                         durationSeconds: roundSeconds, restAfterSeconds: number == rounds ? 0 : restSeconds,
+                         completionMode: .timed)
+        }
+        let seconds = rounds * roundSeconds + (rounds - 1) * restSeconds
+        return TrainingTemplate(id: "freestyle-\(rounds)-\(roundSeconds)-\(restSeconds)-v1",
+                                durationMinutes: Int(ceil(Double(seconds) / 60)), blocks: blocks)
+    }
 }
 
 enum SessionState: String, Codable { case planned, active, completed, interrupted }
@@ -462,7 +495,13 @@ struct TrainingSession: Codable, Identifiable {
     var reflection: String = ""
     var runtimeSegmentIndex: Int? = nil
     var runtimeRemainingSeconds: Int? = nil
+    var runtimeElapsedSeconds: Int? = nil
     var timerElapsedSeconds: Int? = nil
+    var sourceTitle: String? = nil
+    var sourceURL: String? = nil
+    var sourceVersion: String? = nil
+    var plannedSeconds: Int { blocks.reduce(0) { $0 + $1.effectiveSeconds + $1.effectiveRestSeconds } }
+    var isOpenEnded: Bool { blocks.contains(where: \.isManual) }
     var loggedMinutes: Int {
         if let timerElapsedSeconds { return timerElapsedSeconds / 60 }
         let activeMinutes = blocks.filter { completedBlockIDs.contains($0.id) }.reduce(0) { $0 + $1.minutes }
@@ -550,6 +589,9 @@ struct TrainingData: Codable {
             data.sessions[index].endReason = "new_session_started"
         }
         var session = TrainingSession(templateID: template.id, plannedMinutes: template.durationMinutes, createdAt: date, state: .active, blocks: template.blocks)
+        session.sourceTitle = template.sourceTitle
+        session.sourceURL = template.sourceURL
+        session.sourceVersion = template.sourceVersion
         session.startedAt = date
         session.timerElapsedSeconds = 0
         data.sessions.insert(session, at: 0); persist(); return session.id
@@ -579,9 +621,13 @@ struct TrainingData: Codable {
                        plannedSeconds: Int, elapsedSeconds: Int, exitReason: String, at date: Date = Date()) {
         guard let index = data.sessions.firstIndex(where: { $0.id == sessionID }),
               data.sessions[index].state == .active,
-              data.sessions[index].blocks.contains(where: { $0.id == blockID }),
-              plannedSeconds > 0, (0...plannedSeconds).contains(elapsedSeconds),
-              ["timer_elapsed", "skipped", "session_finished"].contains(exitReason) else { return }
+              let block = data.sessions[index].blocks.first(where: { $0.id == blockID }),
+              elapsedSeconds >= 0,
+              ["timer_elapsed", "manual_completed", "skipped", "session_finished"].contains(exitReason) else { return }
+        let manual = block.isManual && !isRest
+        guard manual ? plannedSeconds == 0 : (plannedSeconds > 0 && elapsedSeconds <= plannedSeconds),
+              exitReason != "manual_completed" || manual,
+              exitReason != "timer_elapsed" || !manual else { return }
         if data.sessions[index].segmentLogs == nil { data.sessions[index].segmentLogs = [] }
         data.sessions[index].segmentLogs?.append(SegmentLog(blockID: blockID, activityKey: activityKey,
             isRest: isRest, plannedSeconds: plannedSeconds, elapsedSeconds: elapsedSeconds,
@@ -609,7 +655,7 @@ struct TrainingData: Codable {
         guard let index = data.sessions.firstIndex(where: { $0.id == sessionID }),
               data.sessions[index].state == .active,
               data.sessions[index].blocks.contains(where: { $0.id == blockID &&
-                  ($0.activities ?? []).contains(where: { $0.key == activityKey }) }),
+                  (($0.activities ?? []).contains(where: { $0.key == activityKey }) || $0.sourceActivityKey == activityKey) }),
               (activityKey == "squats" && sourceVersion == "mediapipe-squat-angle-v1")
                 || (activityKey == "lunges" && sourceVersion == "mediapipe-lunge-angle-v1"),
               !(data.sessions[index].exerciseReps ?? []).contains(where: {
@@ -626,7 +672,7 @@ struct TrainingData: Codable {
               data.sessions[index].state == .active,
               block.drillID == attempt.protocolID,
               attempt.startMs >= 0, attempt.endMs > attempt.startMs,
-              attempt.endMs <= block.minutes * 60_000,
+              block.isManual || attempt.endMs <= block.effectiveSeconds * 1000,
               ["full", "partial", "unobservable"].contains(attempt.cameraCoverage),
               attempt.spans.allSatisfy({ $0.startMs >= attempt.startMs && $0.endMs <= attempt.endMs && $0.endMs > $0.startMs }),
               !(data.sessions[index].engagementAttempts ?? []).contains(where: { $0.id == attempt.id }) else { return }
@@ -660,10 +706,12 @@ struct TrainingData: Codable {
                           trigger: String, at date: Date = Date()) {
         guard let index = data.sessions.firstIndex(where: { $0.id == sessionID }),
               data.sessions[index].state == .active,
-              data.sessions[index].blocks.contains(where: { $0.id == blockID }),
+              let block = data.sessions[index].blocks.first(where: { $0.id == blockID }),
               ["fr", "en"].contains(language),
-              ["stage_start", "timer_pacing", "framing"].contains(trigger),
-              TrainingCopy.table[cueKey] != nil || TrainingCopy.base[cueKey] != nil else { return }
+              ["stage_start", "timer_pacing", "framing"].contains(trigger) else { return }
+        let sourcedInstruction = cueKey == "source_instruction" && block.sourceTitle != nil
+            && trigger == "stage_start" && language == "en"
+        guard sourcedInstruction || TrainingCopy.table[cueKey] != nil || TrainingCopy.base[cueKey] != nil else { return }
         if data.sessions[index].cueRequests == nil { data.sessions[index].cueRequests = [] }
         data.sessions[index].cueRequests?.append(CoachCueRecord(blockID: blockID, requestedAt: date,
                                                                  cueKey: cueKey, language: language, trigger: trigger))
@@ -680,18 +728,20 @@ struct TrainingData: Codable {
         data.sessions[sessionIndex].blocks[blockIndex].drillID = drillID
         persist()
     }
-    func saveRuntime(sessionID: UUID, segmentIndex: Int, remainingSeconds: Int) {
+    func saveRuntime(sessionID: UUID, segmentIndex: Int, remainingSeconds: Int, elapsedSeconds: Int? = nil) {
         guard let index = data.sessions.firstIndex(where: { $0.id == sessionID }), data.sessions[index].state == .active else { return }
         data.sessions[index].runtimeSegmentIndex = max(0, segmentIndex)
         data.sessions[index].runtimeRemainingSeconds = max(0, remainingSeconds)
+        if let elapsedSeconds { data.sessions[index].runtimeElapsedSeconds = max(0, elapsedSeconds) }
         persist()
     }
     func recordTimedSeconds(sessionID: UUID, seconds: Int) {
         guard (1...300).contains(seconds),
               let index = data.sessions.firstIndex(where: { $0.id == sessionID }),
               data.sessions[index].state == .active else { return }
-        data.sessions[index].timerElapsedSeconds = min(data.sessions[index].plannedMinutes * 60,
-                                                       (data.sessions[index].timerElapsedSeconds ?? 0) + seconds)
+        let elapsed = (data.sessions[index].timerElapsedSeconds ?? 0) + seconds
+        data.sessions[index].timerElapsedSeconds = data.sessions[index].isOpenEnded
+            ? elapsed : min(data.sessions[index].plannedSeconds, elapsed)
         persist()
     }
     func finish(_ id: UUID, reflection: String, at date: Date = Date()) {

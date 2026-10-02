@@ -22,6 +22,8 @@ targets:
         ITSAppUsesNonExemptEncryption: false
         NSAppTransportSecurity:
           NSAllowsArbitraryLoads: true
+          NSAllowsLocalNetworking: true
+        NSLocalNetworkUsageDescription: Coin sends each finished round to your coaching server on your home network.
     sources:
       - CoinApp.swift
       - CoachingClient.swift
@@ -30,6 +32,8 @@ targets:
       - PoseAnalysis.swift
       - GuardReview.swift
       - TrainingModel.swift
+      - WorkoutCatalog.swift
+      - WorkoutCatalog.json
       - TrainingViews.swift
       - LiveWorkout.swift
       - ExchangeTracker.swift
