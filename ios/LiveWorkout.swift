@@ -11,6 +11,7 @@ struct LivePoseSample {
     let captureToPoseMs: Double?
     let wristTravelBodyWidths: Double?
     let squatKneeAngle: Double?
+    var lungeKneeAngle: Double? = nil
     let lowerBodyVisible: Bool
 }
 
@@ -47,6 +48,19 @@ enum PoseMotion {
         case let (nil, right?): return right
         default: return nil
         }
+    }
+    /// Lunge depth: the most bent visible knee (the front leg), so one leg in view is enough.
+    static func lungeKneeAngle(_ joints: [PoseJoint]) -> Double? {
+        guard joints.count > 28 else { return nil }
+        func angle(_ hip: Int, _ knee: Int, _ ankle: Int) -> Double? {
+            guard [hip, knee, ankle].allSatisfy({ joints[$0].inFrame }) else { return nil }
+            let a = (joints[hip].x - joints[knee].x, joints[hip].y - joints[knee].y)
+            let b = (joints[ankle].x - joints[knee].x, joints[ankle].y - joints[knee].y)
+            let lengths = hypot(a.0, a.1) * hypot(b.0, b.1)
+            guard lengths > 0.002 else { return nil }
+            return acos(max(-1, min(1, (a.0 * b.0 + a.1 * b.1) / lengths))) * 180 / .pi
+        }
+        return [angle(23, 25, 27), angle(24, 26, 28)].compactMap { $0 }.min()
     }
     static func wristTravelBodyWidths(previous: [PoseJoint], current: [PoseJoint]) -> Double? {
         let required = [11, 12, 15, 16, 23, 24]
@@ -320,7 +334,8 @@ final class WorkoutCamera: NSObject, ObservableObject, AVCaptureVideoDataOutputS
                                                  captureToPoseMs: latencyMs,
                                                  wristTravelBodyWidths: wristTravel,
                                                  squatKneeAngle: squatAngle,
-                                                 lowerBodyVisible: squatAngle != nil)
+                                                 lungeKneeAngle: PoseMotion.lungeKneeAngle(joints),
+                                                 lowerBodyVisible: squatAngle != nil || PoseMotion.lungeKneeAngle(joints) != nil)
             }
         }
     }
@@ -589,8 +604,8 @@ struct LiveWorkoutView: View {
                     } else if current.block.kind == .warmup {
                         Text(TrainingCopy.text(current.activity?.key ?? "mobility", language))
                             .font(.system(size: 17, weight: .medium, design: .serif))
-                        if current.activity?.key == "squats" {
-                            Text(TrainingCopy.format("squat_observed_reps", language, squatTracker.count))
+                        if current.activity?.key == "squats" || current.activity?.key == "lunges" {
+                            Text(TrainingCopy.format(current.activity?.key == "lunges" ? "lunge_observed_reps" : "squat_observed_reps", language, squatTracker.count))
                                 .font(.system(size: 12, weight: .medium, design: .monospaced))
                         }
                     } else if current.isRest {
@@ -639,10 +654,10 @@ struct LiveWorkoutView: View {
             if let workout {
                 segmentIndex = workout.runtimeSegmentIndex ?? 0
                 remaining = workout.runtimeRemainingSeconds ?? (current?.seconds ?? 0)
-                if let current, current.activity?.key == "squats" {
+                if let current, let key = current.activity?.key, key == "squats" || key == "lunges" {
                     squatTracker = SquatTracker()
                     squatTracker.restoreCount((workout.exerciseReps ?? []).filter {
-                        $0.blockID == current.block.id && $0.activityKey == "squats"
+                        $0.blockID == current.block.id && $0.activityKey == key
                     }.count)
                 }
             }
@@ -701,10 +716,11 @@ struct LiveWorkoutView: View {
         }
         .onReceive(camera.$poseSample) { sample in
             guard running, let current, !current.isRest, let sample else { return }
-            if current.activity?.key == "squats" {
-                if squatTracker.observe(angle: sample.squatKneeAngle, at: sample.sampledAt) {
+            if let key = current.activity?.key, key == "squats" || key == "lunges" {
+                let angle = key == "lunges" ? sample.lungeKneeAngle : sample.squatKneeAngle
+                if squatTracker.observe(angle: angle, at: sample.sampledAt) {
                     training.recordExerciseRep(sessionID: sessionID, blockID: current.block.id,
-                                               activityKey: "squats", sourceVersion: "mediapipe-squat-angle-v1",
+                                               activityKey: key, sourceVersion: "mediapipe-\(key == "lunges" ? "lunge" : "squat")-angle-v1",
                                                at: sample.sampledAt)
                 }
             }
@@ -746,7 +762,7 @@ struct LiveWorkoutView: View {
         }
     }
     private var poseStatusForCurrentActivity: String {
-        guard current?.activity?.key == "squats", camera.poseStatusKey == "pose_partial" || camera.poseStatusKey == "pose_visible" else {
+        guard current?.activity?.key == "squats" || current?.activity?.key == "lunges", camera.poseStatusKey == "pose_partial" || camera.poseStatusKey == "pose_visible" else {
             return camera.poseStatusKey
         }
         return camera.poseSample?.lowerBodyVisible == true ? "pose_legs_visible" : "pose_show_legs"

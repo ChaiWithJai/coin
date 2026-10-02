@@ -216,7 +216,7 @@ enum TrainingCopy {
             "pose_absent": ["fr": "Suivi limité · séance en cours", "en": "Limited view · workout continues"],
             "pose_visible": ["fr": "Corps visible", "en": "Body visible"],
             "pose_partial": ["fr": "Vue partielle · séance en cours", "en": "Partial view · workout continues"],
-            "pose_legs_visible": ["fr": "Jambes visibles · squats suivis", "en": "Legs visible · tracking squats"],
+            "pose_legs_visible": ["fr": "Jambes visibles · répétitions suivies", "en": "Legs visible · tracking reps"],
             "pose_show_legs": ["fr": "Montre hanches, genoux et chevilles", "en": "Show hips, knees and ankles"],
             "camera_starting": ["fr": "Démarrage caméra", "en": "Starting camera"],
             "camera_unavailable": ["fr": "Caméra indisponible", "en": "Camera unavailable"],
@@ -226,6 +226,7 @@ enum TrainingCopy {
             "mobility": ["fr": "Mobilité", "en": "Mobility"],
             "squats": ["fr": "Squats", "en": "Squats"],
             "squat_observed_reps": ["fr": "%d squats observés", "en": "%d squats observed"],
+            "lunge_observed_reps": ["fr": "%d fentes observées", "en": "%d lunges observed"],
             "lunges": ["fr": "Fentes", "en": "Lunges"],
             "shadowboxing": ["fr": "Boxe dans le vide", "en": "Shadowboxing"],
             "pushups": ["fr": "Pompes", "en": "Push-ups"],
@@ -609,7 +610,8 @@ struct TrainingData: Codable {
               data.sessions[index].state == .active,
               data.sessions[index].blocks.contains(where: { $0.id == blockID &&
                   ($0.activities ?? []).contains(where: { $0.key == activityKey }) }),
-              activityKey == "squats", sourceVersion == "mediapipe-squat-angle-v1",
+              (activityKey == "squats" && sourceVersion == "mediapipe-squat-angle-v1")
+                || (activityKey == "lunges" && sourceVersion == "mediapipe-lunge-angle-v1"),
               !(data.sessions[index].exerciseReps ?? []).contains(where: {
                   $0.blockID == blockID && $0.activityKey == activityKey && date.timeIntervalSince($0.observedAt) < 0.7
               }) else { return }
