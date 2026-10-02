@@ -48,7 +48,7 @@ enum ServiceCredential {
             guard let token = credential, !token.isEmpty, let url = URL(string: base + "/v1/review") else {
                 throw NSError(domain: "Coin", code: 1, userInfo: [NSLocalizedDescriptionKey: language == "fr" ? "Connecte ton serveur dans les réglages." : "Connect your server in settings."])
             }
-            guard url.scheme == "https" || (url.scheme == "http" && url.host == "127.0.0.1") else {
+            guard CoinServer.allowed(url) else {
                 throw NSError(domain: "Coin", code: 2, userInfo: [NSLocalizedDescriptionKey: language == "fr" ? "Utilise HTTPS pour un serveur distant." : "Use HTTPS for a remote server."])
             }
             var request = URLRequest(url: url)

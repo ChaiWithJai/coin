@@ -20,6 +20,8 @@ targets:
         LSSupportsOpeningDocumentsInPlace: true
         CFBundleLocalizations: [fr, en]
         ITSAppUsesNonExemptEncryption: false
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: true
     sources:
       - CoinApp.swift
       - CoachingClient.swift
@@ -32,6 +34,8 @@ targets:
       - LiveWorkout.swift
       - ExchangeTracker.swift
       - RoundReport.swift
+      - path: LocalConfig.json
+        optional: true
       - VoiceCues/en_cooldown_speech.mp3
       - VoiceCues/en_free_late_cue.mp3
       - VoiceCues/en_free_mid_cue.mp3

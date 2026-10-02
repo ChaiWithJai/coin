@@ -83,9 +83,30 @@ struct Round: Codable, Identifiable {
         }
     }
 }
+/// Where the phone finds the private coaching server. HTTPS anywhere; plain HTTP only on this phone (127.0.0.1)
+/// or over Tailscale (100.x addresses), where WireGuard already encrypts the path.
+enum CoinServer {
+    static func allowed(_ url: URL) -> Bool {
+        if url.scheme == "https" { return true }
+        guard url.scheme == "http", let host = url.host else { return false }
+        return host == "127.0.0.1" || host.hasPrefix("100.")
+    }
+    /// Seeds the server address and token from a bundled LocalConfig.json (git-ignored), so the phone needs no setup.
+    static func seedFromBundle() {
+        guard let url = Bundle.main.url(forResource: "LocalConfig", withExtension: "json"),
+              let data = try? Data(contentsOf: url),
+              let config = try? JSONSerialization.jsonObject(with: data) as? [String: String] else { return }
+        if (UserDefaults.standard.string(forKey: "serviceURL") ?? "").isEmpty, let service = config["service_url"] {
+            UserDefaults.standard.set(service, forKey: "serviceURL")
+        }
+        if ServiceCredential.load() == nil, let token = config["service_token"] { ServiceCredential.save(token) }
+    }
+}
+
 @main struct CoinApp: App {
     @StateObject private var store = FilmStore()
     @StateObject private var training = TrainingStore()
+    init() { CoinServer.seedFromBundle() }
     var body: some Scene { WindowGroup { TrainingRootView().environmentObject(store).environmentObject(training) } }
 }
 struct HomeView: View {
@@ -249,7 +270,7 @@ struct ConnectionSettings: View {
                 if let error { Text(error).foregroundStyle(.red) }
                 Button(copy("save")) {
                     let value = address.trimmingCharacters(in: .whitespacesAndNewlines).trimmingCharacters(in: CharacterSet(charactersIn: "/"))
-                    guard let url = URL(string: value), url.host != nil, url.scheme == "https" || (url.scheme == "http" && url.host == "127.0.0.1") else {
+                    guard let url = URL(string: value), url.host != nil, CoinServer.allowed(url) else {
                         error = copy("connection_https_error"); return
                     }
                     if !token.isEmpty && !ServiceCredential.save(token) { error = copy("connection_key_error"); return }

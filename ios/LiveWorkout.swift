@@ -419,7 +419,7 @@ struct WorkoutCameraView: UIViewRepresentable {
         #endif
         guard let token = tokenOverride ?? credential, !token.isEmpty,
               let url = endpointOverride ?? URL(string: base + "/v1/live/pose-window"),
-              url.scheme == "https" || (url.scheme == "http" && url.host == "127.0.0.1") else {
+              CoinServer.allowed(url) else {
             throw URLError(.badURL)
         }
         var body: [String: Any] = [

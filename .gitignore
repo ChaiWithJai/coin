@@ -18,3 +18,4 @@ server/service-token
 *.mov
 *.MOV
 ios/.derivedData/
+ios/LocalConfig.json

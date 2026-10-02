@@ -72,7 +72,7 @@ struct RoundReport: Codable, Equatable {
         let credential = ServiceCredential.load()
         #endif
         guard let token = credential, !token.isEmpty, let url = URL(string: base + "/v1/round"),
-              url.scheme == "https" || (url.scheme == "http" && url.host == "127.0.0.1") else { throw URLError(.badURL) }
+              CoinServer.allowed(url) else { throw URLError(.badURL) }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.timeoutInterval = 90
