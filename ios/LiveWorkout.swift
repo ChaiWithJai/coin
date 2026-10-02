@@ -486,6 +486,7 @@ struct LiveWorkoutView: View {
     @StateObject private var roundReports = RoundReportClient()
     @State private var cuePolicy = ExchangeCuePolicy()
     @State private var roundExchanges: [LabeledExchange] = []
+    @State private var shadowTheme = -1
     @State private var segmentIndex = 0
     @State private var remaining = 0
     @State private var running = false
@@ -604,6 +605,13 @@ struct LiveWorkoutView: View {
                     } else if current.block.kind == .warmup {
                         Text(TrainingCopy.text(current.activity?.key ?? "mobility", language))
                             .font(.system(size: 17, weight: .medium, design: .serif))
+                        if current.activity?.key == "shadowboxing", shadowTheme >= 0 {
+                            let theme = ShadowboxingGuide.themes[shadowTheme]
+                            Text("\(shadowTheme + 1)/\(ShadowboxingGuide.themes.count) · \(theme.title[language] ?? "")")
+                                .font(.system(size: 12, weight: .bold, design: .monospaced)).foregroundStyle(Noir.gold)
+                            Text(theme.line[language] ?? "").font(.subheadline).lineLimit(3)
+                            Text(exchangeLine).font(.system(size: 11, weight: .medium, design: .monospaced)).foregroundStyle(Noir.muted)
+                        }
                         if current.activity?.key == "squats" || current.activity?.key == "lunges" {
                             Text(TrainingCopy.format(current.activity?.key == "lunges" ? "lunge_observed_reps" : "squat_observed_reps", language, squatTracker.count))
                                 .font(.system(size: 12, weight: .medium, design: .monospaced))
@@ -687,6 +695,14 @@ struct LiveWorkoutView: View {
             if pendingTimedSeconds >= 5 { flushTimedSeconds() }
             if remaining == 0 { advance() }
             else {
+                if let current, current.activity?.key == "shadowboxing", !current.isRest {
+                    let index = ShadowboxingGuide.index(elapsed: current.seconds - remaining, total: current.seconds)
+                    if index != shadowTheme {
+                        shadowTheme = index
+                        let theme = ShadowboxingGuide.themes[index]
+                        speak(theme.line[language] ?? "", cueKey: theme.key, trigger: "shadowboxing_theme")
+                    }
+                }
                 if let current, current.block.kind == .boxing, !current.isRest {
                     for boundary in [120, 60] where previous > boundary && updated <= boundary {
                         if let key = DrillLibrary.pacingCueKey(current.block.drillID ?? "", remainingSeconds: boundary) {
@@ -698,7 +714,9 @@ struct LiveWorkoutView: View {
             }
         }
         .onReceive(camera.$latestExchange) { exchange in
-            guard let exchange, running, let current, current.block.kind == .boxing, !current.isRest else { return }
+            guard let exchange, running, let current, !current.isRest else { return }
+            if current.activity?.key == "shadowboxing" { roundExchanges.append(exchange); return }
+            guard current.block.kind == .boxing else { return }
             var labeled = exchange
             if let key = cuePolicy.cue(for: exchange, nowMs: Int(ProcessInfo.processInfo.systemUptime * 1000)),
                let line = ExchangeCuePolicy.lines[key]?[language] {
@@ -773,6 +791,11 @@ struct LiveWorkoutView: View {
         let line: String
         let key: String
         if current.isRest { key = "rest_speech"; line = TrainingCopy.text(key, language) }
+        else if current.activity?.key == "shadowboxing" {
+            let theme = ShadowboxingGuide.themes[ShadowboxingGuide.index(elapsed: current.seconds - remaining, total: current.seconds)]
+            shadowTheme = ShadowboxingGuide.themes.firstIndex { $0.key == theme.key } ?? 0
+            key = theme.key; line = theme.line[language] ?? ""
+        }
         else if current.block.kind == .warmup { key = "\(current.activity?.key ?? "mobility")_cue"; line = TrainingCopy.text(key, language) }
         else if current.block.kind == .cooldown { key = "cooldown_speech"; line = TrainingCopy.text(key, language) }
         else { key = DrillLibrary.speechKey(current.block.drillID ?? ""); line = TrainingCopy.text(key, language) }
@@ -806,7 +829,8 @@ struct LiveWorkoutView: View {
         }
         segmentIndex += 1
         squatTracker = SquatTracker()
-        if let next = self.current, next.block.kind == .boxing, !next.isRest {
+        shadowTheme = -1
+        if let next = self.current, !next.isRest, next.block.kind == .boxing || next.activity?.key == "shadowboxing" {
             camera.resetExchanges(); roundExchanges = []; cuePolicy = ExchangeCuePolicy()
         }
         remaining = self.current?.seconds ?? 0

@@ -171,3 +171,27 @@ struct RoundSummary: Codable {
         case requestID = "request_id", language, stance, drillID = "drill_id", round, durationS = "duration_s", exchanges
     }
 }
+
+/// Guided warm-up shadowboxing: six themes that preview what the rounds coach, spread evenly over the warm-up.
+enum ShadowboxingGuide {
+    struct Theme { let key: String; let title: [String: String]; let line: [String: String] }
+    static let themes: [Theme] = [
+        Theme(key: "sb_guard", title: ["fr": "Garde", "en": "Stance and guard"],
+              line: ["fr": "Trouve ta garde. Main arrière au visage, menton baissé.", "en": "Find your stance. Rear hand on your face, chin down."]),
+        Theme(key: "sb_jab", title: ["fr": "Le jab pour mesurer", "en": "Jab to measure"],
+              line: ["fr": "Jab seulement. Léger et rapide, retour en garde à chaque fois.", "en": "Jab only. Light and fast, back to guard every time."]),
+        Theme(key: "sb_probe_commit", title: ["fr": "Sonder, puis engager", "en": "Probe, then commit"],
+              line: ["fr": "Jab, puis direct. D'abord sonder, ensuite engager.", "en": "Jab, then cross. Probe first, then commit."]),
+        Theme(key: "sb_exit", title: ["fr": "Sortir de la ligne", "en": "Leave the line"],
+              line: ["fr": "Après la combinaison, sors de la ligne.", "en": "After the combination, step off the line."]),
+        Theme(key: "sb_reset", title: ["fr": "Revenir en garde", "en": "Reset"],
+              line: ["fr": "Chaque combinaison finit en garde. Tiens-la.", "en": "Every combination ends back in guard. Hold it."]),
+        Theme(key: "sb_rhythm", title: ["fr": "Casser le rythme", "en": "Break the rhythm"],
+              line: ["fr": "Casse ton rythme : double jab, pause, direct.", "en": "Break your rhythm: double jab, pause, cross."]),
+    ]
+    /// Which theme is active `elapsed` seconds into a warm-up of `total` seconds.
+    static func index(elapsed: Int, total: Int) -> Int {
+        guard total > 0 else { return 0 }
+        return min(themes.count - 1, max(0, elapsed * themes.count / total))
+    }
+}
