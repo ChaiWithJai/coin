@@ -29,4 +29,28 @@ class ContextualReportTests(unittest.TestCase):
         self.assertIn('Stance drill',call.call_args.args[1]['messages'][1]['content'])
         self.assertEqual(response['models'],['unreported-model'])
 
+    def test_english_proposal_cannot_leak_into_french_report(self):
+        summary={'language':'fr','workout_mode':'program','source_title':'English source',
+                 'duration_s':120,'exchanges':[{'punches':[{}]}]}
+        raw={'choices':[{'message':{'content':'{"interpretation":"The data indicates a single punch event."}'}}]}
+        with patch.object(harness,'_post',return_value=raw):
+            response,stages,_=harness.run(summary)
+        self.assertEqual(response['interpretation'],
+                         'Ces détections décrivent l’activité repérée ; la technique reste à vérifier.')
+        self.assertEqual(stages[-2]['outputs']['raw'],raw)
+        self.assertTrue(stages[-1]['outputs']['used_fallback'])
+
+    def test_zero_detections_do_not_claim_inactivity(self):
+        for language in ('fr','en'):
+            with self.subTest(language=language):
+                def choose_allowed(url,body,timeout):
+                    import json
+                    choice=body['response_format']['json_schema']['schema']['properties']['interpretation']['enum'][0]
+                    return {'choices':[{'message':{'content':json.dumps({'interpretation':choice})}}]}
+                with patch.object(harness,'_post',side_effect=choose_allowed):
+                    response,stages,_=harness.run({'language':language,'workout_mode':'freestyle',
+                                                 'duration_s':180,'exchanges':[]})
+                self.assertIn('absence d’activité' if language=='fr' else 'inactivity',response['interpretation'])
+                self.assertFalse(stages[-1]['outputs']['used_fallback'])
+
 if __name__=='__main__':unittest.main()

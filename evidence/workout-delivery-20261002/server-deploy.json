@@ -1,10 +1,87 @@
 {
+  "deployed_at_utc": "2026-10-02T22:12:01Z",
+  "deployment": "locale_evidence_gate",
+  "directory": "/home/chaiwithjai/Documents/code/coin-boxing",
   "installed": {
-    "service.py": "f673050d38146397f7a09ed33ae8d0e9d527a3335496b6713249d4456a0e545b",
-    "round_harness.py": "ff67fad7e31f4337aa219e1e40e7f41fa3f49fa025df68ab61768ffc0e7f03cd",
-    "batch_jobs.py": "fb359d3362d21a207500cc387022bf5e7fc7c72b1bf85dd17203ca9a3b373e68"
+    "service.py": "1526bee84fe2e951e49c6071c0b43bc2e5660d044abe1890d03681e4ace669fb",
+    "round_harness.py": "840257ad0dca2fb7be111d396d35a0123df7a96d841fa9019316a22f0649a39c",
+    "batch_jobs.py": "4eb5b6ad76811ca3cfea586cdfc747afa3e9e423f0efa7fd8a49627690e9783b"
   },
-  "pid": 2556064,
-  "backup": "/home/chaiwithjai/Documents/code/coin-boxing/backups/20261002T2150-batch-integration",
-  "stage_pid_stopped": 2552587
+  "pid": 2684750,
+  "backup": "/home/chaiwithjai/Documents/code/coin-boxing/backups/20261002T221155-locale-gate",
+  "request_states_before_restart": {
+    "complete": 37
+  },
+  "checks": {
+    "127.0.0.1": {
+      "/health": {
+        "http_status": 200,
+        "body": {
+          "ready": true,
+          "visual_perception": false,
+          "live_policy_promoted": false,
+          "outbox": {
+            "delivered": 38
+          }
+        }
+      },
+      "/v1/batch/status": {
+        "http_status": 200,
+        "body": {
+          "processing": "offline_only",
+          "enqueue_counts": {
+            "enqueued": 10
+          }
+        }
+      }
+    },
+    "192.168.68.196": {
+      "/health": {
+        "http_status": 200,
+        "body": {
+          "ready": true,
+          "visual_perception": false,
+          "live_policy_promoted": false,
+          "outbox": {
+            "delivered": 38
+          }
+        }
+      },
+      "/v1/batch/status": {
+        "http_status": 200,
+        "body": {
+          "processing": "offline_only",
+          "enqueue_counts": {
+            "enqueued": 10
+          }
+        }
+      }
+    },
+    "100.122.5.1": {
+      "/health": {
+        "http_status": 200,
+        "body": {
+          "ready": true,
+          "visual_perception": false,
+          "live_policy_promoted": false,
+          "outbox": {
+            "delivered": 38
+          }
+        }
+      },
+      "/v1/batch/status": {
+        "http_status": 200,
+        "body": {
+          "processing": "offline_only",
+          "enqueue_counts": {
+            "enqueued": 10
+          }
+        }
+      }
+    }
+  },
+  "unauthenticated_batch_http_status": 401,
+  "stage_pid_stopped": 2684660,
+  "model_inference_executed": false,
+  "preserved_forwarder_pid": 2526383
 }

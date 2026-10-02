@@ -26,5 +26,10 @@
   "quality_scope": "8 corrected development cases; full corpus processing is not full corpus accuracy",
   "promotion": "not promoted",
   "source_path": "outputs/batch-catalog-full/1790978065968604000",
-  "mlflow_export": "in progress"
+  "mlflow_export": {
+    "delivered": 531,
+    "finished_runs_read_back": 531,
+    "receipt": "batch-mlflow-receipt.json"
+  },
+  "backup_status": "unverified: MongoDB connection refused; unrelated Docker not restarted"
 }

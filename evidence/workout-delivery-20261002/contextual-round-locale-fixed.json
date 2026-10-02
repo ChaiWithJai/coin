@@ -1,0 +1,83 @@
+{
+  "scope": "synthetic_request_over_real_private_coordinator_and_9b",
+  "request": {
+    "request_id": "af887fd6-30ba-41df-8e7e-36da536743e8",
+    "session_id": "f361498b-d6c9-44b0-8173-6f4752558195",
+    "origin": "synthetic",
+    "language": "fr",
+    "stance": "orthodox",
+    "workout_mode": "program",
+    "drill_id": "free-boxing-v1",
+    "source_id": "synthetic-program-check",
+    "source_title": "Synthetic source stance drill",
+    "source_instructions": "Development fixture:4 rounds of2minutes.",
+    "round": 1,
+    "duration_s": 120,
+    "exchanges": [
+      {
+        "id": 1,
+        "startMs": 1000,
+        "endMs": 1500,
+        "opener": "commit",
+        "resetMs": null,
+        "lateralShift": 0,
+        "punches": [
+          {
+            "hand": "rear",
+            "atMs": 1000,
+            "peakSpeed": 5,
+            "rearHandLow": false
+          }
+        ]
+      }
+    ]
+  },
+  "response": {
+    "observation": "1 échanges et 1 départs de coups repérés.",
+    "interpretation": "Les coups repérés ne permettent pas de juger le respect de la consigne.",
+    "constraint": "Continue la consigne de ton programme au prochain round.",
+    "prediction": "La technique reste à vérifier sur les images.",
+    "drill": "Synthetic source stance drill",
+    "labels": [],
+    "models": [
+      "/home/chaiwithjai/models/bonsai-gen/Ternary-Bonsai-2-9B-gguf/Ternary-Bonsai-2-9B-PTQ1_0.gguf"
+    ],
+    "latency_ms": 1712,
+    "event_id": "af887fd6-30ba-41df-8e7e-36da536743e8",
+    "offline_analysis": {
+      "accepted": true,
+      "job_id": "live-round:af887fd6-30ba-41df-8e7e-36da536743e8",
+      "state": "pending",
+      "processing": "offline_only"
+    }
+  },
+  "offline_status": {
+    "job_id": "live-round:af887fd6-30ba-41df-8e7e-36da536743e8",
+    "state": "enqueued",
+    "attempts": 1,
+    "last_error": null,
+    "updated_at": 1790979158.1011136,
+    "processing": "offline_only"
+  },
+  "elapsed_including_enqueue_wait_s": 7.748283832101151,
+  "mlflow": {
+    "run_id": "85a07c89437747a590d00a04e8e626c2",
+    "trace_id": "tr-8583d6360f4030959d858c1548878d8f",
+    "status": "FINISHED",
+    "span_names": [
+      "coaching_event",
+      "phone.exchange_rules",
+      "bonsai.contextual_report",
+      "report.locale_evidence_gate"
+    ],
+    "gate_outputs": {
+      "interpretation": "Les coups repérés ne permettent pas de juger le respect de la consigne.",
+      "used_fallback": false
+    }
+  },
+  "assessment": {
+    "integration": "passed",
+    "french_interpretation": "passed bounded approved sentence check",
+    "physical_workout": "unobserved"
+  }
+}

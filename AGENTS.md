@@ -9,3 +9,5 @@ Keep the camera experience central. Support the source programs and freestyle wi
 Trace the separate processing stages in MLflow. Distinguish actual charges, estimates, and unknown costs. Never claim hidden reasoning capture. Model proposals are separate from reviewed labels.
 
 Coordinate shared files before parallel edits. Preserve unrelated GB10 processes and the existing model and LAN/tailnet forwarders. Use narrowly scoped deployment with backups and verify the actual phone build, server response, and source provenance. A simulator test does not establish physical-camera recognition quality.
+
+Commit implementation and evidence at major checkpoints. Verify repository visibility before pushing: it was public on October 2, and public publication remains unauthorized pending the user’s explicit visibility decision.

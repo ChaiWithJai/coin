@@ -1,0 +1,72 @@
+{
+  "scope": "synthetic_request_over_real_private_coordinator_and_9b",
+  "request": {
+    "request_id": "c4d4ed53-dd50-4c4c-bb14-659dbdcf7e6d",
+    "session_id": "364c3b67-1ddf-4e4f-9a01-042dd3583bc2",
+    "origin": "synthetic",
+    "language": "fr",
+    "stance": "orthodox",
+    "workout_mode": "program",
+    "drill_id": "free-boxing-v1",
+    "source_id": "synthetic-program-check",
+    "source_title": "Synthetic source stance drill",
+    "source_instructions": "Development fixture:4 rounds of2minutes.",
+    "round": 1,
+    "duration_s": 120,
+    "exchanges": [
+      {
+        "id": 1,
+        "startMs": 1000,
+        "endMs": 1500,
+        "opener": "commit",
+        "resetMs": null,
+        "lateralShift": 0,
+        "punches": [
+          {
+            "hand": "rear",
+            "atMs": 1000,
+            "peakSpeed": 5,
+            "rearHandLow": false
+          }
+        ]
+      }
+    ]
+  },
+  "response": {
+    "observation": "1 échanges et 1 départs de coups repérés.",
+    "interpretation": "The data indicates a single punch event was recorded during a 2-minute interval of a synthetic stance drill, but since quality evaluation was not performed, the count reflects only the activity level rather than technique or form, suggesting a need for review of the technique.",
+    "constraint": "Continue la consigne de ton programme au prochain round.",
+    "prediction": "La technique reste à vérifier sur les images.",
+    "drill": "Synthetic source stance drill",
+    "labels": [],
+    "models": [
+      "/home/chaiwithjai/models/bonsai-gen/Ternary-Bonsai-2-9B-gguf/Ternary-Bonsai-2-9B-PTQ1_0.gguf"
+    ],
+    "latency_ms": 2938,
+    "event_id": "c4d4ed53-dd50-4c4c-bb14-659dbdcf7e6d",
+    "offline_analysis": {
+      "accepted": true,
+      "job_id": "live-round:c4d4ed53-dd50-4c4c-bb14-659dbdcf7e6d",
+      "state": "pending",
+      "processing": "offline_only"
+    }
+  },
+  "offline_status": {
+    "job_id": "live-round:c4d4ed53-dd50-4c4c-bb14-659dbdcf7e6d",
+    "state": "enqueued",
+    "attempts": 1,
+    "last_error": null,
+    "updated_at": 1790978682.7768521,
+    "processing": "offline_only"
+  },
+  "elapsed_including_enqueue_wait_s": 8.976614465005696,
+  "assessment": {
+    "integration": "passed",
+    "french_interpretation": "failed: English output in French request",
+    "promotion": "failed language baseline retained"
+  },
+  "mlflow": {
+    "run_id": "fb0aecabf9984efda5e00be5bfd7f139",
+    "trace_id": "tr-16ad3a800aec546ed4a941adf474d552"
+  }
+}

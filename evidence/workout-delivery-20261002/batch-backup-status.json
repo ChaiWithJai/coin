@@ -1,0 +1,14 @@
+{
+  "status": "not_verified",
+  "attempted_command": "/Users/jaibhagat/code/prismml/bonsai-lab/.venv/bin/python backup.py both",
+  "exit_code": 1,
+  "observed_error": "MongoDB 127.0.0.1:27028 connection refused",
+  "recovery_inspection": {
+    "docker_context": "desktop-linux",
+    "lab_compose_service": "mongo",
+    "compose_ps_timeout_seconds": 8,
+    "docker_info": "hung; only owned read process stopped"
+  },
+  "unrelated_services_restarted": false,
+  "evidence_scope": "Local MLflow runs and artifacts read back; Mongo mirror/archive restore not completed."
+}

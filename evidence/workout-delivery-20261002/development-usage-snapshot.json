@@ -1,0 +1,19 @@
+{
+  "thread_id": "01a0da45-399d-7120-bab3-34cea3ef1fee",
+  "as_of": "2026-10-02T22:12:19.208585+00:00",
+  "response_count": 1803,
+  "totals": {
+    "input_tokens": 250638429,
+    "cached_input_tokens": 245371648,
+    "output_tokens": 529182,
+    "reasoning_output_tokens": 116050,
+    "total_tokens": 251167611
+  },
+  "actual_billed_usd": null,
+  "api_equivalent_usd": null,
+  "cost_status": "Rates and billing unavailable; unknown is not zero.",
+  "coverage": "Observed per-response usage records only. No hidden reasoning or full inference payload capture. Snapshot excludes later responses.",
+  "snapshot_sha": "0621cffee4aab67bbb6c1291bcf6867508114c1ae0081c89372e722e2f129565",
+  "mlflow_run_id": "60f4753a962c4ea685fdf62e43168f72",
+  "mlflow_url": "http://127.0.0.1:5210/#/experiments/39/runs/60f4753a962c4ea685fdf62e43168f72"
+}
