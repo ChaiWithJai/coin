@@ -245,6 +245,13 @@ class SourceItemBatchTests(unittest.TestCase):
             for row in rows:
                 event = json.loads(row[0])
                 self.assertEqual(event['provenance']['origin'], 'source_curriculum')
+                self.assertEqual(event['decision']['telemetry_schema_version'],
+                                 'source-item-attempt-v1')
+                self.assertEqual(event['decision']['attempt_kind'], 'deterministic_rule')
+                self.assertFalse(event['decision']['inference_performed'])
+                self.assertFalse(event['decision']['cache_hit'])
+                self.assertFalse(event['decision']['runtime_eligible'])
+                self.assertFalse(event['decision']['runtime_promotion'])
                 stages = {stage['name']: stage for stage in event['stages']}
                 self.assertEqual(list(stages), [
                     'source_item.normalization', 'source_item.gate_decision',
@@ -260,16 +267,53 @@ class SourceItemBatchTests(unittest.TestCase):
 
     def test_source_item_export_adds_model_span_only_when_inference_was_recorded(self):
         from batch_jobs import source_item_export_stages
-        base = {'result': {'source_item_id': 'one', 'normalization_status': 'candidate',
-                           'evidence_status': 'source_only', 'review_state': 'model_proposal'},
-                'duration_ms': 12, 'usage': {'total_tokens': 7}}
+        base = {'result': {'proposal_id': 'proposal', 'workout_id': 'workout',
+                           'source_block_id': 'block', 'source_item_id': 'one',
+                           'source_text_sha256': 'text-sha',
+                           'normalization_version': 'fixture-v1',
+                           'normalization_status': 'candidate',
+                           'evidence_status': 'source_only', 'review_state': 'model_proposal',
+                           'runtime_eligible': False},
+                'duration_ms': 12, 'usage': {'total_tokens': 7},
+                'actual_cost_usd': None, 'estimated_cost_usd': 0.002,
+                'output_gate': {'runtime_promotion': False}}
         without = source_item_export_stages(dict(base, inference_performed=False), 'job', 'item', {})
         self.assertNotIn('source_item.model_inference', [stage['name'] for stage in without])
+        normalization = without[0]['outputs']
+        self.assertEqual(normalization['source_lineage']['source_item_id'], 'one')
+        self.assertEqual(normalization['source_lineage']['normalization_version'], 'fixture-v1')
+        self.assertEqual(normalization['attempt']['attempt_kind'], 'deterministic_rule')
+        self.assertEqual(normalization['attempt']['model_identity_status'],
+                         'not_applicable_no_model_call')
+        self.assertEqual(normalization['attempt']['usage'], {'total_tokens': 7})
+        self.assertIsNone(normalization['attempt']['actual_cost_usd'])
+        self.assertEqual(normalization['attempt']['estimated_cost_usd'], 0.002)
+        self.assertEqual(normalization['attempt']['cost_status'], {
+            'actual': 'unknown', 'estimated': 'recorded'})
         with_model = source_item_export_stages(dict(base, inference_performed=True), 'job', 'item', {'model': 'fixture'})
         inference = next(stage for stage in with_model if stage['name'] == 'source_item.model_inference')
         self.assertEqual(inference['span_type'], 'LLM')
         self.assertTrue(inference['outputs']['inference_performed'])
         self.assertEqual(inference['outputs']['model_versions'], {'model': 'fixture'})
+        self.assertEqual(with_model[0]['outputs']['attempt']['model_identity_status'], 'recorded')
+        self.assertEqual(inference['outputs']['usage'], {'total_tokens': 7})
+        self.assertEqual(inference['outputs']['estimated_cost_usd'], 0.002)
+        gate = next(stage for stage in with_model if stage['name'] == 'source_item.gate_decision')
+        self.assertFalse(gate['outputs']['runtime_eligible'])
+        self.assertFalse(gate['outputs']['runtime_promotion'])
+        self.assertEqual(gate['outputs']['model_output_gate'], {'runtime_promotion': False})
+
+        cached = source_item_export_stages(dict(
+            base, inference_performed=False, cache_hit=True,
+            usage={'prompt_tokens': 0, 'completion_tokens': 0, 'total_tokens': 0},
+            usage_semantics='No inference this item.',
+            cached_response_usage={'total_tokens': 7}), 'job', 'item', {'model': 'fixture'})
+        cache = next(stage for stage in cached if stage['name'] == 'source_item.cache_materialization')
+        self.assertFalse(cache['outputs']['inference_performed'])
+        self.assertEqual(cache['outputs']['usage']['total_tokens'], 0)
+        self.assertEqual(cache['outputs']['cached_response_usage'], {'total_tokens': 7})
+        self.assertEqual(cached[0]['outputs']['attempt']['attempt_kind'], 'cache_materialization')
+        self.assertEqual(cached[0]['outputs']['attempt']['model_identity_status'], 'recorded')
 
     def test_export_writes_each_lifecycle_stage_from_a_stored_attempt(self):
         with tempfile.TemporaryDirectory() as folder:

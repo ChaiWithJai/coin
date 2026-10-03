@@ -44,7 +44,35 @@ def digest(value):
 def source_item_export_stages(output, job_id, item_id, model_versions):
     """Describe source-item lifecycle steps without inventing approvals."""
     result = output.get('result') if isinstance(output.get('result'), dict) else {}
-    common = {'job_id': job_id, 'item_id': item_id}
+    lineage_keys = (
+        'proposal_id', 'workout_id', 'source_block_id', 'source_item_id',
+        'source_url', 'source_sha256', 'catalog_sha256',
+        'source_block_text_sha256', 'source_text_sha256',
+        'normalization_version',
+    )
+    lineage = {key: result.get(key) for key in lineage_keys if key in result}
+    common = {'job_id': job_id, 'item_id': item_id, 'source_lineage': lineage}
+    cache_hit = output.get('cache_hit') is True
+    inference_performed = output.get('inference_performed') is True
+    attempt_kind = ('model_call' if inference_performed else
+                    'cache_materialization' if cache_hit else 'deterministic_rule')
+    model_identity_status = ('recorded' if model_versions else
+                             'not_applicable_no_model_call' if attempt_kind == 'deterministic_rule' else
+                             'missing')
+    attempt = {
+        'attempt_kind': attempt_kind,
+        'inference_performed': inference_performed,
+        'cache_hit': cache_hit,
+        'model_identity': model_versions,
+        'model_identity_status': model_identity_status,
+        'usage': output.get('usage'),
+        'actual_cost_usd': output.get('actual_cost_usd'),
+        'estimated_cost_usd': output.get('estimated_cost_usd'),
+        'cost_status': {
+            'actual': 'recorded' if output.get('actual_cost_usd') is not None else 'unknown',
+            'estimated': 'recorded' if output.get('estimated_cost_usd') is not None else 'unknown',
+        },
+    }
     stages = [{
         'name': 'source_item.normalization', 'span_type': 'TOOL',
         'inputs': common,
@@ -53,24 +81,46 @@ def source_item_export_stages(output, job_id, item_id, model_versions):
                 'proposal_id', 'source_item_id', 'normalization_version',
                 'normalization_status', 'exercise_key', 'measurement')
             if key in result
-        },
+        } | {'source_lineage': lineage, 'attempt': attempt},
         'duration_ms': output.get('duration_ms'),
     }]
-    if output.get('inference_performed') is True:
+    if inference_performed:
         stages.append({
             'name': 'source_item.model_inference', 'span_type': 'LLM',
             'inputs': common,
             'outputs': {'inference_performed': True,
                         'model_versions': model_versions,
-                        'usage': output.get('usage', {})},
+                        'usage': output.get('usage'),
+                        'actual_cost_usd': output.get('actual_cost_usd'),
+                        'estimated_cost_usd': output.get('estimated_cost_usd'),
+                        'cost_status': attempt['cost_status']},
             'duration_ms': output.get('duration_ms'),
+        })
+    elif cache_hit:
+        stages.append({
+            'name': 'source_item.cache_materialization', 'span_type': 'TOOL',
+            'inputs': common,
+            'outputs': {
+                'inference_performed': False,
+                'cache_hit': True,
+                'model_versions': model_versions,
+                'usage': output.get('usage'),
+                'usage_semantics': output.get('usage_semantics'),
+                'cached_response_usage': output.get('cached_response_usage'),
+                'actual_cost_usd': output.get('actual_cost_usd'),
+                'estimated_cost_usd': output.get('estimated_cost_usd'),
+                'cost_status': attempt['cost_status'],
+            },
         })
     stages.extend([{
         'name': 'source_item.gate_decision', 'span_type': 'TOOL',
         'inputs': common,
         'outputs': {'decision': 'requires_human_review',
                     'normalization_status': result.get('normalization_status', 'not_evaluated'),
-                    'evidence_status': result.get('evidence_status', 'not_evaluated')},
+                    'evidence_status': result.get('evidence_status', 'not_evaluated'),
+                    'runtime_eligible': result.get('runtime_eligible', False),
+                    'runtime_promotion': False,
+                    'model_output_gate': output.get('output_gate')},
     }, {
         'name': 'source_item.human_review', 'span_type': 'TOOL',
         'inputs': common,
@@ -657,10 +707,21 @@ class Store:
                             'span_type': 'TOOL' if output.get('cache_hit') or output.get('inference_performed') is False else 'LLM',
                             'inputs': {'job_id': job['id'], 'item_id': item['item_id']},
                             'outputs': output, 'duration_ms': output.get('duration_ms')}])
+                decision = {'status': item['state'], 'batch_job_id': job['id']}
+                if item['kind'] == 'source_item':
+                    attempt = stages[0]['outputs']['attempt']
+                    decision.update({
+                        'telemetry_schema_version': 'source-item-attempt-v1',
+                        'attempt_kind': attempt['attempt_kind'],
+                        'inference_performed': attempt['inference_performed'],
+                        'cache_hit': attempt['cache_hit'],
+                        'runtime_eligible': False,
+                        'runtime_promotion': False,
+                    })
                 payload = {'session_id': job['provenance'].get('session_id', job['provenance']['source_id']),
                            'window_id': item['item_id'], 'provenance': job['provenance'],
                            'model_versions': model_versions,
-                           'decision': {'status': item['state'], 'batch_job_id': job['id']},
+                           'decision': decision,
                            'stages': stages}
                 # Already exported attempts are immutable, even when exporter code improves.
                 with outbox.connect() as existing:
