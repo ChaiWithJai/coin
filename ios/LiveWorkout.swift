@@ -1225,7 +1225,7 @@ struct LiveWorkoutView: View {
                                segmentIndex: segmentIndex, preparationIndex: current.preparationIndex)
         voice.stop()
         flushPoseWindows()
-        if tracksExchanges(current) { submitRound(current) }
+        if tracksExchanges(current) { submitRound(current, includeEmpty: !current.isManual && remaining == 0) }
         if (current.isManual && completed) || (!current.isManual && remaining <= 0) {
             if current.isRest { training.recordRestElapsed(sessionID: sessionID, blockID: current.block.id) }
             else if !segments.indices.contains(segmentIndex + 1) || segments[segmentIndex + 1].block.id != current.block.id || segments[segmentIndex + 1].isRest {
@@ -1284,7 +1284,7 @@ struct LiveWorkoutView: View {
                                 : "EXCHANGES \(roundExchanges.count) · LAST \(last) · FAULTS \(faults)"
     }
     /// Sends the finished round's exchanges to the harness; never blocks the workout.
-    private func submitRound(_ segment: Segment, outgoingInstanceID: UUID? = nil) {
+    private func submitRound(_ segment: Segment, outgoingInstanceID: UUID? = nil, includeEmpty: Bool = false) {
         guard outgoingInstanceID != nil || tracksExchanges(segment) else { return }
         let instanceID = outgoingInstanceID ?? activityInstance(for: segment)?.id
         var byID = Dictionary(uniqueKeysWithValues: roundExchanges.map { ($0.id, $0) })
@@ -1292,7 +1292,10 @@ struct LiveWorkoutView: View {
         let exchanges = byID.values.sorted { $0.id < $1.id }
         roundExchanges = []; cuePolicy = ExchangeCuePolicy()
         lastEvidence = roundEvidence; roundEvidence = []
-        guard !exchanges.isEmpty else { return }
+        // A completed round with no detected exchange is still evidence. It may
+        // mean quiet work, poor framing, or a detector miss; the server's
+        // bounded report states that uncertainty instead of claiming inactivity.
+        guard includeEmpty || !exchanges.isEmpty else { return }
         roundReports.submit(RoundSummary(requestID: UUID().uuidString, language: language, stance: "orthodox",
                                          drillID: segment.block.drillID, round: segment.block.roundNumber ?? 0,
                                          durationS: instanceID.map { workout?.activityElapsedSeconds(instanceID: $0) ?? 0 } ?? 0,

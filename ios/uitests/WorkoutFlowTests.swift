@@ -4,7 +4,8 @@ final class WorkoutFlowTests: XCTestCase {
     override func setUpWithError() throws { continueAfterFailure = false }
 
     private func application(language: String, directory: String = UUID().uuidString, shortFreestyle: Bool = false,
-                             activityFixture: Bool = false, acceleratedSource: Bool = false) -> XCUIApplication {
+                             activityFixture: Bool = false, acceleratedSource: Bool = false,
+                             zeroDetectionFreestyle: Bool = false) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["-noAutoStart", "-language", language]
         app.launchEnvironment["COIN_TRAINING_DIRECTORY"] = "workout-ui-" + directory
@@ -13,6 +14,10 @@ final class WorkoutFlowTests: XCTestCase {
         if shortFreestyle {
             app.launchEnvironment["COIN_TEST_FREESTYLE"] = "1"
             app.launchEnvironment["COIN_TEST_ROUND_REVIEW"] = "1"
+        }
+        if zeroDetectionFreestyle {
+            app.launchEnvironment["COIN_TEST_FREESTYLE"] = "1"
+            app.launchEnvironment["COIN_TEST_TIMER_STEP_SECONDS"] = "300"
         }
         if activityFixture { app.launchEnvironment["COIN_TEST_ACTIVITY_CHOOSER"] = "1" }
         if acceleratedSource { app.launchEnvironment["COIN_TEST_TIMER_STEP_SECONDS"] = "300" }
@@ -258,6 +263,26 @@ final class WorkoutFlowTests: XCTestCase {
         reveal(reflection, in: app)
         XCTAssertTrue(reflection.exists)
         attach("freestyle-finished-saved-review", app: app)
+    }
+
+    func testCompletedFreestylePersistsReviewWhenNoExchangeIsDetected() throws {
+        let directory = UUID().uuidString
+        let app = application(language: "fr", directory: directory, zeroDetectionFreestyle: true)
+        app.buttons["start-workout"].tap()
+        XCTAssertTrue(app.staticTexts["workout-clock"].waitForExistence(timeout: 5))
+        app.buttons["workout-toggle"].tap()
+        XCTAssertTrue(app.buttons["recap-done"].waitForExistence(timeout: 8))
+        let pending = app.staticTexts["Retour en attente. Ta reprise est enregistrée sur ce téléphone."]
+        reveal(pending, in: app)
+        XCTAssertTrue(pending.exists)
+        app.buttons["recap-done"].tap()
+        app.terminate()
+        app.launch()
+        let saved = app.buttons["saved-session-freestyle-1-10-0-v1"]
+        reveal(saved, in: app)
+        saved.tap()
+        reveal(pending, in: app)
+        XCTAssertTrue(pending.exists)
     }
 
     func testChangedConditioningChoicePersistsInRecapAndSavedReview() throws {

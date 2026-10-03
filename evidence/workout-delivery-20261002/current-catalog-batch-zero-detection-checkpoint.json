@@ -1,0 +1,72 @@
+{
+  "recorded_at": "2026-10-02T23:43:19-04:00",
+  "checkpoint": "current-catalog-batch-and-zero-detection-rounds",
+  "catalog": {
+    "workouts": 70,
+    "source_blocks": 535,
+    "runtime_work_segments": 1126,
+    "runtime_rest_segments": 134,
+    "runtime_segments": 1260,
+    "timed_work_segments": 628,
+    "manual_work_segments": 498,
+    "required_runtime_choices": 77,
+    "timed_seconds": 87555,
+    "structurally_impossible_segments": 0
+  },
+  "batch": {
+    "job_id": "350987a377fb33498544d2ff4e5d47fc946262b989236b9129a6f32ed40c6bcb",
+    "prompt_version": "source-curriculum-v2.1",
+    "items": 535,
+    "complete": 535,
+    "failed": 0,
+    "cache_hits": 157,
+    "model_inference_calls": 194,
+    "deterministic_or_noninference_items": 184,
+    "observed_total_tokens": 30092,
+    "unknown_proposals": 149,
+    "actual_cost_usd": null,
+    "estimated_cost_usd": null,
+    "review_state": "proposals_not_promoted"
+  },
+  "mlflow": {
+    "experiment_id": 40,
+    "readback_event_id": "3305bf51-61b6-5ae3-8e06-dd8f58305fcb",
+    "readback_run_id": "94139dc3aaf84673ab0d76701a96955b",
+    "readback_trace_id": "tr-0f3e06a6c25a536156beaa3ec1cfd1be",
+    "export_state_at_recording": {
+      "delivered": 134,
+      "pending": 455
+    },
+    "development_usage_run_id": "1cd7dcac906c4025aca665c66516c138",
+    "development_usage_total_tokens": 479317653,
+    "development_usage_actual_billed_usd": null,
+    "development_usage_scope": "Observed per-response records only; no hidden reasoning or full inference payload capture."
+  },
+  "app_change": {
+    "completed_exchange_capable_round_with_zero_detections_persists_summary": true,
+    "skipped_or_early_empty_round_persists_summary": false,
+    "server_interpretation": "zero detections do not establish inactivity"
+  },
+  "verification": {
+    "all_ios_units": "92/92 passed",
+    "zero_detection_freestyle_ui": "1/1 passed",
+    "all_catalog_runtime_plan": "1/1 passed",
+    "signed_device_build": "succeeded",
+    "bundle_id": "com.coinboxing.prototype",
+    "team_id": "TNK67SNT56",
+    "executable_sha256": "69329ce0a65e0fdee521ddcb5b1d873032c3202dcefab602a44bf60a0513f66a"
+  },
+  "device": {
+    "name": "Lakshmi",
+    "state": "unavailable",
+    "installed": false,
+    "physical_camera_verified": false
+  },
+  "limits": [
+    "Batch outputs are unreviewed proposals and do not alter runtime measurement or coaching.",
+    "149 unknown classifications are retained for review.",
+    "The current batch is section-level; atomic source-item runtime promotion remains unfinished.",
+    "MLflow export was still draining durable records at checkpoint time.",
+    "No physical-device camera or zero-detection report delivery was verified."
+  ]
+}

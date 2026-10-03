@@ -111,6 +111,55 @@ import XCTest
         XCTAssertTrue(manual.allSatisfy { $0.effectiveSeconds == 0 && $0.effectiveRestSeconds == 0 })
     }
 
+    func testEverySourceDayBuildsATraversableRuntimePlan() throws {
+        let lessons = WorkoutCatalog.shared.lessons
+        var workSegments = 0
+        var restSegments = 0
+        var timedWork = 0
+        var manualWork = 0
+        var requiredChoices = 0
+        var timedSeconds = 0
+        for lesson in lessons {
+            let template = lesson.template()
+            let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            defer { try? FileManager.default.removeItem(at: folder) }
+            let store = TrainingStore(directory: folder)
+            let sessionID = store.start(template, origin: .synthetic)
+            for block in template.blocks {
+                let workCount = block.activities?.isEmpty == false ? block.activities?.count ?? 0 : 1
+                workSegments += workCount
+                if block.effectiveRestSeconds > 0 { restSegments += 1 }
+                if block.isManual { manualWork += workCount }
+                else {
+                    timedWork += workCount
+                    XCTAssertGreaterThan(block.effectiveSeconds, 0, block.sourceBlockID ?? lesson.id)
+                }
+                timedSeconds += block.effectiveSeconds + block.effectiveRestSeconds
+                XCTAssertTrue(block.isManual || block.effectiveSeconds > 0, block.sourceBlockID ?? lesson.id)
+                if block.effectiveRestSeconds > 0 { XCTAssertGreaterThan(block.effectiveRestSeconds, 0) }
+                guard block.activities?.isEmpty != false,
+                      let instance = store.data.sessions.first?.activityInstance(blockID: block.id),
+                      WorkoutActivityRouting.requiresRuntimeSelection(choiceFamily: block.activityChoiceFamily,
+                          sourceActivityKey: block.sourceActivityKey, instance: instance) else { continue }
+                requiredChoices += 1
+                let choices = WorkoutMovementDefinition.choices(for: block.activityChoiceFamily)
+                XCTAssertFalse(choices.isEmpty, block.sourceBlockID ?? lesson.id)
+                XCTAssertTrue(store.selectActivity(sessionID: sessionID, blockID: block.id,
+                    exerciseKey: try XCTUnwrap(choices.first?.key)))
+                let selected = try XCTUnwrap(store.data.sessions.first?.activityInstance(blockID: block.id))
+                XCTAssertFalse(WorkoutActivityRouting.requiresRuntimeSelection(choiceFamily: block.activityChoiceFamily,
+                    sourceActivityKey: block.sourceActivityKey, instance: selected))
+            }
+        }
+        XCTAssertEqual(lessons.count, 70)
+        XCTAssertEqual(workSegments, 1_126)
+        XCTAssertEqual(restSegments, 134)
+        XCTAssertEqual(timedWork, 628)
+        XCTAssertEqual(manualWork, 498)
+        XCTAssertEqual(requiredChoices, 77)
+        XCTAssertEqual(timedSeconds, 87_555)
+    }
+
     func testGenericSourceSlotsRequireConcreteRuntimeMovement() throws {
         let source = WorkoutCatalog.shared.lessons.flatMap(\.blocks)
         let warmups = source.filter { $0.title == "DYNAMIC WARM-UP:" && $0.instructions == $0.title }
