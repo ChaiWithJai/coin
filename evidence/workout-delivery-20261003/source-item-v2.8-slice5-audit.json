@@ -1,0 +1,296 @@
+{
+  "audit_kind": "bounded_source_item_slice",
+  "baseline_complete": 1697,
+  "catalog_sha256": "d2523d6e4dec591fb1776928940df0b1614c8ee32446ef47113e9f633a612693",
+  "issues": [],
+  "job_id": "2782f0b73d2d7e96a2796598b17e4578ba0be6b468876f4bf5061126aba75492",
+  "job_state": "complete",
+  "normalization_version": "source-item-normalization-v2.8",
+  "passed": true,
+  "provenance": {
+    "origin": "source_curriculum",
+    "runtime_promotion": false,
+    "source_id": "https://boxing.dharmicdata.org"
+  },
+  "queue": {
+    "complete": 1773,
+    "failed": 0,
+    "items": 1773,
+    "pending": 0,
+    "running": 0
+  },
+  "regression_sentinels": {
+    "analyst_corrections": {
+      "checked": 8,
+      "items": [
+        {
+          "actual": "partner_work",
+          "expected": "partner_work",
+          "fixture_proposal_id": "b8efe04f5f134103a1b8252b14fae26ee20f6bf6d2c58524c4131c5da9f22b19",
+          "passed": true,
+          "resolution": "stable_source_identity",
+          "resolved_item_id": "source-item:88659bc1da7f4269da7d1807e99304e6069d752cbc2286efc717bb5edd8d77d5"
+        },
+        {
+          "actual": "bag_work",
+          "expected": "bag_work",
+          "fixture_proposal_id": "022cd60e785167ca0990c5386841fc29b1d739ccd744710b255cd8f0db587519",
+          "passed": true,
+          "resolution": "stable_source_identity",
+          "resolved_item_id": "source-item:433daeebb5a68e9ec5353a8c3c207b8a897e6fbf70a67162f389bfe5ec692358"
+        },
+        {
+          "actual": "bag_work",
+          "expected": "bag_work",
+          "fixture_proposal_id": "8b49a4215014c601519159fbdfa6205b4e527b015115cc958f991042e5a9b993",
+          "passed": true,
+          "resolution": "stable_source_identity",
+          "resolved_item_id": "source-item:91326453afefed5b2f3f60b53d6ce3e8e4670ebe9a99df4da1057ecda43496fa"
+        },
+        {
+          "actual": "bag_work",
+          "expected": "bag_work",
+          "fixture_proposal_id": "295bbc3b9237b0fd147b83c2826be1327d79368041a329f898ea64ed82d09f99",
+          "passed": true,
+          "resolution": "stable_source_identity",
+          "resolved_item_id": "source-item:af4363a26878311893616ecdbb174cf8da88681795ba1bc9cc714b0106d4c4d1"
+        },
+        {
+          "actual": "bag_work",
+          "expected": "bag_work",
+          "fixture_proposal_id": "32ec94826373a2eb297c6e27906e73d120b140acb5e6530c0efe5b6e90e6d53c",
+          "passed": true,
+          "resolution": "stable_source_identity",
+          "resolved_item_id": "source-item:9e5592992b04d1bd0e659389e6c3ebc4f56ea31ee4b25d7f9dd2f2fb9e81aaa6"
+        },
+        {
+          "actual": "bag_work",
+          "expected": "bag_work",
+          "fixture_proposal_id": "2b240dc5b7aa843bc6f795fffaa17df33c0e72786babb4a58bf123e127de0fb8",
+          "passed": true,
+          "resolution": "stable_source_identity",
+          "resolved_item_id": "source-item:87ddb8e05f0648ec7b51acf84e891be6fa35369d791870d52b3016217e89e5ab"
+        },
+        {
+          "actual": "bag_work",
+          "expected": "bag_work",
+          "fixture_proposal_id": "d3f87c04457c8ef24a6cfc3392cbb18c82139cd485e63a7d2716f947820d4183",
+          "passed": true,
+          "resolution": "stable_source_identity",
+          "resolved_item_id": "source-item:b1d40f8201ec0613db4103d2cbff34a9a42fb79bdf15345e074424ad1722a97f"
+        },
+        {
+          "actual": "bag_work",
+          "expected": "bag_work",
+          "fixture_proposal_id": "5840deebec13ab06778a2d3c8c321eac13b229cec94512eb923a452d3743b7b1",
+          "passed": true,
+          "resolution": "stable_source_identity",
+          "resolved_item_id": "source-item:55fd1984b2fa3a9f2eaf6b94f847b55d11a61148893e3d2deed2e21a71bcad08"
+        }
+      ],
+      "passed": 8
+    },
+    "explicit_child_modality": {
+      "checked": 4,
+      "items": [
+        {
+          "actual": "strength",
+          "expected": "strength",
+          "item_id": "source-item:ded72fd25fd40f2fe58d1e510bdad3c8fd68c63ab945dcfef1ba28785a8422fb",
+          "passed": true
+        },
+        {
+          "actual": "conditioning",
+          "expected": "conditioning",
+          "item_id": "source-item:1586aec4412f1cf1764e627f061e4d024ef06dfc35ef1447283ab2ffbabeef92",
+          "passed": true
+        },
+        {
+          "actual": "conditioning",
+          "expected": "conditioning",
+          "item_id": "source-item:35610166b63fa7bb78691dd088f953baa7f53690e0d0e0f6afe391210a23439d",
+          "passed": true
+        },
+        {
+          "actual": "strength",
+          "expected": "strength",
+          "item_id": "source-item:2673bf0839645fd6355c27371f77b89881d22efa64d45ec91222a53a02fa78b4",
+          "passed": true
+        }
+      ],
+      "passed": 4
+    },
+    "virtual_or_virual_sparring": {
+      "checked": 11,
+      "items": [
+        {
+          "actual": "shadowboxing",
+          "item_id": "source-item:4985b652f1339ba99272570500d68652cef42614b25c1357030d70141174c7db",
+          "passed": true
+        },
+        {
+          "actual": "shadowboxing",
+          "item_id": "source-item:7c28400a7b95238a0b92bf26665259cdc574d0fd585a89036f5129beb108875e",
+          "passed": true
+        },
+        {
+          "actual": "shadowboxing",
+          "item_id": "source-item:c4ef8c12db7c89945d58e876bca4f885963f42229589bde4e8dcdd3817431e67",
+          "passed": true
+        },
+        {
+          "actual": "shadowboxing",
+          "item_id": "source-item:69bcfbe9b1bd07f52212b8420ceb7ae2e74c528c71b7cc670ea3e2d9e780ba8a",
+          "passed": true
+        },
+        {
+          "actual": "shadowboxing",
+          "item_id": "source-item:7341f20b3966b26959d7b86fc79c553e74812a2878e9a20557283275c64e5d3a",
+          "passed": true
+        },
+        {
+          "actual": "shadowboxing",
+          "item_id": "source-item:4f18c2424966d9914d67533a40f0b66d95ff0d77efbf4390f78c9737c20eb460",
+          "passed": true
+        },
+        {
+          "actual": "shadowboxing",
+          "item_id": "source-item:9b98deb07fa319e6efd584937cd80baab4dc2eda8d42cadb91ab55630b9a0472",
+          "passed": true
+        },
+        {
+          "actual": "shadowboxing",
+          "item_id": "source-item:72b0a871c7a0e7c2ed71a24a1aa512001da19179f0374f80d15d2a272402aba1",
+          "passed": true
+        },
+        {
+          "actual": "shadowboxing",
+          "item_id": "source-item:d13e08c5ea43d2324dfc1cb2de5b6d458e398e675491f839cf24b017f6aa08ae",
+          "passed": true
+        },
+        {
+          "actual": "shadowboxing",
+          "item_id": "source-item:a8785fff36cc59e9282619eecc1df30680e7a7387844f4529ac51ed9de3846f5",
+          "passed": true
+        },
+        {
+          "actual": "shadowboxing",
+          "item_id": "source-item:2b30f5485dd126f8a212b5abc4572fdbff2cd642aabc122cb855772aeb28b558",
+          "passed": true
+        }
+      ],
+      "passed": 11
+    }
+  },
+  "runtime_eligibility": {
+    "promotion_performed": false,
+    "required": false
+  },
+  "schema_version": 1,
+  "slice": {
+    "cache_materializations": 23,
+    "costs": {
+      "actual_cost_usd": {
+        "invalid_count": 0,
+        "non_null_count": 0,
+        "null_count": 76,
+        "sum_usd": null
+      },
+      "estimated_cost_usd": {
+        "invalid_count": 0,
+        "non_null_count": 0,
+        "null_count": 76,
+        "sum_usd": null
+      }
+    },
+    "deterministic_results": 0,
+    "inference_calls": 53,
+    "item_ids": [
+      "source-item:01a1aa4035830ddb662374506c95eaf61eedb82ac4047ac278d1e1d95a4b622e",
+      "source-item:0212ae06629bd6b4291bea71a00d5f0c509eca7390a30564ff73fd58b17afaf5",
+      "source-item:03cfcbfb587bcf54472819be1ed5a2153372605a0d7ace488bd524a15bbc305a",
+      "source-item:062d1c8064d31c72e67676b8f9b5e950d7ce442c4be61a96888346ac5bdd2b3c",
+      "source-item:0817b8b55c0d52e541aa4037c00b59178b58751660f0e6a3b8a433a8aa8833ea",
+      "source-item:0ec73b3e7392679785a6e07a3979f4175267f91718536defbccdeb6282f8e034",
+      "source-item:16481b8cb86d49f16b23e600001b606622a359a06929698b4c4f8ee73ed20c12",
+      "source-item:23002c5dfb36a28f1401541d78914d2ed177bd4af87c4292c07a78aecbbb3013",
+      "source-item:266cdde52080c25ef36cd78766e3e8c780e833f2ff394441bca7d76e28936d07",
+      "source-item:285e2c8bf0195853abb9f4ff74233e9dde04dd9d125025ed2567dc2afb7f1372",
+      "source-item:2c7c66a46e6df355d37173dc9108e01a009b3028eefe144025972b9cdc67c9c4",
+      "source-item:2d78ecf199a4b5f0b767f3ca041271a10004165d09fee32733987caa777cd43b",
+      "source-item:327ea1f327a26e52f586d4ba9915fd1aa01f5fa87cc29184b6b9856b6ddcf9c3",
+      "source-item:337fd2aa70a2d148286955b7bece2b0fb57fba0936410440affd87deee3b35c1",
+      "source-item:3a4346c776360de09e64d325b178d805f5d83916959b4758631a240ed83a8981",
+      "source-item:3cb214a200a35b863d7b34a29171d4e6bc610658076e5a35ecb0774c033d688d",
+      "source-item:40199df442fa47ff0810dbf67cb5f64c07e86255730734fbcc753b032db61435",
+      "source-item:4696e61c670cbf9f18baace86a149cc79e4653326dfc0806b75d9ebeefae7289",
+      "source-item:4dd652bfd50ee1b0d9f8415dfcd57ff1815cbf3d72b52a3f3707a838aee1997a",
+      "source-item:4fc8a2560cd7c82a2d7f44c2688a9ba7117327e0a0ccb7e2623a9a76d83f4a4b",
+      "source-item:551d8b15eea61395c21a6b6ffff79c5659df5b00d3f2dc51b10537057335d007",
+      "source-item:5ca447cfe93477d99a0762449fa88922b294aa010a99348894c27d8685410097",
+      "source-item:5dd51f8265ab71a506bd45730b323b36c5391d0f4f79b3cfa3723c1334fc20e5",
+      "source-item:63ea29c12fd9365458c3df83fbe3b5e75a7a4d8aa1f6c6b4b6b01b8c01507228",
+      "source-item:65f017d9ffde39694d789112322ae14645954f0904f12e96c14e0a026ebfc3f2",
+      "source-item:65f9798fbcc199a32091c0c9a275b90e67594f6ebff7eae549aebd1ea5b2021e",
+      "source-item:6ef5fac02585888f0dc2eb283881ab45992311a0c528d5a6f05be7904c6d2c01",
+      "source-item:7523126a54c9c0bdee35170bac0e55bd90bc881265143a1302ba6eacfed7256b",
+      "source-item:79d6930909209f8c96cc3ab1d9999691db5329265fa869c5dfb58e6441302a2b",
+      "source-item:7bd26a4ee77b61502ca480ce830caeb05090e1cef7a08e47b7a349793deadc57",
+      "source-item:7cd7f10b07a0b9f378e6cd05d3b82754fd92617ecd5347de7cad463fe5282cab",
+      "source-item:7ce0548ad997e2df22717a8bdf799ed568e3a4b80d5cf97eb8a8067b1c4e6a91",
+      "source-item:7dc107398e06b683618e382acaa6184ee7b6fb63072f362196b77a7e26407664",
+      "source-item:7f64fe23874fb6c9d62be135611a8fa196135db5a69af0225e9f885c82ca47f0",
+      "source-item:81969ea1ebde4fc1f78f9c70b9ee8c5a784d7d56b7165b89d11fb70b92d140e8",
+      "source-item:838fcc2ee726d82ae1a2c528e60134336b6c28c2fe6f5700a96ae62108a32579",
+      "source-item:83caa02e1fa690f58fb09591971b9ce7ba10b169b0795e69f8283c04bb148918",
+      "source-item:844e9b538a932c159ccca517536406287dd57598c238161d5f189034d826069d",
+      "source-item:857ee2376d93f19b557ac72165d483dd325eb3b0182503e545d03d0068ceb5da",
+      "source-item:898d4590d5c4af5360dbc55ca20f82d911f52a2172c494167ff6b628d7519d9f",
+      "source-item:8b4d230bc7d6d1fe5676c125327935122fad27ec65eaa13c4bde1d36c8b87b06",
+      "source-item:941410c720201a0e61fa673cce260cbd09c82d90f22b2d210df4cc3a6c010581",
+      "source-item:974bb367ca57fa6e3e7757100da2ed9a921ee1e66268738effb1797e281b9185",
+      "source-item:9f84f60bbf8d91fbb182db2a4b51c0dc50e43dd21938473e9d2024d178a8a6c1",
+      "source-item:a0df49cee1d74bd981389a6a5c47677340974c972bb93416ecd348965bc80229",
+      "source-item:a113efe8bf4d950dd95a55156dc21d339beb064888e17b28ad94073e059a7925",
+      "source-item:a27c43308f37e9b4c65a179401a7669e559c2310f0e4e46f18e8d43c06c91f3b",
+      "source-item:a40b54bb86814137233a0da4ad50316c9c37cbada3fc6d4a586b2ca0e5a8f23c",
+      "source-item:a98fda962f064573175746df15a0f0dcb68145a9f3dc69e4bd4f8ddf058a33d3",
+      "source-item:a9dd2dba4dc785772b3fb689a756d687f58f86d41d3ce1393a18985bc8b7ae64",
+      "source-item:b4d859c42bcdcc30599304249c05d935cafa22f008f962c693dc4f29c744f3d3",
+      "source-item:b574f935b3f2161139f7395dece81cbd2091bdee2ecda97e11e6f67e39ec8164",
+      "source-item:b7433c3f636f3cf426eb62570423d95afd98678c26ece9121cf10ad14a79d9c0",
+      "source-item:bc1509eb7b2784d11ccbfcb3efc06c9b518c40a52e2ea9b8fd676deb3945a856",
+      "source-item:bcda246e4205f9605dca5ca9949f3aafc72de5631d8b78f7469a58d3afb72fd1",
+      "source-item:bde13aad781231b7ae419cd31615c51bdca7d174d3e34bb8c119fe4c795deda5",
+      "source-item:c189ac912a3e78120c4a099c7c26b5781d6d40908e4a57049ab7f781f7a58162",
+      "source-item:c301bbede933a5c1aa067e163c41a80f6d7867d74b7fafee05c7eb9dce468da1",
+      "source-item:c57d3c13c2ef7a635ceb5301bcfa31df9c0b572d4e88aac35a0ffdc4152caec9",
+      "source-item:c7f34d02fb30f8c3048c451bf58d31114571d4671b032d62e41c54a5f04d5ad8",
+      "source-item:c9f320533ae9f1cfeaec5640bf9f7e1391a90ba184966f75a16af5d23cf29a51",
+      "source-item:ca95650e6f499e55503fb8e2a1085646bba3c0e689983b77afcb32ab61acfc99",
+      "source-item:caa72f97c5d1440b51623c98465e49ae99cbf7012389691070345a689e8cd7eb",
+      "source-item:d11139af1e57a781cb4569e6c301cd84346cdb90dcafbb56f5f76a3cd785d09a",
+      "source-item:d7aec8f8d5736efa4ca32613ebb637827bcd048b8ca66f3751f278651ab068ce",
+      "source-item:da5af9fcada95fcf014875b0397ad7c67f7be555e79849fde182290c39af82c1",
+      "source-item:db5674c0fff2f8a49cd4c25703b15e942c5f3beab5e92042738a04a36c1aa5b6",
+      "source-item:dc90bc1598cd31609826d79b1d3a347c81fe7a29cf4d6a2f5e4410bc2074bc45",
+      "source-item:deb3071a2f13ba8747bb200dfc9fedeb5642cc6367447990ab4eaac2d526fa79",
+      "source-item:e21ee99d8f3153bc93f26afbcfd2eed0f41d97764b0f4fab2285c37963fbf3e2",
+      "source-item:e40758a8e9d3284c015a3d2ba3923b53d903e569402e545c337fc2a228ae6c65",
+      "source-item:e41e809021aa6d57c3eb6f610cafe48dd7ec6798d8ae9764d3d094d7acf2e470",
+      "source-item:e76df89efb048d94410a046b64db4a86b01c6e3a203307a7875b56e43183ce0c",
+      "source-item:f95d8fd5d2c6a73bc0c1306114262b5c7056a6c3191fed65f967f99df2f4bc03",
+      "source-item:fdde1ec855d91b15aad9c583c75e01b37b15a07ad32dc2f070efe9cd2588fd1e",
+      "source-item:fefa72e2562069ebe45c7073619897efd772634c1f654bdffb2ba5e051e3ef82"
+    ],
+    "known_exact_quotes_checked": 37,
+    "processed_items": 76,
+    "source_identity_checked": 76,
+    "usage": {
+      "completion_tokens": 53,
+      "prompt_tokens": 8660,
+      "total_tokens": 8713
+    }
+  },
+  "source_item_manifest_sha256": "21f533f4ddd081dafdaa4c2ff00d10007a33dc2a84da566565f1770712a51cb0"
+}
