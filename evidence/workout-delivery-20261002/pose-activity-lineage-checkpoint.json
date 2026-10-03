@@ -1,0 +1,27 @@
+{
+  "checkpoint": "pose-to-activity-lineage-and-slice-observability",
+  "date": "2026-10-02",
+  "change": {
+    "pose_capture": "Aggregate MediaPipe samples carry the resolved activity instance ID only when sampled after that choice was selected; unchosen and delayed pre-selection samples remain unassigned.",
+    "transport": "The iPhone pose receipt carries activity_instance_id and runtime_origin; private GB10 visual_perception traces retain both.",
+    "round_diagnostics": "Candidate exchange count and observed/not_detected/unobservable reset counts use the existing reset evidence gate and an explicit candidate-only evidence label.",
+    "raw_video_uploaded": false
+  },
+  "verification": {
+    "ios_integrated_simulator": "86 passed, 0 failed on clean run",
+    "server_tests": "65 passed",
+    "signed_generic_device_binary_sha256": "c7948c767967b2b35984485e813d15d94f2cb0cf8d5f0304a12dfb14a83344ec",
+    "gb10_service_sha256": "522af030801212851488b4487c5de481cbef57e9ddcf4fc7291d2ab4cd3f66ab",
+    "gb10_round_diagnostics_sha256": "c75ca2016ce5e1028725c2f88e3a1c02538480cc8c18770af0288c3c2e1b3df6",
+    "gb10_service_pid": 2922450,
+    "synthetic_pose_request_id": "8d609b32-6621-430a-b518-9a00c15c9f6d",
+    "synthetic_pose_mlflow_trace": "tr-082bb7646e93d8fd3fbf46a96f50a0cc",
+    "synthetic_round_request_id": "d9dd9515-1c54-4c5f-957c-5fd749ed7335",
+    "synthetic_round_mlflow_trace": "tr-9bdeac974123dd4e547cdd6c1f5ba168",
+    "physical_phone_install": "not_done_device_unavailable",
+    "physical_pose_and_cue_validation": "not_done"
+  },
+  "first_full_simulator_attempt": "One 10-second freestyle UI test failed while another Xcode test process shared the simulator. The test passed alone, then the complete suite passed 86/86 without concurrent Xcode work.",
+  "cost": {"actual_billed_usd": null, "api_equivalent_usd": null, "infrastructure_usd": null},
+  "limits": ["Synthetic traces verify lineage, not boxing recognition", "Reset status is observability, not technique correctness", "Normal phone placement and physical audio feedback remain unmeasured"]
+}

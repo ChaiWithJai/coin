@@ -64,6 +64,9 @@ class ServiceBatchTests(unittest.TestCase):
         with self.service.OUTBOX.connect() as db:
             payload=json.loads(db.execute('SELECT payload FROM events').fetchone()[0])
         self.assertEqual(payload['activity_instance_id'],str(activity_id))
+        self.assertEqual(payload['slice_diagnostics']['candidate_exchange_count'],1)
+        self.assertEqual(payload['slice_diagnostics']['reset_evidence_counts']['unobservable'],1)
+        self.assertEqual(payload['stages'][0]['name'],'activity_slice_observation')
         self.service.enqueue_pending_rounds()
         store=Store(self.service.DATA/'batch-jobs.sqlite3')
         job=store.inspect()[0]

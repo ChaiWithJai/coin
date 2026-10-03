@@ -39,6 +39,8 @@ class PoseWindow(BaseModel):
     request_id:uuid.UUID
     session_id:uuid.UUID
     block_id:uuid.UUID
+    activity_instance_id:uuid.UUID|None=None
+    runtime_origin:Literal['physical_device','simulator','synthetic','replay','unknown']='unknown'
     sequence:int=Field(ge=0)
     sampled_at_ms:int=Field(ge=0)
     language:Literal['fr','en']
@@ -433,11 +435,16 @@ def pose_window(body:PoseWindow):
     result={'action':'silence','reason':'movement_classifier_unvalidated',
             'source':'pose_window_observation_only','sequence':body.sequence}
     payload={'session_id':str(body.session_id),'window_id':str(body.request_id),
+             'activity_instance_id':str(body.activity_instance_id) if body.activity_instance_id else None,
+             'origin':body.runtime_origin,
              'received_at':time.time(),'model_versions':{'pose':body.source_version,
                                                          'motion_feature':'wrist-travel-v1' if body.wrist_travel_body_widths is not None else None},
              'decision':result,
              'stages':[{'name':'visual_perception','span_type':'TOOL',
-                        'inputs':{'block_id':str(body.block_id),'sequence':body.sequence,
+                        'inputs':{'block_id':str(body.block_id),
+                                  'activity_instance_id':str(body.activity_instance_id) if body.activity_instance_id else None,
+                                  'runtime_origin':body.runtime_origin,
+                                  'sequence':body.sequence,
                                   'sampled_at_ms':body.sampled_at_ms,'language':body.language,
                                   'camera_facing':body.camera_facing},
                         'outputs':{'landmark_count':body.landmark_count,
@@ -491,10 +498,17 @@ def round_report(body:RoundSummary):
     start=time.perf_counter()
     try:
         response,stages,facts=round_harness.run(body.model_dump(mode='json'))
+        from round_diagnostics import summarize_round_candidates
+        slice_diagnostics=summarize_round_candidates(body.model_dump(mode='json'))
+        stages.insert(0,{'name':'activity_slice_observation','span_type':'TOOL',
+                         'inputs':{'activity_instance_id':str(body.activity_instance_id) if body.activity_instance_id else None,
+                                   'duration_s':body.duration_s},
+                         'outputs':slice_diagnostics,'duration_ms':0})
         payload={'session_id':str(body.session_id or body.request_id),'window_id':str(body.request_id),'received_at':time.time(),
                  'model_versions':{'served':response.get('models',[]),'rules':'exchange-tracker-v1'},
                  'workout_mode':body.workout_mode,'source_title':body.source_title,'origin':body.origin,
                  'activity_instance_id':str(body.activity_instance_id) if body.activity_instance_id else None,
+                 'slice_diagnostics':slice_diagnostics,
                  'decision':{'status':'complete','constraint':response['constraint'],'facts':facts},'stages':stages}
         response['event_id']=OUTBOX.enqueue(payload,event_id=str(body.request_id))
         response['offline_analysis']=offline

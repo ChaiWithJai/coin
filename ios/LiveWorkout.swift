@@ -500,7 +500,8 @@ struct WorkoutCameraView: UIViewRepresentable {
             while !Task.isCancelled && UserDefaults.standard.bool(forKey: "poseTelemetryEnabled"),
                   let pending = store.nextPendingPoseUpload() {
                 do {
-                    let eventID = try await send(pending.sample, sessionID: pending.sessionID)
+                    let origin = store.data.sessions.first { $0.id == pending.sessionID }?.runtimeOrigin ?? .unknown
+                    let eventID = try await send(pending.sample, sessionID: pending.sessionID, origin: origin)
                     if Task.isCancelled { break }
                     store.recordPoseDelivery(sessionID: pending.sessionID, sampleID: pending.sample.id, eventID: eventID)
                     offline = false
@@ -517,7 +518,7 @@ struct WorkoutCameraView: UIViewRepresentable {
         uploadTask?.cancel()
     }
 
-    private func send(_ sample: PoseSampleRecord, sessionID: UUID) async throws -> String {
+    private func send(_ sample: PoseSampleRecord, sessionID: UUID, origin: WorkoutRuntimeOrigin) async throws -> String {
         #if DEBUG
         let environment = ProcessInfo.processInfo.environment
         let base = environment["COIN_SERVICE_URL"] ?? UserDefaults.standard.string(forKey: "serviceURL") ?? ""
@@ -542,7 +543,9 @@ struct WorkoutCameraView: UIViewRepresentable {
             "visible_landmark_count": sample.visibleLandmarkCount ?? 0,
             "framing_ready": sample.framingReady ?? false,
             "source_version": sample.sourceVersion,
+            "runtime_origin": origin.rawValue,
         ]
+        if let activityID = sample.activityInstanceID { body["activity_instance_id"] = activityID.uuidString }
         if let facing = sample.cameraFacing { body["camera_facing"] = facing }
         if let latency = sample.captureToPoseMs { body["capture_to_pose_ms"] = latency }
         if let travel = sample.wristTravelBodyWidths { body["wrist_travel_body_widths"] = travel }
@@ -1012,6 +1015,7 @@ struct LiveWorkoutView: View {
             if let last = lastPoseRecordAt, sample.sampledAt.timeIntervalSince(last) < 2 { return }
             lastPoseRecordAt = sample.sampledAt
             pendingPoseWindows.append(PoseSampleRecord(blockID: current.block.id, sampledAt: sample.sampledAt,
+                                                  activityInstanceID: WorkoutActivityRouting.poseOwner(activityInstance(for: current), sampledAt: sample.sampledAt),
                                                   landmarkCount: sample.landmarkCount, sourceVersion: "mediapipe-pose-full-v1",
                                                   visibleLandmarkCount: sample.visibleLandmarkCount, framingReady: sample.framingReady,
                                                   captureToPoseMs: sample.captureToPoseMs,

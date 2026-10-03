@@ -110,6 +110,9 @@ import XCTest
         let stance = try XCTUnwrap(store.data.sessions[0].activityInstance(blockID: block.id))
         XCTAssertFalse(WorkoutActivityRouting.allowsExchange(stance))
         XCTAssertEqual(WorkoutActivityRouting.outgoingExchangeID(from: shadow, to: stance), shadow.id)
+        let selectedAt = try XCTUnwrap(shadow.selectedAt)
+        XCTAssertNil(WorkoutActivityRouting.poseOwner(shadow, sampledAt: selectedAt.addingTimeInterval(-0.001)))
+        XCTAssertEqual(WorkoutActivityRouting.poseOwner(shadow, sampledAt: selectedAt), shadow.id)
     }
     func testSourceSpecifiedAndUserSelectionAreDistinctEvenForSameExercise() throws {
         let (store, folder) = makeStore()

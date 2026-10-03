@@ -436,6 +436,10 @@ private final class PoseWindowURLProtocol: URLProtocol {
         let sample = PoseSampleRecord(blockID: blockID, sampledAt: Date(), landmarkCount: 33,
                                       sourceVersion: "mediapipe-pose-full-v1")
         var selected = sample
+        selected.activityInstanceID = UUID()
+        store.recordPoseWindows(sessionID: sessionID, windows: [selected])
+        XCTAssertTrue((store.data.sessions.first?.poseWindows ?? []).isEmpty)
+        selected.activityInstanceID = store.data.sessions.first?.activityInstances?.first { $0.blockID == blockID }?.id
         selected.uploadLanguage = "fr"
         store.recordPoseWindows(sessionID: sessionID, windows: [selected])
         XCTAssertEqual(TrainingStore(directory: directory).nextPendingPoseUpload()?.sample.id, sample.id)
@@ -466,10 +470,12 @@ private final class PoseWindowURLProtocol: URLProtocol {
         let store = TrainingStore(directory: directory)
         let sessionID = store.start(try XCTUnwrap(SessionTemplates.make(30)))
         let blockID = try XCTUnwrap(store.data.sessions.first?.blocks.first?.id)
+        let activityID = try XCTUnwrap(store.data.sessions.first?.activityInstances?.first { $0.blockID == blockID }?.id)
         var sample = PoseSampleRecord(blockID: blockID, sampledAt: Date(), landmarkCount: 33,
                                       sourceVersion: "mediapipe-pose-full-v1", visibleLandmarkCount: 12,
                                       framingReady: false, captureToPoseMs: 38.5,
                                       wristTravelBodyWidths: 0.42, lowerBodyVisible: true)
+        sample.activityInstanceID = activityID
         sample.uploadLanguage = "fr"
         store.recordPoseWindows(sessionID: sessionID, windows: [sample])
         let configuration = URLSessionConfiguration.ephemeral
@@ -485,6 +491,8 @@ private final class PoseWindowURLProtocol: URLProtocol {
         XCTAssertFalse(sender.offline, "Sender rejected the mock response")
         XCTAssertEqual(store.data.sessions.first?.poseWindows?.first?.remoteEventID, sample.id.uuidString)
         XCTAssertEqual(PoseWindowURLProtocol.lastPayload?["session_id"] as? String, sessionID.uuidString)
+        XCTAssertEqual(PoseWindowURLProtocol.lastPayload?["activity_instance_id"] as? String, activityID.uuidString)
+        XCTAssertEqual(PoseWindowURLProtocol.lastPayload?["runtime_origin"] as? String, "simulator")
         XCTAssertEqual(PoseWindowURLProtocol.lastPayload?["visible_landmark_count"] as? Int, 12)
         XCTAssertEqual(PoseWindowURLProtocol.lastPayload?["language"] as? String, "fr")
         XCTAssertEqual(PoseWindowURLProtocol.lastPayload?["wrist_travel_body_widths"] as? Double, 0.42)

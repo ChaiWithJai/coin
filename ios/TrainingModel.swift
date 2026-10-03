@@ -468,6 +468,10 @@ enum WorkoutActivityRouting {
         guard changed(from: previous, to: current), allowsExchange(previous) else { return nil }
         return previous?.id
     }
+    static func poseOwner(_ instance: WorkoutActivityInstance?, sampledAt: Date) -> UUID? {
+        guard let instance, let selectedAt = instance.selectedAt, sampledAt >= selectedAt else { return nil }
+        return instance.id
+    }
 }
 
 struct PreparationActivity: Codable, Hashable {
@@ -587,6 +591,7 @@ struct PoseSampleRecord: Codable, Identifiable {
     var id = UUID()
     let blockID: UUID
     let sampledAt: Date
+    var activityInstanceID: UUID? = nil
     let landmarkCount: Int
     let sourceVersion: String
     var visibleLandmarkCount: Int? = nil
@@ -967,8 +972,12 @@ struct TrainingData: Codable {
               let index = data.sessions.firstIndex(where: { $0.id == sessionID }),
               data.sessions[index].state == .active else { return }
         let allowed = Set(data.sessions[index].blocks.map(\.id))
+        let instances = data.sessions[index].activityInstances ?? []
         let valid = windows.filter { window in
             allowed.contains(window.blockID) && (0...33).contains(window.landmarkCount)
+            && (window.activityInstanceID.map { instanceID in
+                instances.contains { $0.id == instanceID && $0.blockID == window.blockID }
+            } ?? true)
             && (window.visibleLandmarkCount.map { (0...33).contains($0) && $0 <= window.landmarkCount } ?? true)
             && (window.captureToPoseMs.map { $0.isFinite && (0...10_000).contains($0) } ?? true)
             && (window.wristTravelBodyWidths.map { $0.isFinite && (0...10).contains($0) } ?? true)

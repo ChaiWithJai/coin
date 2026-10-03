@@ -69,6 +69,21 @@ class WorkoutCompletionTests(unittest.TestCase):
         self.assertEqual(failure.exception.status_code,422)
         self.assertEqual(self.service.OUTBOX.counts(),{})
 
+    def test_pose_window_trace_keeps_runtime_activity_identity(self):
+        import json
+        activity_id=uuid.uuid4()
+        body=self.service.PoseWindow(request_id=uuid.uuid4(),session_id=self.session_id,
+            block_id=self.block_id,activity_instance_id=activity_id,runtime_origin='synthetic',sequence=1,sampled_at_ms=1000,
+            language='fr',landmark_count=33,visible_landmark_count=20,
+            framing_ready=False,source_version='mediapipe-pose-full-v1')
+        self.service.pose_window(body)
+        with self.service.OUTBOX.connect() as db:
+            payload=json.loads(db.execute('SELECT payload FROM events').fetchone()[0])
+        self.assertEqual(payload['activity_instance_id'],str(activity_id))
+        self.assertEqual(payload['origin'],'synthetic')
+        self.assertEqual(payload['stages'][0]['inputs']['activity_instance_id'],str(activity_id))
+        self.assertEqual(payload['decision']['action'],'silence')
+
     def test_activity_lineage_is_kept_without_claiming_recognition(self):
         selected=dict(instance_id=uuid.uuid4(),block_id=self.block_id,source_block_id='basic-w1-d6-p8-s1-1',
                       source_item_id='p8-b6',exercise_key='custom',selection_provenance='user_selected',
