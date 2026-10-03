@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from app import atomic_write, item_key, load_labels, load_source
+from app import attach_source_context, atomic_write, item_key, load_labels, load_source
 
 
 class ReviewTests(unittest.TestCase):
@@ -46,6 +46,21 @@ class ReviewTests(unittest.TestCase):
         atomic_write(labels_path, labels)
         with self.assertRaisesRegex(ValueError, 'do not belong'):
             load_labels(labels_path, source)
+
+    def test_section_context_requires_exact_catalog_item(self):
+        self.source['lessonID'] = 'day'
+        self.path.write_text(json.dumps(self.source))
+        catalog_path = self.path.with_name('catalog.json')
+        catalog = {'workouts': [{'id': 'day', 'sourceSHA256': 'snapshot',
+                    'blocks': [{'id': 'block', 'sourceText': 'WARM-UP\n10 JUMP SQUATS',
+                                'sourceItems': [{'id': 'item', 'text': '10 JUMP SQUATS'}]}]}]}
+        catalog_path.write_text(json.dumps(catalog))
+        loaded = attach_source_context(load_source(self.path), catalog_path)
+        self.assertIn('WARM-UP', loaded['items'][0]['sectionContext'])
+        catalog['workouts'][0]['blocks'][0]['sourceItems'][0]['text'] = '12 JUMP SQUATS'
+        catalog_path.write_text(json.dumps(catalog))
+        with self.assertRaisesRegex(ValueError, 'differs'):
+            attach_source_context(load_source(self.path), catalog_path)
 
 
 if __name__ == '__main__':

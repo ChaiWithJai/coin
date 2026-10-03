@@ -13,6 +13,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 HERE = Path(__file__).resolve().parent
+CATALOG = HERE.parents[1] / "ios" / "WorkoutCatalog.json"
 DECISIONS = {"pass", "fail", "defer"}
 
 
@@ -37,6 +38,23 @@ def load_source(path: Path):
 
 def item_key(item):
     return item["blockID"] + "::" + item["sourceItemID"]
+
+
+def attach_source_context(source, catalog_path: Path):
+    """Show source section context only when the bundled catalog matches exactly."""
+    catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+    matches = [day for day in catalog.get("workouts", []) if day.get("id") == source.get("lessonID")]
+    if len(matches) != 1 or matches[0].get("sourceSHA256") != source["sourceSHA256"]:
+        raise ValueError("Catalog lesson or source hash differs from proposal")
+    blocks = {block["id"]: block for block in matches[0]["blocks"]}
+    for item in source["items"]:
+        block = blocks.get(item["blockID"])
+        if block is None or not any(s.get("id") == item["sourceItemID"] and
+                                    s.get("text") == item["sourceText"]
+                                    for s in block.get("sourceItems", [])):
+            raise ValueError("Catalog source item differs from proposal")
+        item["sectionContext"] = block["sourceText"]
+    return source
 
 
 def load_labels(path: Path, source):
@@ -86,8 +104,11 @@ def read_attempts(db_path, source):
     return result
 
 
-def serve(source_path: Path, labels_path: Path, db_path: Path | None, host: str, port: int):
+def serve(source_path: Path, labels_path: Path, db_path: Path | None, host: str, port: int,
+          catalog_path: Path | None = CATALOG):
     source = load_source(source_path)
+    if catalog_path is not None:
+        source = attach_source_context(source, catalog_path)
     labels = load_labels(labels_path, source)
     attempts = read_attempts(db_path, source)
     keys = {item_key(item): item for item in source["items"]}
@@ -117,6 +138,13 @@ def serve(source_path: Path, labels_path: Path, db_path: Path | None, host: str,
                 payload = (HERE / "app.js").read_bytes()
                 self.send_response(200)
                 self.send_header("Content-Type", "application/javascript; charset=utf-8")
+                self.send_header("Content-Length", str(len(payload)))
+                self.end_headers()
+                self.wfile.write(payload)
+            elif route == "/style.css":
+                payload = (HERE / "style.css").read_bytes()
+                self.send_response(200)
+                self.send_header("Content-Type", "text/css; charset=utf-8")
                 self.send_header("Content-Length", str(len(payload)))
                 self.end_headers()
                 self.wfile.write(payload)
@@ -168,12 +196,14 @@ def main():
     parser.add_argument("proposal", type=Path, help="Any proposal-only JSON export")
     parser.add_argument("--labels", type=Path, help="Review file; defaults beside proposal")
     parser.add_argument("--db", type=Path, help="Optional batch SQLite file for model attempts")
+    parser.add_argument("--catalog", type=Path, default=CATALOG,
+                        help="Exact bundled catalog for source-section context")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=5399)
     args = parser.parse_args()
     labels = args.labels or args.proposal.with_name(args.proposal.stem + "-review.json")
     db = args.db or args.proposal.with_name("batch.sqlite")
-    serve(args.proposal, labels, db, args.host, args.port)
+    serve(args.proposal, labels, db, args.host, args.port, args.catalog)
 
 
 if __name__ == "__main__":
