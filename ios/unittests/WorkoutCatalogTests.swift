@@ -152,12 +152,50 @@ import XCTest
             }
         }
         XCTAssertEqual(lessons.count, 70)
-        XCTAssertEqual(workSegments, 1_126)
-        XCTAssertEqual(restSegments, 134)
-        XCTAssertEqual(timedWork, 628)
-        XCTAssertEqual(manualWork, 498)
+        XCTAssertEqual(workSegments, 1_184)
+        XCTAssertEqual(restSegments, 192)
+        XCTAssertEqual(timedWork, 688)
+        XCTAssertEqual(manualWork, 496)
         XCTAssertEqual(requiredChoices, 77)
-        XCTAssertEqual(timedSeconds, 87_555)
+        XCTAssertEqual(timedSeconds, 93_255)
+    }
+
+    func testReviewedEnduranceDaysExpandIntoExactThreeCircuitClock() throws {
+        let expectedExercises = [
+            "Push-Up Shuttle", "Squat With Med Ball Throws", "Rolls", "Plate Punches",
+            "Side Jumps", "Plank", "Landmine Punches", "Boxing Steps With Weights",
+            "Wall Sit", "Barbell Push-Outs",
+        ]
+        for lessonID in ["competitive-w2-d6", "competitive-w4-d6"] {
+            let lesson = try XCTUnwrap(WorkoutCatalog.shared.lessons.first { $0.id == lessonID })
+            let source = try XCTUnwrap(lesson.blocks.first)
+            let blocks = lesson.template().blocks
+            XCTAssertEqual(blocks.count, 30)
+            XCTAssertEqual(blocks.map(\.sourceTitle), Array(repeating: expectedExercises, count: 3).flatMap { $0 })
+            XCTAssertEqual(blocks.map(\.effectiveSeconds), Array(repeating: 60, count: 30))
+            XCTAssertEqual(blocks.map(\.effectiveRestSeconds),
+                Array(repeating: Array(repeating: 30, count: 9) + [120], count: 2).flatMap { $0 }
+                    + Array(repeating: 30, count: 9) + [0])
+            XCTAssertEqual(blocks.map(\.sourceBlockID), Array(repeating: source.id, count: 30))
+            XCTAssertEqual(Set(blocks.compactMap(\.sourceItemID)).count, 10)
+            XCTAssertTrue(blocks.allSatisfy { $0.sourceInstructions == source.instructions })
+            XCTAssertTrue(blocks.allSatisfy { $0.sourceDemoURLs == source.demoURLs })
+            XCTAssertTrue(blocks.allSatisfy { !$0.isManual })
+            XCTAssertEqual(lesson.template().plannedSeconds, 2_850)
+        }
+    }
+
+    func testChangedEndurancePrescriptionFallsBackToOneManualSourceBlock() throws {
+        let url = try XCTUnwrap(Bundle.main.url(forResource: "WorkoutCatalog", withExtension: "json"))
+        var text = try String(contentsOf: url, encoding: .utf8)
+        text = text.replacingOccurrences(of: "3 CIRCUITS, 10 EXERCISES EACH. WORK FOR 1 MINUTE, REST FOR",
+                                         with: "3 CIRCUITS, 10 EXERCISES EACH. CHANGED SOURCE")
+        let catalog = try WorkoutCatalog.load(Data(text.utf8))
+        let lesson = try XCTUnwrap(catalog.lessons.first { $0.id == "competitive-w2-d6" })
+        let blocks = lesson.template().blocks
+        XCTAssertEqual(blocks.count, 1)
+        XCTAssertTrue(try XCTUnwrap(blocks.first).isManual)
+        XCTAssertEqual(blocks.first?.effectiveSeconds, 0)
     }
 
     func testGenericSourceSlotsRequireConcreteRuntimeMovement() throws {
@@ -355,6 +393,8 @@ import XCTest
         var expandedItems = 0
         var roundSections = 0
         var roundItems = 0
+        var circuitSections = 0
+        var circuitItems = 0
         for lesson in WorkoutCatalog.shared.lessons {
             let blocks = lesson.template().blocks
             for source in lesson.blocks {
@@ -362,6 +402,10 @@ import XCTest
                 if mapped.count == 1, mapped.first?.sourceActivityKey == "squat_jumps" {
                     XCTAssertEqual(mapped.first?.sourceItemID, source.sourceItems?.first?.id)
                     XCTAssertEqual(mapped.first?.sourceInstructions, source.instructions)
+                } else if source.reviewedEnduranceCircuitSteps != nil {
+                    circuitSections += 1
+                    circuitItems += mapped.count
+                    XCTAssertTrue(mapped.allSatisfy { $0.sourceItemID != nil && !$0.isManual })
                 } else if mapped.contains(where: { $0.sourceItemID != nil }) {
                     if source.completion == .manual {
                         expandedSections += 1
@@ -381,6 +425,8 @@ import XCTest
         XCTAssertEqual(expandedItems, 218)
         XCTAssertEqual(roundSections, 5)
         XCTAssertEqual(roundItems, 25)
+        XCTAssertEqual(circuitSections, 2)
+        XCTAssertEqual(circuitItems, 60)
     }
 
     func testOnlyFourReviewedSourceItemsEnableExistingRepCandidates() throws {

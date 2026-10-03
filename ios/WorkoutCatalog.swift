@@ -65,6 +65,18 @@ struct WorkoutLesson: Decodable, Identifiable {
     func sourceTemplate() -> TrainingTemplate {
         var roundNumber = 0
         var sessionBlocks = blocks.flatMap { source -> [SessionBlock] in
+            if let steps = source.reviewedEnduranceCircuitSteps {
+                return steps.map { step in
+                    SessionBlock(kind: .exercise, minutes: 1, roundNumber: nil, drillID: nil,
+                                 restAfterMinutes: step.restSeconds / 60,
+                                 durationSeconds: 60, restAfterSeconds: step.restSeconds,
+                                 sourceTitle: step.item.text, sourceInstructions: source.instructions,
+                                 sourceURL: source.sourceURL ?? sourceURL, sourceDemoURLs: source.demoURLs,
+                                 sourceBlockID: source.id, sourceItemID: step.item.id,
+                                 repetitionText: "Circuit \(step.circuit) of 3",
+                                 completionMode: .timed)
+                }
+            }
             if let steps = source.manualSteps {
                 return steps.map { step in
                     SessionBlock(kind: .exercise, minutes: 0, roundNumber: nil, drillID: source.drillID, restAfterMinutes: 0,
@@ -153,6 +165,46 @@ struct WorkoutSourceItem: Decodable {
 }
 
 extension WorkoutSourceBlock {
+    struct EnduranceCircuitStep {
+        let item: WorkoutSourceItem
+        let circuit: Int
+        let restSeconds: Int
+    }
+
+    /// Two source-pinned endurance days prescribe the same complete circuit:
+    /// three passes over ten named exercises, one minute of work, 30 seconds
+    /// between exercises, and two minutes between circuits. Keep changed or
+    /// incomplete source snapshots manual rather than guessing a schedule.
+    var reviewedEnduranceCircuitSteps: [EnduranceCircuitStep]? {
+        let pages: [String: Int] = [
+            "competitive-w2-d6-p18-s1-1": 18,
+            "competitive-w4-d6-p34-s1-1": 34,
+        ]
+        guard let page = pages[id], completion == .manual, kind == .exercise,
+              rounds == nil, durationSeconds == nil, restSeconds == nil,
+              let items = sourceItems, items.count == 15,
+              items.map(\.id) == (1...15).map({ "p\(page)-b\($0)" }),
+              items.map(\.text) == [
+                "WARM UP:", "ENDURANCE WORKOUT #\(page == 18 ? 2 : 4) WARM UP:",
+                "3 CIRCUITS, 10 EXERCISES EACH. WORK FOR 1 MINUTE, REST FOR",
+                "30 SECONDS. TAKE 2 MINUTES OF REST BETWEEN CIRCUITS",
+                "Push-Up Shuttle", "Squat With Med Ball Throws", "Rolls", "Plate Punches",
+                "Side Jumps", "Plank", "Landmine Punches", "Boxing Steps With Weights",
+                "Wall Sit", "Barbell Push-Outs", "Stretch Series",
+              ],
+              items.map(\.text).joined(separator: "\n") == instructions,
+              sourceText == instructions else { return nil }
+        let exercises = Array(items[4..<14])
+        return (1...3).flatMap { circuit in
+            exercises.enumerated().map { index, item in
+                let isFinal = circuit == 3 && index == exercises.count - 1
+                let isCircuitBoundary = index == exercises.count - 1
+                return EnduranceCircuitStep(item: item, circuit: circuit,
+                    restSeconds: isFinal ? 0 : (isCircuitBoundary ? 120 : 30))
+            }
+        }
+    }
+
     var reviewedWholeBlockItemID: String? {
         activityKey == nil && reviewedWholeBlockActivityKey == "squat_jumps" ? sourceItems?.first?.id : nil
     }

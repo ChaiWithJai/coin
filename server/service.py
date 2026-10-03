@@ -189,7 +189,7 @@ class RoundSummary(BaseModel):
     drill_id:str|None=Field(default=None,max_length=80)
     round:int=Field(ge=0,le=100)
     duration_s:int=Field(ge=0,le=3600)
-    exchanges:list[Exchange]=Field(min_length=1,max_length=200)
+    exchanges:list[Exchange]=Field(max_length=200)
     session_id:uuid.UUID|None=None
     workout_mode:Literal['program','freestyle','drill']|None=None
     origin:Literal['live','replay','synthetic']='live'
@@ -197,6 +197,15 @@ class RoundSummary(BaseModel):
     source_instructions:str|None=Field(default=None,max_length=6000)
     source_id:str|None=Field(default=None,max_length=200)
     activity_instance_id:uuid.UUID|None=None
+
+    @model_validator(mode='after')
+    def require_exchange_for_assessed_drills(self):
+        # A completed source or freestyle round is still useful evidence when
+        # the phone detects no exchanges. Dedicated drill reports require an
+        # observed exchange because their rubric assesses exchange details.
+        if not self.exchanges and self.workout_mode not in ('program','freestyle'):
+            raise ValueError('At least one exchange is required for drill reports')
+        return self
 
 
 def db():

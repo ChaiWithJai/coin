@@ -56,6 +56,44 @@ class ServiceBatchTests(unittest.TestCase):
         self.assertEqual(jobs[0]['provenance']['workout_mode'],'program')
         self.assertTrue(all(x['state']=='pending' for x in jobs[0]['items']))
 
+    def test_zero_detection_freestyle_is_accepted_traced_and_idempotent(self):
+        body=self.service.RoundSummary(request_id=uuid.uuid4(),session_id=uuid.uuid4(),language='en',
+            round=2,duration_s=180,workout_mode='freestyle',drill_id='free-boxing-v1',exchanges=[])
+        first=self.service.round_report(body)
+        second=self.service.round_report(body)
+        self.assertEqual(first['event_id'],second['event_id'])
+        self.assertTrue(first['offline_analysis']['accepted'])
+        self.assertEqual(self.mock_model.call_count,1)
+        self.assertEqual(self.mock_model.call_args.args[0]['exchanges'],[])
+        with self.service.OUTBOX.connect() as db:
+            rows=db.execute('SELECT id,payload FROM events').fetchall()
+        self.assertEqual(len(rows),1)
+        self.assertEqual(rows[0][0],str(body.request_id))
+        payload=json.loads(rows[0][1])
+        self.assertEqual(payload['session_id'],str(body.session_id))
+        self.assertEqual(payload['window_id'],str(body.request_id))
+        self.assertEqual(payload['workout_mode'],'freestyle')
+        self.assertEqual(payload['slice_diagnostics']['candidate_exchange_count'],0)
+        self.assertEqual(payload['slice_diagnostics']['reset_evidence_counts'],
+                         {'observed':0,'not_detected':0,'unobservable':0})
+        self.assertEqual(payload['stages'][0]['name'],'activity_slice_observation')
+        self.service.enqueue_pending_rounds()
+        jobs=Store(self.service.DATA/'batch-jobs.sqlite3').inspect()
+        self.assertEqual(len(jobs),1)
+        self.assertEqual(jobs[0]['provenance']['request_id'],str(body.request_id))
+        self.assertEqual(jobs[0]['provenance']['session_id'],str(body.session_id))
+        self.assertEqual(jobs[0]['provenance']['workout_mode'],'freestyle')
+
+    def test_zero_detection_is_limited_to_program_and_freestyle(self):
+        common=dict(request_id=uuid.uuid4(),session_id=uuid.uuid4(),language='en',
+                    round=1,duration_s=180,exchanges=[])
+        self.service.RoundSummary(**common,workout_mode='program')
+        self.service.RoundSummary(**common,workout_mode='freestyle')
+        from pydantic import ValidationError
+        for mode in (None,'drill'):
+            with self.subTest(mode=mode),self.assertRaises(ValidationError):
+                self.service.RoundSummary(**common,workout_mode=mode,drill_id='probe-combine-angle-v1')
+
     def test_runtime_activity_id_survives_round_and_outbox(self):
         activity_id=uuid.uuid4()
         body=self.body.model_copy(update={'activity_instance_id':activity_id,'duration_s':12})

@@ -131,4 +131,26 @@ class BundledCatalogTests(unittest.TestCase):
         self.assertIn('steady state run',day['blocks'][0]['instructions'])
         self.assertTrue(day['blocks'][0]['referenceURLs'])
 
+    def test_reviewed_three_circuit_endurance_sources_remain_exact_and_traceable(self):
+        exercises = ['Push-Up Shuttle', 'Squat With Med Ball Throws', 'Rolls', 'Plate Punches',
+                     'Side Jumps', 'Plank', 'Landmine Punches', 'Boxing Steps With Weights',
+                     'Wall Sit', 'Barbell Push-Outs']
+        for lesson_id, page, number in [('competitive-w2-d6', 18, 2),
+                                        ('competitive-w4-d6', 34, 4)]:
+            day = next(w for w in self.catalog['workouts'] if w['id'] == lesson_id)
+            self.assertEqual(len(day['blocks']), 1)
+            block = day['blocks'][0]
+            self.assertEqual(block['id'], f'{lesson_id}-p{page}-s1-1')
+            self.assertEqual(block['completion'], 'manual')
+            self.assertEqual([row['id'] for row in block['sourceItems']],
+                             [f'p{page}-b{i}' for i in range(1, 16)])
+            self.assertEqual([row['text'] for row in block['sourceItems']], [
+                'WARM UP:', f'ENDURANCE WORKOUT #{number} WARM UP:',
+                '3 CIRCUITS, 10 EXERCISES EACH. WORK FOR 1 MINUTE, REST FOR',
+                '30 SECONDS. TAKE 2 MINUTES OF REST BETWEEN CIRCUITS',
+                *exercises, 'Stretch Series'])
+            self.assertTrue(all(row['demoURLs'] for row in block['sourceItems'][4:14]))
+            self.assertEqual(block['sourceText'],
+                             '\n'.join(row['text'] for row in block['sourceItems']))
+
 if __name__=='__main__':unittest.main()

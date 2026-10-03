@@ -1,0 +1,66 @@
+{
+  "checkpoint": "endurance-freestyle-dataset",
+  "timestamp": "2026-10-03T00:44:00-04:00",
+  "guided_workout": {
+    "lesson_ids": [
+      "competitive-w2-d6",
+      "competitive-w4-d6"
+    ],
+    "source_behavior_before": "one manual block per whole endurance day",
+    "source_behavior_after": "30 one-minute exercise segments; 30 seconds between exercises; 120 seconds between circuits; no final rest",
+    "planned_seconds": 2850,
+    "source_guard": "exact block ID, item IDs, item text, sourceText, and schema; mismatch returns original manual block"
+  },
+  "freestyle": {
+    "fix": "zero detected exchanges accepted only for program/freestyle; drill and unspecified modes still require an exchange",
+    "deployed_service_sha256": "d35fad6b4bc13f320ccbb4feff45c7e4e39220d21145f42450a57c7ddcc74709",
+    "synthetic_request_id": "eaca8240-0436-4a62-8954-e37f64dbaaae",
+    "synthetic_session_id": "95f62234-28dc-44b0-850f-b83d963b3bc6",
+    "idempotent_retry": true,
+    "single_outbox_event": true,
+    "offline_job_state": "pending",
+    "observation": "0 exchanges and 0 punch onsets observed.",
+    "limitation": "No punch onset was detected; this does not establish inactivity."
+  },
+  "agentic_data_bridge": {
+    "outputs": [
+      "record.json",
+      "review.json",
+      "dataset.json"
+    ],
+    "requires": "complete exact-queue-bound pass/fail review; structured registered movement correction; exact source quote",
+    "split_unit": "whole source workout session",
+    "training_performed": false
+  },
+  "validation": {
+    "coin_unit_tests": "103/103",
+    "workout_catalog_tests": "25/25",
+    "server_tests": "101/101 across package and root",
+    "source_catalog_tests": "12/12",
+    "activity_review_tests": "9/9",
+    "signed_build": "succeeded",
+    "signed_binary_sha256": "e735f61484d85c8820b71532ff33f9a806b3f752e7ebd79f62088a37c0ecf6c3"
+  },
+  "batch_v22": {
+    "job_id": "9585a62ea0cb702cc6e6c87ace6421ca717c0240ba460a656a84adf013bed39b",
+    "state_at_checkpoint": "pending",
+    "complete": 1427,
+    "pending": 346,
+    "runtime_eligible": false
+  },
+  "usage": {
+    "mlflow_experiment": 39,
+    "run_id": "7b3cb223dc934e98bc4e4ae41a47afe2",
+    "response_count": 3729,
+    "total_tokens": 508070117,
+    "actual_billed_usd": null,
+    "api_equivalent_usd": null,
+    "coverage": "Observed per-response development usage only; no hidden reasoning capture."
+  },
+  "limits": [
+    "The exact endurance circuit has unit-level simulator evidence but no completed physical session.",
+    "The deployed zero-detection request was synthetic.",
+    "Dataset compilation prepares reviewed examples; it does not train, evaluate, promote, or deploy a detector.",
+    "The remaining atomic batch is still running and unreviewed."
+  ]
+}
