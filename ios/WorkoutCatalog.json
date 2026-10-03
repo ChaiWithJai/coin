@@ -3156,11 +3156,11 @@
         {
           "id": "basic-w1-d5-p7-s6-1",
           "title": "6 ROUNDS OF 3 MINUTES OF BAG WORK",
-          "instructions": "6 ROUNDS OF 3 MINUTES OF BAG WORK\nShadow ONLY boxing MOVEMENT with resistance bands. 6 rounds of 1 minute with 20\nsec of rest\nONLY LONG RANGE ATTACKS\nONLY CLOSE RANGE ATTACKS\nFREESTYLE\nCHANGE THE STACE\nCONDITIONING BAG WORK DRILL (1 ROUND)",
+          "instructions": "6 ROUNDS OF 3 MINUTES OF BAG WORK",
           "kind": "boxing",
           "drillID": "free-boxing-v1",
           "activityKey": null,
-          "sourceText": "6 ROUNDS OF 3 MINUTES OF BAG WORK\nShadow ONLY boxing MOVEMENT with resistance bands. 6 rounds of 1 minute with 20\nsec of rest\nONLY LONG RANGE ATTACKS\nONLY CLOSE RANGE ATTACKS\nFREESTYLE\nCHANGE THE STACE\nCONDITIONING BAG WORK DRILL (1 ROUND)",
+          "sourceText": "6 ROUNDS OF 3 MINUTES OF BAG WORK",
           "sourceSectionIndex": 6,
           "sourceSectionID": "p7-s6",
           "sourceItems": [
@@ -3173,7 +3173,34 @@
               "referenceURLs": [
                 "https://www.youtube.com/shorts/u1vHeFR4ptE"
               ]
-            },
+            }
+          ],
+          "sourceURL": "https://boxing.dharmicdata.org/program/basic/week/1/day/5#p7-s6",
+          "referenceURLs": [
+            "https://www.youtube.com/shorts/u1vHeFR4ptE"
+          ],
+          "demoURLs": [
+            "https://www.youtube.com/shorts/u1vHeFR4ptE"
+          ],
+          "completion": "timed",
+          "rounds": 6,
+          "durationSeconds": 180,
+          "restSeconds": null,
+          "sets": null,
+          "reps": null,
+          "parseStatus": "explicit_round_prescription"
+        },
+        {
+          "id": "basic-w1-d5-p7-s6-2",
+          "title": "Shadow ONLY boxing MOVEMENT with resistance bands. 6 rounds of 1 minute with 20",
+          "instructions": "Shadow ONLY boxing MOVEMENT with resistance bands. 6 rounds of 1 minute with 20\nsec of rest",
+          "kind": "exercise",
+          "drillID": null,
+          "activityKey": null,
+          "sourceText": "Shadow ONLY boxing MOVEMENT with resistance bands. 6 rounds of 1 minute with 20\nsec of rest",
+          "sourceSectionIndex": 6,
+          "sourceSectionID": "p7-s6",
+          "sourceItems": [
             {
               "id": "p7-b20",
               "text": "Shadow ONLY boxing MOVEMENT with resistance bands. 6 rounds of 1 minute with 20",
@@ -3189,7 +3216,34 @@
               "text": "sec of rest",
               "demoURLs": [],
               "referenceURLs": []
-            },
+            }
+          ],
+          "sourceURL": "https://boxing.dharmicdata.org/program/basic/week/1/day/5#p7-s6",
+          "referenceURLs": [
+            "https://www.youtube.com/shorts/9h6FHbBzijE"
+          ],
+          "demoURLs": [
+            "https://www.youtube.com/shorts/9h6FHbBzijE"
+          ],
+          "completion": "timed",
+          "rounds": 6,
+          "durationSeconds": 60,
+          "restSeconds": 20,
+          "sets": null,
+          "reps": null,
+          "parseStatus": "explicit_round_prescription"
+        },
+        {
+          "id": "basic-w1-d5-p7-s6-3",
+          "title": "ONLY LONG RANGE ATTACKS",
+          "instructions": "ONLY LONG RANGE ATTACKS\nONLY CLOSE RANGE ATTACKS\nFREESTYLE\nCHANGE THE STACE",
+          "kind": "exercise",
+          "drillID": null,
+          "activityKey": null,
+          "sourceText": "ONLY LONG RANGE ATTACKS\nONLY CLOSE RANGE ATTACKS\nFREESTYLE\nCHANGE THE STACE",
+          "sourceSectionIndex": 6,
+          "sourceSectionID": "p7-s6",
+          "sourceItems": [
             {
               "id": "p7-b22",
               "text": "ONLY LONG RANGE ATTACKS",
@@ -3229,7 +3283,42 @@
               "referenceURLs": [
                 "https://www.youtube.com/shorts/ZPG8OsHKXLw"
               ]
-            },
+            }
+          ],
+          "sourceURL": "https://boxing.dharmicdata.org/program/basic/week/1/day/5#p7-s6",
+          "referenceURLs": [
+            "https://www.youtube.com/shorts/Z8b0PuYbDXk",
+            "https://www.youtube.com/shorts/Mo5vtCs7mkk",
+            "https://www.youtube.com/shorts/wp3mmcRXHzY",
+            "https://www.youtube.com/shorts/jIBkXDJDTgI",
+            "https://www.youtube.com/shorts/ZPG8OsHKXLw"
+          ],
+          "demoURLs": [
+            "https://www.youtube.com/shorts/Z8b0PuYbDXk",
+            "https://www.youtube.com/shorts/Mo5vtCs7mkk",
+            "https://www.youtube.com/shorts/wp3mmcRXHzY",
+            "https://www.youtube.com/shorts/jIBkXDJDTgI",
+            "https://www.youtube.com/shorts/ZPG8OsHKXLw"
+          ],
+          "completion": "manual",
+          "rounds": null,
+          "durationSeconds": null,
+          "restSeconds": null,
+          "sets": null,
+          "reps": null,
+          "parseStatus": "manual_source_prescription"
+        },
+        {
+          "id": "basic-w1-d5-p7-s6-4",
+          "title": "CONDITIONING BAG WORK DRILL (1 ROUND)",
+          "instructions": "CONDITIONING BAG WORK DRILL (1 ROUND)",
+          "kind": "exercise",
+          "drillID": null,
+          "activityKey": null,
+          "sourceText": "CONDITIONING BAG WORK DRILL (1 ROUND)",
+          "sourceSectionIndex": 6,
+          "sourceSectionID": "p7-s6",
+          "sourceItems": [
             {
               "id": "p7-b28",
               "text": "CONDITIONING BAG WORK DRILL (1 ROUND)",
@@ -3245,24 +3334,10 @@
           ],
           "sourceURL": "https://boxing.dharmicdata.org/program/basic/week/1/day/5#p7-s6",
           "referenceURLs": [
-            "https://www.youtube.com/shorts/u1vHeFR4ptE",
-            "https://www.youtube.com/shorts/9h6FHbBzijE",
-            "https://www.youtube.com/shorts/Z8b0PuYbDXk",
-            "https://www.youtube.com/shorts/Mo5vtCs7mkk",
-            "https://www.youtube.com/shorts/wp3mmcRXHzY",
-            "https://www.youtube.com/shorts/jIBkXDJDTgI",
-            "https://www.youtube.com/shorts/ZPG8OsHKXLw",
             "https://www.youtube.com/watch?v=1PTb-3y7nJ8&ab_channel=U.S.ArmyCenterforInitialMilitaryTraining",
             "https://www.youtube.com/shorts/cCIWGpOGlFU"
           ],
           "demoURLs": [
-            "https://www.youtube.com/shorts/u1vHeFR4ptE",
-            "https://www.youtube.com/shorts/9h6FHbBzijE",
-            "https://www.youtube.com/shorts/Z8b0PuYbDXk",
-            "https://www.youtube.com/shorts/Mo5vtCs7mkk",
-            "https://www.youtube.com/shorts/wp3mmcRXHzY",
-            "https://www.youtube.com/shorts/jIBkXDJDTgI",
-            "https://www.youtube.com/shorts/ZPG8OsHKXLw",
             "https://www.youtube.com/watch?v=1PTb-3y7nJ8&ab_channel=U.S.ArmyCenterforInitialMilitaryTraining",
             "https://www.youtube.com/shorts/cCIWGpOGlFU"
           ],
@@ -21233,11 +21308,11 @@
         {
           "id": "competitive-w1-d1-p5-s3-3",
           "title": "10 PUSH-UPS; 6 360° JUMPS; 10 JUMP HALF SQUATS WITH PUNCHES",
-          "instructions": "10 PUSH-UPS; 6 360° JUMPS; 10 JUMP HALF SQUATS WITH PUNCHES\nFIGHTING STNCE: HIP AND SHOULDER ROTATION FOCUSED DRILL: 1\nROUND OF 3 MINUTES",
+          "instructions": "10 PUSH-UPS; 6 360° JUMPS; 10 JUMP HALF SQUATS WITH PUNCHES",
           "kind": "exercise",
           "drillID": null,
           "activityKey": null,
-          "sourceText": "10 PUSH-UPS; 6 360° JUMPS; 10 JUMP HALF SQUATS WITH PUNCHES\nFIGHTING STNCE: HIP AND SHOULDER ROTATION FOCUSED DRILL: 1\nROUND OF 3 MINUTES",
+          "sourceText": "10 PUSH-UPS; 6 360° JUMPS; 10 JUMP HALF SQUATS WITH PUNCHES",
           "sourceSectionIndex": 3,
           "sourceSectionID": "p5-s3",
           "sourceItems": [
@@ -21250,7 +21325,34 @@
               "referenceURLs": [
                 "https://youtube.com/shorts/dMyfD4VQUiA"
               ]
-            },
+            }
+          ],
+          "sourceURL": "https://boxing.dharmicdata.org/program/competitive/week/1/day/1#p5-s3",
+          "referenceURLs": [
+            "https://youtube.com/shorts/dMyfD4VQUiA"
+          ],
+          "demoURLs": [
+            "https://youtube.com/shorts/dMyfD4VQUiA"
+          ],
+          "completion": "manual",
+          "rounds": null,
+          "durationSeconds": null,
+          "restSeconds": null,
+          "sets": null,
+          "reps": null,
+          "parseStatus": "manual_source_prescription"
+        },
+        {
+          "id": "competitive-w1-d1-p5-s3-4",
+          "title": "FIGHTING STNCE: HIP AND SHOULDER ROTATION FOCUSED DRILL: 1",
+          "instructions": "FIGHTING STNCE: HIP AND SHOULDER ROTATION FOCUSED DRILL: 1\nROUND OF 3 MINUTES",
+          "kind": "exercise",
+          "drillID": null,
+          "activityKey": null,
+          "sourceText": "FIGHTING STNCE: HIP AND SHOULDER ROTATION FOCUSED DRILL: 1\nROUND OF 3 MINUTES",
+          "sourceSectionIndex": 3,
+          "sourceSectionID": "p5-s3",
+          "sourceItems": [
             {
               "id": "p5-b10",
               "text": "FIGHTING STNCE: HIP AND SHOULDER ROTATION FOCUSED DRILL: 1",
@@ -21270,23 +21372,21 @@
           ],
           "sourceURL": "https://boxing.dharmicdata.org/program/competitive/week/1/day/1#p5-s3",
           "referenceURLs": [
-            "https://youtube.com/shorts/dMyfD4VQUiA",
             "https://youtube.com/shorts/VLrgjGD_RB0"
           ],
           "demoURLs": [
-            "https://youtube.com/shorts/dMyfD4VQUiA",
             "https://youtube.com/shorts/VLrgjGD_RB0"
           ],
-          "completion": "manual",
-          "rounds": null,
-          "durationSeconds": null,
+          "completion": "timed",
+          "rounds": 1,
+          "durationSeconds": 180,
           "restSeconds": null,
           "sets": null,
           "reps": null,
-          "parseStatus": "manual_source_prescription"
+          "parseStatus": "explicit_round_prescription"
         },
         {
-          "id": "competitive-w1-d1-p5-s3-4",
+          "id": "competitive-w1-d1-p5-s3-5",
           "title": "FIGHTING STANCE: STEP IN&OUT DRILL. 1 ROUND OF 3 MINUTES",
           "instructions": "FIGHTING STANCE: STEP IN&OUT DRILL. 1 ROUND OF 3 MINUTES",
           "kind": "boxing",
@@ -21323,7 +21423,7 @@
           "parseStatus": "explicit_round_prescription"
         },
         {
-          "id": "competitive-w1-d1-p5-s3-5",
+          "id": "competitive-w1-d1-p5-s3-6",
           "title": "FIGHTING STANCE: JUMP UP AND PUNCH. 1 ROUND OF 3 MINUTES",
           "instructions": "FIGHTING STANCE: JUMP UP AND PUNCH. 1 ROUND OF 3 MINUTES",
           "kind": "boxing",

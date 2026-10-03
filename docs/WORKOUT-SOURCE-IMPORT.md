@@ -12,7 +12,7 @@ This is the existing source capture used by the Shadowbox Coach pipeline. It is 
 
 Each catalog day keeps its canonical lesson URL, PDF URL, snapshot filename, and SHA-256. Each playable block keeps the source section, original text items, demonstration links, and any other linked references. Endurance workouts with Google Doc references retain those links.
 
-The generated catalog contains 70 days and 531 blocks. There are 228 blocks with an explicit round timer and 303 blocks that require the athlete to advance them. Timed blocks may expand into several rounds. A manual block can contain several sets or exercises; it is not a claim that the app recognizes each exercise.
+The generated catalog contains 70 days and 535 blocks. There are 231 blocks with an explicit round timer and 304 blocks that require the athlete to advance them. Timed blocks may expand into several rounds. A manual block can contain several sets or exercises; it is not a claim that the app recognizes each exercise. Two source sections with distinct prescriptions were split at exact source-item boundaries; no source item or demo link was changed.
 
 ## Prescription rules
 
@@ -27,7 +27,7 @@ Every one of the 2,709 nonempty source items is accounted for exactly once: 1,77
 
 ## Verification and remaining experience work
 
-Eight Python checks pass. They cover the 70-day identity grid, source-item accounting, retained strength and endurance work, source links, first-day timing, unspecified rests, mixed prescriptions, and recovery days. Run them from `server` with `python3 -m unittest test_workout_catalog.py`.
+Ten Python checks pass. They cover the 70-day identity grid, source-item accounting, retained strength and endurance work, source links, first-day timing, unspecified rests, mixed prescriptions, the two reviewed source-section splits, and recovery days. Run them from `server` with `python3 -m unittest test_workout_catalog.py`.
 
 The simulator passed 40 unit tests and 3 UI tests, including both program catalogs, manual completion, exact round timing, restart persistence, and French/English freestyle. Source session summaries now show elapsed time without a zero-minute total. The home screen restores the source workout title, and freestyle no longer displays a provisional probe/commit label. The remaining experience limits are:
 

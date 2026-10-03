@@ -1,0 +1,28 @@
+{
+  "catalog": "ios/WorkoutCatalog.json",
+  "sourceKind": "pinned_rendered_html_snapshot",
+  "before": {"days": 70, "blocks": 531, "timed": 228, "manual": 303},
+  "after": {"days": 70, "blocks": 535, "timed": 231, "manual": 304},
+  "changedDays": ["basic-w1-d5", "competitive-w1-d1"],
+  "sourceChecks": {
+    "lessonSHA256Unchanged": "70/70",
+    "sourceItemIDsTextAndDemoLinksUnchanged": "70/70",
+    "sourceExclusionsUnchanged": "70/70",
+    "htmlSnapshotHashes": "matched pinned catalog for both changed days"
+  },
+  "basicWeekOneDayFive": [
+    {"blockID": "basic-w1-d5-p7-s6-1", "sourceItemIDs": ["p7-b19"], "meaning": "bag work", "rounds": 6, "durationSeconds": 180, "restSeconds": null, "measurement": "unvalidated exchange candidate"},
+    {"blockID": "basic-w1-d5-p7-s6-2", "sourceItemIDs": ["p7-b20", "p7-b21"], "meaning": "resistance-band shadow movement", "rounds": 6, "durationSeconds": 60, "restSeconds": 20, "measurement": "clock only"},
+    {"blockID": "basic-w1-d5-p7-s6-3", "sourceItemIDs": ["p7-b22", "p7-b23", "p7-b25", "p7-b26"], "meaning": "unallocated focus list", "completion": "manual", "measurement": "clock only"},
+    {"blockID": "basic-w1-d5-p7-s6-4", "sourceItemIDs": ["p7-b28"], "meaning": "conditioning bag drill without exact duration", "completion": "manual", "measurement": "clock only"}
+  ],
+  "competitiveWeekOneDayOne": [
+    {"blockID": "competitive-w1-d1-p5-s3-3", "sourceItemIDs": ["p5-b9"], "meaning": "repetition circuit", "completion": "manual", "measurement": "clock only"},
+    {"blockID": "competitive-w1-d1-p5-s3-4", "sourceItemIDs": ["p5-b10", "p5-b11"], "meaning": "fighting-stance hip and shoulder rotation", "rounds": 1, "durationSeconds": 180, "measurement": "clock only"}
+  ],
+  "limits": [
+    "The source does not say how the four bag focus lines map to six rounds, so no focus is assigned to a specific round.",
+    "A source prescription and timer do not prove that the boxer performed a movement.",
+    "This importer change has not yet been validated in a physical gym workout."
+  ]
+}

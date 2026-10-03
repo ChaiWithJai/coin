@@ -80,6 +80,27 @@ final class WorkoutFlowTests: XCTestCase {
         attach("source-round-resumed", app: app)
     }
 
+    func testMixedBagAndBandPrescriptionsShowSeparateClocks() throws {
+        let app = application(language: "en")
+        app.buttons["choose-program"].tap()
+        let day = app.buttons["lesson-basic-w1-d5"]
+        reveal(day, in: app)
+        day.tap()
+        app.buttons["start-workout"].tap()
+        let title = app.staticTexts["workout-source-title"]
+        for _ in 0..<25 {
+            if title.exists && title.label == "6 ROUNDS OF 3 MINUTES OF BAG WORK" { break }
+            app.buttons["Skip to next"].tap()
+        }
+        XCTAssertEqual(title.label, "6 ROUNDS OF 3 MINUTES OF BAG WORK")
+        XCTAssertEqual(app.staticTexts["workout-clock"].label, "03:00")
+        for _ in 0..<6 { app.buttons["Skip to next"].tap() }
+        XCTAssertEqual(title.label, "Shadow ONLY boxing MOVEMENT with resistance bands. 6 rounds of 1 minute with 20")
+        XCTAssertEqual(app.staticTexts["workout-clock"].label, "01:00")
+        XCTAssertFalse(app.staticTexts["EXCHANGES"].exists)
+        attach("mixed-bag-band-separate-timers", app: app)
+    }
+
     func testFrenchDayOneShowsWholeDayCopyAndKeepsOriginalAvailable() throws {
         let directory = UUID().uuidString
         let app = application(language: "fr", directory: directory)

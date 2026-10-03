@@ -96,6 +96,46 @@ import XCTest
         XCTAssertEqual(frontal.map(\.effectiveRestSeconds), [30, 30, 30, 0])
     }
 
+    func testMixedSourcePrescriptionsKeepSeparateClocksAndNoFalseExchangeTracking() throws {
+        let basic = try XCTUnwrap(WorkoutCatalog.shared.lessons.first { $0.id == "basic-w1-d5" })
+        let blocks = basic.template().blocks
+        let bag = blocks.filter { $0.sourceBlockID == "basic-w1-d5-p7-s6-1" }
+        XCTAssertEqual(bag.count, 6)
+        XCTAssertEqual(bag.map(\.effectiveSeconds), Array(repeating: 180, count: 6))
+        XCTAssertEqual(bag.map(\.effectiveRestSeconds), Array(repeating: 0, count: 6))
+        XCTAssertTrue(bag.allSatisfy { $0.sourceItemID == nil && $0.kind == .boxing })
+
+        let bands = blocks.filter { $0.sourceBlockID == "basic-w1-d5-p7-s6-2" }
+        XCTAssertEqual(bands.count, 6)
+        XCTAssertEqual(bands.map(\.effectiveSeconds), Array(repeating: 60, count: 6))
+        XCTAssertEqual(bands.map(\.effectiveRestSeconds), [20, 20, 20, 20, 20, 0])
+        XCTAssertTrue(bands.allSatisfy { $0.kind == .exercise && $0.drillID == nil })
+        for block in bands {
+            let instance = try XCTUnwrap(WorkoutActivityInstance.initial(for: block, at: Date()).first)
+            XCTAssertFalse(WorkoutActivityRouting.allowsExchange(instance))
+        }
+        for suffix in ["3", "4"] {
+            let manual = try XCTUnwrap(blocks.first { $0.sourceBlockID == "basic-w1-d5-p7-s6-\(suffix)" })
+            XCTAssertTrue(manual.isManual)
+            XCTAssertEqual(manual.kind, .exercise)
+            XCTAssertEqual(manual.effectiveSeconds, 0)
+            XCTAssertFalse(WorkoutActivityRouting.allowsExchange(
+                WorkoutActivityInstance.initial(for: manual, at: Date()).first))
+        }
+
+        let competitive = try XCTUnwrap(WorkoutCatalog.shared.lessons.first { $0.id == "competitive-w1-d1" })
+        let stages = competitive.template().blocks
+        let circuit = try XCTUnwrap(stages.first { $0.sourceBlockID == "competitive-w1-d1-p5-s3-3" })
+        XCTAssertTrue(circuit.isManual)
+        XCTAssertEqual(circuit.kind, .exercise)
+        let rotation = try XCTUnwrap(stages.first { $0.sourceBlockID == "competitive-w1-d1-p5-s3-4" })
+        XCTAssertEqual(rotation.effectiveSeconds, 180)
+        XCTAssertEqual(rotation.kind, .exercise)
+        XCTAssertNil(rotation.drillID)
+        XCTAssertFalse(WorkoutActivityRouting.allowsExchange(
+            WorkoutActivityInstance.initial(for: rotation, at: Date()).first))
+    }
+
     func testExactJumpSquatPrescriptionsGetClockOnlyMovementLineage() throws {
         let ids: Set<String> = ["basic-w1-d1-p3-s6-2", "basic-w2-d1-p10-s5-2",
             "basic-w2-d5-p14-s3-2", "basic-w3-d1-p17-s5-2", "basic-w3-d5-p21-s3-2",
