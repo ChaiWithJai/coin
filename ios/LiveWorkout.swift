@@ -691,7 +691,7 @@ struct LiveWorkoutView: View {
     }
     private var canChooseActivity: Bool {
         guard let current, !current.isRest else { return false }
-        return current.block.activityChoiceFamily == "conditioning" || current.activityKey == "mobility"
+        return current.block.activityChoiceFamily != nil || current.activityKey == "mobility"
     }
     private func tracksExchanges(_ segment: Segment) -> Bool {
         !segment.isRest && WorkoutActivityRouting.allowsExchange(activityInstance(for: segment))
@@ -1055,15 +1055,15 @@ struct LiveWorkoutView: View {
             NavigationStack {
                 List {
                     Section(language == "fr" ? "Mouvement pour ce segment" : "Movement for this segment") {
-                        ForEach(["jumping_jacks", "burpees", "box_jumps", "squat_jumps", "squats", "lunges", "frontal_stance", "shadowboxing", "mobility"], id: \.self) { key in
+                        ForEach(WorkoutMovementDefinition.choices(for: current?.block.activityChoiceFamily ?? (current?.activityKey == "mobility" ? "mobility" : nil)), id: \.key) { movement in
                             Button {
-                                chooseActivity(key)
+                                chooseActivity(movement.key)
                             } label: {
                                 VStack(alignment: .leading, spacing: 3) {
-                                    Text(activityLabel(key))
-                                    Text(ActivityMeasurementRecipe.forExercise(key).capability == .repCandidate
+                                    Text(activityLabel(movement.key))
+                                    Text(ActivityMeasurementRecipe.forExercise(movement.key).capability == .repCandidate
                                          ? (language == "fr" ? "Répétitions candidates · non validées" : "Candidate reps · unvalidated")
-                                         : ActivityMeasurementRecipe.forExercise(key).capability == .exchangeCandidate
+                                         : ActivityMeasurementRecipe.forExercise(movement.key).capability == .exchangeCandidate
                                          ? (language == "fr" ? "Échanges candidats · non validés" : "Candidate exchanges · unvalidated")
                                          : (language == "fr" ? "Durée seulement · aucun comptage de pose" : "Time only · no pose count"))
                                         .font(.caption).foregroundStyle(Noir.muted)

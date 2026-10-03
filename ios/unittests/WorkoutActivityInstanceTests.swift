@@ -48,6 +48,7 @@ import XCTest
         XCTAssertFalse(store.selectActivity(sessionID: id, blockID: block.id, exerciseKey: "bench_press"))
         XCTAssertFalse(store.selectActivity(sessionID: id, blockID: block.id, preparationIndex: 3, exerciseKey: "squats"))
         XCTAssertFalse(store.selectActivity(sessionID: id, blockID: block.id, preparationIndex: 0, exerciseKey: "do whatever <script>"))
+        XCTAssertFalse(store.selectActivity(sessionID: id, blockID: block.id, preparationIndex: 0, exerciseKey: "unreviewed_jump_counter"))
         XCTAssertEqual(store.data.sessions[0].activityInstances?.count, 2)
         XCTAssertTrue(store.selectActivity(sessionID: id, blockID: block.id, preparationIndex: 0, exerciseKey: "box_jumps"))
         XCTAssertEqual(store.data.sessions[0].activityInstance(blockID: block.id, preparationIndex: 0)?.measurement.capability, .elapsedOnly)
@@ -76,6 +77,22 @@ import XCTest
         XCTAssertEqual(ActivityMeasurementRecipe.forExercise("squats").landmarkGroups.count, 2)
         XCTAssertEqual(ActivityMeasurementRecipe.forExercise("squats").visibilityRule, "any_complete_group")
         XCTAssertEqual(ActivityMeasurementRecipe.forExercise("squats").observationUnit, "rep_candidate")
+    }
+    func testRuntimeDefinitionsKeepConditioningSpecificWithoutInventingPoseCounts() {
+        let choices = WorkoutMovementDefinition.choices(for: "conditioning")
+        XCTAssertEqual(Array(choices.prefix(6)).map(\.key), ["jumping_jacks", "burpees", "box_jumps", "squat_jumps", "squats", "lunges"])
+        XCTAssertTrue(choices.contains { $0.key == "shadowboxing" })
+        XCTAssertEqual(WorkoutMovementDefinition.forKey("box_jumps")?.equipment, "box")
+        XCTAssertEqual(WorkoutMovementDefinition.forKey("burpees")?.family, "conditioning")
+        let instance = WorkoutActivityInstance(blockID: UUID(), preparationIndex: nil,
+            sourceBlockID: "conditioning-source", sourceItemID: nil, exerciseKey: "box_jumps",
+            selectionProvenance: .userSelected,
+            measurement: .forExercise("box_jumps"), selectedAt: Date())
+        let definition = instance.payload["movement_definition"] as? [String: String]
+        XCTAssertEqual(definition?["key"], "box_jumps")
+        XCTAssertEqual(definition?["version"], "v1")
+        XCTAssertEqual(instance.measurement.capability, .elapsedOnly)
+        XCTAssertTrue(WorkoutMovementDefinition.choices(for: "mobility").contains { $0.key == "mobility" })
     }
     func testOpenConditioningStartsUnchosenDespiteBroadSourceBoxingTag() throws {
         let lesson = try XCTUnwrap(WorkoutCatalog.shared.lessons.first { $0.id == "basic-w2-d1" })

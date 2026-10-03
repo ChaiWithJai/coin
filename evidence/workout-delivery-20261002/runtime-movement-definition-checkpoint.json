@@ -1,0 +1,34 @@
+{
+  "checkpoint": "runtime-movement-definition",
+  "ios": {
+    "source": "Coin",
+    "bundle_id": "com.coinboxing.prototype",
+    "simulator": "Coin iPhone 11",
+    "tests_passed": 87,
+    "tests_failed": 0,
+    "xcresult": "/tmp/coin-workout-derived/Logs/Test/Test-Coin-2026.10.02_21-26-46--0400.xcresult",
+    "signed_device_build_sha256": "e21e5b0d891a3a5e77d6cf6df1f0d9169c84821bd46187d4d4ef69f6f651ef29",
+    "device_install": "not attempted; Lakshmi unavailable to CoreDevice"
+  },
+  "server": {
+    "tests_passed": 66,
+    "tests_failed": 0,
+    "service_sha256": "8826f98aed74fe137bd7e15d8a3da951bc27a203f413f413177fbebd400f9316",
+    "gb10_pid": 2951599,
+    "movement_definition_schema_loaded": true,
+    "health_unauthenticated_http_status": 401
+  },
+  "mlflow": {
+    "inspected_existing_synthetic_pose_trace": "tr-082bb7646e93d8fd3fbf46a96f50a0cc",
+    "inspected_existing_synthetic_round_trace": "tr-9bdeac974123dd4e547cdd6c1f5ba168",
+    "new_product_inference_calls": 0,
+    "usage_run_id": "644726cf855f4c799d303c9617fb1378",
+    "actual_billed_usd": null
+  },
+  "limitations": [
+    "Movement definitions and timer/pose lineage do not validate movement recognition.",
+    "Jumping jacks, burpees, box jumps, squat jumps and custom choices remain clock-only.",
+    "No new physical workout or iPhone installation in this checkpoint.",
+    "French source workout instructions remain English pending full-day review."
+  ]
+}

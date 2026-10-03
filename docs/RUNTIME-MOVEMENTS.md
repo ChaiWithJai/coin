@@ -1,0 +1,11 @@
+# Runtime movement contract
+
+The source workout says what to do and for how long. Each active block or warm-up slot has a separate `WorkoutActivityInstance` that says which movement the boxer is doing now. A generic conditioning slot begins unchosen. Choosing burpees, box jumps, or a custom movement appends an instance; it does not edit the source prescription. Timer intervals, pose samples, rep candidates, and exchange slices refer to that instance ID. A choice change closes the old interval before opening the new one.
+
+`WorkoutMovementDefinition` is the versioned registry for concrete keys, family, and required equipment. The picker orders conditioning or mobility choices first, while allowing cross-training and a named custom choice. Arbitrary new machine keys are rejected until they have a registry entry. Custom names remain on the phone; the server receives only `custom` and its clock-only measurement.
+
+Every instance carries a separate `ActivityMeasurementRecipe`: method ID/version, candidate type, validation status, landmark groups, visibility rule, and observation unit. Only squats and lunges currently produce unvalidated rep candidates. Boxing and shadowboxing produce unvalidated exchange candidates. Jumping jacks, burpees, box jumps, squat jumps, frontal stance, mobility, and custom choices record elapsed time only. The app must not turn time or a selected name into a claim that the movement was performed.
+
+To add a movement, add its stable key and versioned definition, then decide whether its measurement is clock-only or has an implemented observation path. For pose counting, specify the required landmarks and visibility rule, add a candidate detector, test low and side camera views, and retain `unvalidated` until boxer-reviewed footage supports it. Preserve source item IDs and hashes and never infer unspecified sets, rest, or repetitions.
+
+Completion receipts carry the definition and recipe separately. The GB10 coordinator rejects a definition key that conflicts with its chosen exercise key. MLflow receives these as workout lineage, not ground-truth exercise labels. A new candidate needs review, correction, session-separated evaluation, and measured latency before live feedback uses it.

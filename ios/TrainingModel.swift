@@ -362,6 +362,44 @@ enum WorkoutActivityCopy {
         return names[key]?[language] ?? key.replacingOccurrences(of: "_", with: " ")
     }
 }
+
+/// A source section is a prescription; this registry describes the concrete
+/// movement chosen for one runtime slot. Adding a movement here does not grant
+/// it pose recognition. Its measurement recipe must be implemented separately.
+struct WorkoutMovementDefinition {
+    let key: String
+    let family: String
+    let equipment: String
+    let version: String
+
+    static let all: [Self] = [
+        .init(key: "jumping_jacks", family: "conditioning", equipment: "none", version: "v1"),
+        .init(key: "burpees", family: "conditioning", equipment: "none", version: "v1"),
+        .init(key: "box_jumps", family: "conditioning", equipment: "box", version: "v1"),
+        .init(key: "squat_jumps", family: "conditioning", equipment: "none", version: "v1"),
+        .init(key: "squats", family: "strength", equipment: "none", version: "v1"),
+        .init(key: "lunges", family: "strength", equipment: "none", version: "v1"),
+        .init(key: "frontal_stance", family: "boxing", equipment: "none", version: "v1"),
+        .init(key: "shadowboxing", family: "boxing", equipment: "none", version: "v1"),
+        .init(key: "boxing", family: "boxing", equipment: "none", version: "v1"),
+        .init(key: "mobility", family: "mobility", equipment: "none", version: "v1"),
+        .init(key: "pushups", family: "strength", equipment: "none", version: "v1"),
+        .init(key: "bench_press", family: "strength", equipment: "bench", version: "v1"),
+    ]
+
+    static func forKey(_ key: String?) -> Self? { all.first { $0.key == key } }
+    static func choices(for family: String?) -> [Self] {
+        let preferred: [String]
+        switch family {
+        case "conditioning": preferred = ["jumping_jacks", "burpees", "box_jumps", "squat_jumps", "squats", "lunges"]
+        case "mobility": preferred = ["mobility", "frontal_stance", "shadowboxing", "squats", "lunges"]
+        default: preferred = all.map(\.key)
+        }
+        // Keep cross-training choices available; the family only orders them.
+        return (preferred + all.map(\.key).filter { !preferred.contains($0) }).compactMap(forKey)
+    }
+}
+
 struct ActivityMeasurementRecipe: Codable, Equatable {
     let id: String
     let version: String
@@ -435,6 +473,13 @@ struct WorkoutActivityInstance: Codable, Identifiable, Equatable {
         value["source_block_id"] = sourceBlockID
         value["source_item_id"] = sourceItemID
         value["exercise_key"] = exerciseKey
+        if let definition = WorkoutMovementDefinition.forKey(exerciseKey) {
+            value["movement_definition"] = ["key": definition.key, "family": definition.family,
+                "equipment": definition.equipment, "version": definition.version]
+        } else if exerciseKey == "custom" {
+            value["movement_definition"] = ["key": "custom", "family": "user_defined",
+                "equipment": "unknown", "version": "v1"]
+        }
         if let selectedAt { value["selected_at_ms"] = Int(selectedAt.timeIntervalSince1970 * 1000) }
         return value
     }
@@ -873,7 +918,8 @@ struct TrainingData: Codable {
         } else {
             guard let preparationIndex, activities.indices.contains(preparationIndex) else { return false }
         }
-        // Extensible stable keys, not source text or model-supplied instructions.
+        // A new key needs a reviewed definition. Free text uses the explicit
+        // local-only custom path and never silently receives pose recognition.
         let key = exerciseKey == "unknown" ? nil : exerciseKey
         let trimmedName = customName?.trimmingCharacters(in: .whitespacesAndNewlines)
         if key == "custom" {
@@ -881,7 +927,8 @@ struct TrainingData: Codable {
         } else if trimmedName != nil { return false }
         if let key {
             guard !key.isEmpty, key.count <= 100,
-                  key.unicodeScalars.allSatisfy({ ("a"..."z").contains(String($0)) || ("0"..."9").contains(String($0)) || $0 == "_" }) else { return false }
+                  key.unicodeScalars.allSatisfy({ ("a"..."z").contains(String($0)) || ("0"..."9").contains(String($0)) || $0 == "_" }),
+                  key == "custom" || WorkoutMovementDefinition.forKey(key) != nil else { return false }
         }
         ensureActivityInstances(sessionID: sessionID, at: date)
         let provenance: ActivitySelectionProvenance = key == nil ? .unchosen : .userSelected

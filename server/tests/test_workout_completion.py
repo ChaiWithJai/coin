@@ -88,6 +88,7 @@ class WorkoutCompletionTests(unittest.TestCase):
         selected=dict(instance_id=uuid.uuid4(),block_id=self.block_id,source_block_id='basic-w1-d6-p8-s1-1',
                       source_item_id='p8-b6',exercise_key='custom',selection_provenance='user_selected',
                       measurement=dict(id='session-clock',version='v1',capability='elapsed_only',validation_status='not_applicable'),
+                      movement_definition=dict(key='custom',family='user_defined',equipment='unknown',version='v1'),
                       selected_at_ms=2000)
         self.service.workout_completion(self.receipt(activity_instances=[selected]))
         with self.service.OUTBOX.connect() as db:
@@ -96,7 +97,16 @@ class WorkoutCompletionTests(unittest.TestCase):
         output=json.loads(row[0])['stages'][0]['outputs']['activity_instances'][0]
         self.assertEqual(output['exercise_key'],'custom')
         self.assertEqual(output['measurement']['capability'],'elapsed_only')
+        self.assertEqual(output['movement_definition']['family'],'user_defined')
         self.assertNotIn('custom_name',output)
+
+    def test_activity_definition_must_match_selected_key(self):
+        from fastapi import HTTPException
+        selected=self.activity(exercise_key='burpees',movement_definition=dict(
+            key='squats',family='strength',equipment='none',version='v1'))
+        with self.assertRaises(HTTPException) as failure:
+            self.service.workout_completion(self.receipt(activity_instances=[selected]))
+        self.assertEqual(failure.exception.status_code,422)
 
     def test_runtime_measurement_contract_is_preserved_without_verification_claim(self):
         selected=self.activity(measurement=dict(id='mediapipe-squat-angle',version='v1',

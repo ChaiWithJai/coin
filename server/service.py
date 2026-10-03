@@ -88,6 +88,12 @@ class CompletionMeasurement(BaseModel):
     visibility_rule:Literal['any_complete_group','not_applicable']|None=None
     observation_unit:Literal['rep_candidate','exchange_candidate','elapsed_seconds','none']|None=None
 
+class CompletionMovementDefinition(BaseModel):
+    key:str=Field(max_length=100)
+    family:str=Field(max_length=40)
+    equipment:str=Field(max_length=40)
+    version:str=Field(max_length=40)
+
 class CompletionActivityInstance(BaseModel):
     instance_id:uuid.UUID
     block_id:uuid.UUID
@@ -97,6 +103,7 @@ class CompletionActivityInstance(BaseModel):
     exercise_key:str|None=Field(default=None,max_length=100)
     selection_provenance:Literal['source_specified','user_selected','unchosen']
     measurement:CompletionMeasurement
+    movement_definition:CompletionMovementDefinition|None=None
     selected_at_ms:int|None=Field(default=None,ge=0)
 
 class CompletionActivityInterval(BaseModel):
@@ -376,6 +383,9 @@ def workout_completion(body:WorkoutCompletion):
         block_ids={block.block_id for block in body.blocks}
         if any(item.block_id not in block_ids for item in body.activity_instances):
             raise HTTPException(422,'Activity instance references unknown block')
+        if any(item.movement_definition is not None and item.movement_definition.key != item.exercise_key
+               for item in body.activity_instances):
+            raise HTTPException(422,'Movement definition does not match selected exercise')
         if len({item.instance_id for item in body.activity_instances})!=len(body.activity_instances):
             raise HTTPException(422,'Duplicate activity instance')
     if body.activity_intervals is not None:
