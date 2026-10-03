@@ -888,7 +888,14 @@ struct LiveWorkoutView: View {
                         }
                         .accessibilityIdentifier("workout-toggle")
                         if current.isManual {
-                            Button { advance(completed: true) } label: {
+                            Button {
+                                if requiresRuntimeSelection(current) {
+                                    selectionRequiredToStart = true
+                                    showActivityChoice = true
+                                } else {
+                                    advance(completed: true)
+                                }
+                            } label: {
                                 Label(language == "fr" ? "Terminé" : "Done", systemImage: "checkmark")
                                     .padding(10).background(Noir.gold, in: RoundedRectangle(cornerRadius: 7)).foregroundStyle(Noir.black)
                             }.accessibilityIdentifier("complete-manual-step")
@@ -963,8 +970,16 @@ struct LiveWorkoutView: View {
             let updated = max(0, Int(ceil(deadline.timeIntervalSince(now))))
             guard updated != remaining else { return }
             let previous = remaining
+            #if DEBUG
+            if let step = WorkoutTestClock.stepSeconds {
+                remaining = max(0, previous - step)
+            } else {
+                remaining = updated
+            }
+            #else
             remaining = updated
-            pendingTimedSeconds += max(0, previous - updated)
+            #endif
+            pendingTimedSeconds += max(0, previous - remaining)
             if pendingTimedSeconds >= 5 { flushTimedSeconds() }
             if remaining == 0 { advance() }
             else {
@@ -977,7 +992,7 @@ struct LiveWorkoutView: View {
                     }
                 }
                 if let current, current.block.kind == .boxing, !current.isRest, current.block.sourceTitle == nil {
-                    for boundary in [120, 60] where previous > boundary && updated <= boundary {
+                    for boundary in [120, 60] where previous > boundary && remaining <= boundary {
                         if let key = DrillLibrary.pacingCueKey(current.block.drillID ?? "", remainingSeconds: boundary) {
                             speak(TrainingCopy.text(key, language), cueKey: key, trigger: "timer_pacing")
                         }
@@ -1101,7 +1116,7 @@ struct LiveWorkoutView: View {
                                          : (language == "fr" ? "Durée seulement · aucun comptage de pose" : "Time only · no pose count"))
                                         .font(.caption).foregroundStyle(Noir.muted)
                                 }
-                            }
+                            }.accessibilityIdentifier("activity-choice-\(movement.key)")
                         }
                         TextField(language == "fr" ? "Autre mouvement" : "Other movement", text: $customActivityName)
                             .textInputAutocapitalization(.words)
@@ -1206,7 +1221,8 @@ struct LiveWorkoutView: View {
                                activityKey: loggedActivityKey(for: current), isRest: current.isRest,
                                plannedSeconds: current.seconds,
                                elapsedSeconds: current.isManual ? manualElapsed : max(0, current.seconds - remaining),
-                               exitReason: current.isManual ? (completed ? "manual_completed" : "skipped") : (remaining == 0 ? "timer_elapsed" : "skipped"))
+                               exitReason: current.isManual ? (completed ? "manual_completed" : "skipped") : (remaining == 0 ? "timer_elapsed" : "skipped"),
+                               segmentIndex: segmentIndex, preparationIndex: current.preparationIndex)
         voice.stop()
         flushPoseWindows()
         if tracksExchanges(current) { submitRound(current) }
@@ -1304,7 +1320,8 @@ struct LiveWorkoutView: View {
                                        activityKey: loggedActivityKey(for: current), isRest: current.isRest,
                                        plannedSeconds: current.seconds,
                                        elapsedSeconds: current.isManual ? manualElapsed : max(0, current.seconds - remaining),
-                                       exitReason: "session_finished")
+                                       exitReason: "session_finished", segmentIndex: segmentIndex,
+                                       preparationIndex: current.preparationIndex)
             }
         }
         running = false
@@ -1322,7 +1339,13 @@ struct LiveWorkoutView: View {
         captureElapsedFromDeadline()
         if let current { recordActivityInterval(for: current, reason: .paused) }
         flushTimedSeconds()
+        #if DEBUG
+        if WorkoutTestClock.stepSeconds == nil, let deadline {
+            remaining = max(0, Int(ceil(deadline.timeIntervalSinceNow)))
+        }
+        #else
         if let deadline { remaining = max(0, Int(ceil(deadline.timeIntervalSinceNow))) }
+        #endif
         deadline = nil
         manualAnchor = nil
         running = false
@@ -1362,6 +1385,9 @@ struct LiveWorkoutView: View {
     }
     private func captureElapsedFromDeadline() {
         if current?.isManual == true { captureManualElapsed(); return }
+        #if DEBUG
+        if WorkoutTestClock.stepSeconds != nil { return }
+        #endif
         guard running, let deadline else { return }
         let updated = max(0, Int(ceil(deadline.timeIntervalSinceNow)))
         if updated < remaining {

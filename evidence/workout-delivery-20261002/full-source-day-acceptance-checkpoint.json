@@ -1,0 +1,72 @@
+{
+  "recorded_at": "2026-10-02T23:33:08-04:00",
+  "checkpoint": "basic-w1-d1-full-runtime-acceptance",
+  "base_commit": "2fbaee6aef275ebc5ea6e830cb7a5ce2641c981a",
+  "source_contract": {
+    "lesson_id": "basic-w1-d1",
+    "template_blocks": 24,
+    "runtime_segments": 27,
+    "timed_work_segments": 18,
+    "manual_segments": 6,
+    "rest_segments": 3,
+    "timed_work_seconds": 2520,
+    "rest_seconds": 90,
+    "timer_seconds": 2610
+  },
+  "behavior": {
+    "required_runtime_choice_cannot_be_bypassed": true,
+    "completed_blocks": 24,
+    "recorded_segments": 27,
+    "skipped_segments": 0,
+    "segment_indices_contiguous": true,
+    "completion_receipt_blocks": 24,
+    "program_progress_completed": true,
+    "saved_review_recovered_after_relaunch": true,
+    "runtime_origin": "synthetic"
+  },
+  "test_clock": {
+    "step_seconds": 300,
+    "scope": "DEBUG iOS Simulator only",
+    "guards": [
+      "COIN_TRAINING_DIRECTORY begins workout-ui-",
+      "COIN_SERVICE_URL equals http://127.0.0.1:1"
+    ],
+    "production_enabled": false
+  },
+  "verification": {
+    "server_tests": "73/73 passed",
+    "focused_ios_units": "50/50 passed",
+    "ios_units_in_broad_run": "91/91 passed",
+    "full_day_ui": "1/1 passed",
+    "updated_regression_ui": "2/2 passed",
+    "broad_run_note": "Broad run found two legacy UI assumptions after the intended required-choice change; both tests were updated and passed together. All 91 unit tests passed in that run.",
+    "signed_device_build": "succeeded",
+    "bundle_id": "com.coinboxing.prototype",
+    "team_id": "TNK67SNT56",
+    "executable_sha256": "e3750082349279badd37a9dd03673ea07a417121ec5617afab00d6c075741c97"
+  },
+  "deployment": {
+    "gb10_service_sha256": "92773d4d0c6d8968b7b4109c21512991e75162d14a1d71217e69f51152d72c5c",
+    "pid": 3108151,
+    "authenticated_health_status": 200,
+    "outbox_delivered": 54
+  },
+  "device": {
+    "name": "Lakshmi",
+    "model": "iPhone 11 Pro",
+    "state": "unavailable",
+    "installed": false,
+    "physical_workout_verified": false
+  },
+  "usage": {
+    "mlflow_experiment_id": 39,
+    "run_id": "6d37a25183404683b5d503aefade6198",
+    "actual_billed_usd": null,
+    "api_equivalent_usd": null,
+    "coverage": "Observed per-response usage records only. No hidden reasoning or full inference payload capture."
+  },
+  "limits": [
+    "Synthetic acceptance proves app control flow and durable evidence, not that the boxer performed the prescribed movement.",
+    "No latest build install or physical camera recognition validation because the phone is unavailable."
+  ]
+}

@@ -4,7 +4,7 @@ final class WorkoutFlowTests: XCTestCase {
     override func setUpWithError() throws { continueAfterFailure = false }
 
     private func application(language: String, directory: String = UUID().uuidString, shortFreestyle: Bool = false,
-                             activityFixture: Bool = false) -> XCUIApplication {
+                             activityFixture: Bool = false, acceleratedSource: Bool = false) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["-noAutoStart", "-language", language]
         app.launchEnvironment["COIN_TRAINING_DIRECTORY"] = "workout-ui-" + directory
@@ -15,6 +15,7 @@ final class WorkoutFlowTests: XCTestCase {
             app.launchEnvironment["COIN_TEST_ROUND_REVIEW"] = "1"
         }
         if activityFixture { app.launchEnvironment["COIN_TEST_ACTIVITY_CHOOSER"] = "1" }
+        if acceleratedSource { app.launchEnvironment["COIN_TEST_TIMER_STEP_SECONDS"] = "300" }
         app.launch()
         return app
     }
@@ -37,8 +38,7 @@ final class WorkoutFlowTests: XCTestCase {
     private func chooseRequiredMovementIfShown(_ app: XCUIApplication, language: String = "en") {
         let chooser = app.navigationBars[language == "fr" ? "Choisir le mouvement" : "Choose movement"]
         guard chooser.waitForExistence(timeout: 5) else { return }
-        let name = language == "fr" ? "Cercles d’épaules" : "Shoulder circles"
-        let option = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", name)).firstMatch
+        let option = app.buttons["activity-choice-shoulder_circles"]
         XCTAssertTrue(option.waitForExistence(timeout: 2))
         option.tap()
     }
@@ -62,10 +62,11 @@ final class WorkoutFlowTests: XCTestCase {
         app.buttons["choose-program"].tap()
         app.buttons["lesson-basic-w1-d1"].tap()
         app.buttons["start-workout"].tap()
-        chooseRequiredMovementIfShown(app)
         XCTAssertTrue(app.buttons["complete-manual-step"].waitForExistence(timeout: 5))
         XCTAssertEqual(app.staticTexts["workout-source-title"].label, "DYNAMIC WARM-UP:")
         attach("source-manual-step-paused", app: app)
+        app.buttons["complete-manual-step"].tap()
+        chooseRequiredMovementIfShown(app)
         app.buttons["complete-manual-step"].tap()
         XCTAssertEqual(app.staticTexts["workout-source-title"].label, "FR0NTAL STANCE DRILL")
         XCTAssertEqual(app.staticTexts["workout-clock"].label, "02:00")
@@ -113,7 +114,6 @@ final class WorkoutFlowTests: XCTestCase {
         app.buttons["choose-program"].tap()
         app.buttons["lesson-basic-w1-d1"].tap()
         app.buttons["start-workout"].tap()
-        chooseRequiredMovementIfShown(app, language: "fr")
         XCTAssertTrue(app.staticTexts["workout-source-title"].waitForExistence(timeout: 5))
         XCTAssertEqual(app.staticTexts["workout-source-title"].label, "Échauffement dynamique :")
         app.buttons["workout-source"].tap()
@@ -121,6 +121,8 @@ final class WorkoutFlowTests: XCTestCase {
         app.buttons["Texte source"].tap()
         XCTAssertTrue(app.staticTexts["DYNAMIC WARM-UP:"].waitForExistence(timeout: 3))
         app.buttons["Fermer"].tap()
+        app.buttons["complete-manual-step"].tap()
+        chooseRequiredMovementIfShown(app, language: "fr")
         app.buttons["complete-manual-step"].tap()
         XCTAssertEqual(app.staticTexts["workout-source-title"].label, "Exercice en garde frontale")
         XCTAssertEqual(app.staticTexts["workout-clock"].label, "02:00")
@@ -296,5 +298,60 @@ final class WorkoutFlowTests: XCTestCase {
             XCTAssertTrue(reopened.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", language == "fr" ? "Burpees · durée seulement" : "Burpees · time only")).firstMatch.waitForExistence(timeout: 3))
             reopened.terminate()
         }
+    }
+
+    func testBasicDayOneCompletesEverySourceSegmentWithoutSkipping() throws {
+        let directory = UUID().uuidString
+        let app = application(language: "en", directory: directory, acceleratedSource: true)
+        app.buttons["choose-program"].tap()
+        app.buttons["lesson-basic-w1-d1"].tap()
+        app.buttons["start-workout"].tap()
+
+        // A required manual slot cannot be marked complete while it is still generic.
+        XCTAssertTrue(app.buttons["complete-manual-step"].waitForExistence(timeout: 5))
+        app.buttons["complete-manual-step"].tap()
+        XCTAssertTrue(app.navigationBars["Choose movement"].waitForExistence(timeout: 3))
+
+        var manualCompletions = 0
+        let recapDone = app.buttons["recap-done"]
+        let deadline = Date().addingTimeInterval(75)
+        while !recapDone.exists && Date() < deadline {
+            let picker = app.navigationBars["Choose movement"]
+            if picker.exists {
+                let choice = app.buttons["activity-choice-shoulder_circles"]
+                XCTAssertTrue(choice.waitForExistence(timeout: 2))
+                choice.tap()
+                continue
+            }
+            let done = app.buttons["complete-manual-step"]
+            if done.exists && done.isHittable {
+                done.tap()
+                manualCompletions += 1
+                Thread.sleep(forTimeInterval: 0.2)
+                continue
+            }
+            RunLoop.current.run(until: Date().addingTimeInterval(0.2))
+        }
+        XCTAssertTrue(recapDone.waitForExistence(timeout: 5))
+        XCTAssertEqual(manualCompletions, 6)
+        let summary = app.staticTexts["synthetic-receipt-summary"]
+        XCTAssertTrue(summary.waitForExistence(timeout: 3))
+        XCTAssertEqual(summary.label,
+            "origin=synthetic blocks=24 completed=24 segments=27 timer=2,610 skipped=0 contiguous=true receipt_blocks=24")
+        XCTAssertTrue(app.staticTexts["That's a wrap."].exists)
+
+        recapDone.tap()
+        XCTAssertTrue(app.buttons["choose-program"].waitForExistence(timeout: 5))
+        app.buttons["choose-program"].tap()
+        let completed = app.buttons["lesson-basic-w1-d1"]
+        XCTAssertTrue(completed.waitForExistence(timeout: 5))
+        XCTAssertTrue(completed.label.contains("Workout completed"), completed.label)
+        app.buttons["Close"].tap()
+        app.terminate()
+        app.launch()
+        let saved = app.buttons["saved-session-basic-w1-d1"]
+        reveal(saved, in: app)
+        saved.tap()
+        XCTAssertTrue(app.staticTexts["DYNAMIC WARM-UP:"].waitForExistence(timeout: 5))
     }
 }

@@ -60,6 +60,18 @@ class WorkoutCompletionTests(unittest.TestCase):
         self.assertEqual(payload['stages'][0]['outputs']['blocks'][0]['source_item_id'],'p8-b6')
         self.assertEqual(payload['stages'][0]['outputs']['blocks'][0]['segments'][0]['exit_reason'],'manual_completed')
 
+    def test_segment_traversal_indices_are_preserved(self):
+        import json
+        blocks=self.receipt().blocks
+        blocks[0].segments[0].segment_index=7
+        blocks[0].segments[0].preparation_index=2
+        self.service.workout_completion(self.receipt(blocks=blocks))
+        with self.service.OUTBOX.connect() as db:
+            payload=json.loads(db.execute('SELECT payload FROM events').fetchone()[0])
+        segment=payload['stages'][0]['outputs']['blocks'][0]['segments'][0]
+        self.assertEqual(segment['segment_index'],7)
+        self.assertEqual(segment['preparation_index'],2)
+
     def test_pose_counts_require_explicit_sharing(self):
         from fastapi import HTTPException
         blocks=self.receipt().blocks

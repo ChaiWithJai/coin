@@ -343,6 +343,27 @@ private final class PoseWindowURLProtocol: URLProtocol {
         XCTAssertEqual(saved.segmentLogs?.last?.activityKey, "squats")
     }
 
+    func testSegmentTraversalIndicesPersistAndOlderLogsStillDecode() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let store = TrainingStore(directory: directory)
+        let id = store.start(try XCTUnwrap(SessionTemplates.make(30)))
+        let block = try XCTUnwrap(store.data.sessions.first?.blocks.first)
+        store.recordSegment(sessionID: id, blockID: block.id, activityKey: "mobility", isRest: false,
+                            plannedSeconds: 120, elapsedSeconds: 120, exitReason: "timer_elapsed",
+                            segmentIndex: 4, preparationIndex: 2)
+        let saved = try XCTUnwrap(TrainingStore(directory: directory).data.sessions.first?.segmentLogs?.first)
+        XCTAssertEqual(saved.segmentIndex, 4)
+        XCTAssertEqual(saved.preparationIndex, 2)
+
+        let legacy = """
+        {"id":"00000000-0000-0000-0000-000000000001","blockID":"00000000-0000-0000-0000-000000000002","isRest":false,"plannedSeconds":120,"elapsedSeconds":120,"exitReason":"timer_elapsed","endedAt":0}
+        """
+        let decoded = try JSONDecoder().decode(SegmentLog.self, from: Data(legacy.utf8))
+        XCTAssertNil(decoded.segmentIndex)
+        XCTAssertNil(decoded.preparationIndex)
+    }
+
     func testCampDatesAndWeightMeasurementsPersist() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: directory) }

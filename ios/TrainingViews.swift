@@ -523,6 +523,16 @@ struct WorkoutRecapView: View {
                     Text(TrainingCopy.text(fullyTimed ? "recap_title" : "recap_early_title", language))
                         .font(.system(size: 38, weight: .regular, design: .serif)).foregroundStyle(Noir.ink)
                     if let session {
+                        #if DEBUG
+                        if WorkoutTestClock.stepSeconds != nil {
+                            let logs = session.segmentLogs ?? []
+                            let indices = logs.compactMap(\.segmentIndex).sorted()
+                            let contiguous = indices == Array(0..<logs.count)
+                            Text("origin=\((session.runtimeOrigin ?? .unknown).rawValue) blocks=\(session.blocks.count) completed=\(session.completedBlockIDs.count) segments=\(logs.count) timer=\(session.timerElapsedSeconds ?? 0) skipped=\(logs.filter { $0.exitReason == "skipped" }.count) contiguous=\(contiguous) receipt_blocks=\(session.completionReceipt?.blocks.count ?? 0)")
+                                .font(.caption2.monospaced())
+                                .accessibilityIdentifier("synthetic-receipt-summary")
+                        }
+                        #endif
                         Text(SessionCopy.clockSummary(session, language: language))
                             .font(.title3).foregroundStyle(Noir.ink)
                         Rectangle().fill(Noir.gold.opacity(0.4)).frame(height: 1)

@@ -77,6 +77,8 @@ class PoseWindow(BaseModel):
 
 class CompletionSegment(BaseModel):
     segment_id:uuid.UUID
+    segment_index:int|None=Field(default=None,ge=0,le=10000)
+    preparation_index:int|None=Field(default=None,ge=0,le=1000)
     elapsed_seconds:int=Field(ge=0,le=86400)
     planned_seconds:int=Field(ge=0,le=86400)
     is_rest:bool

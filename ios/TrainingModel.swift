@@ -676,6 +676,8 @@ struct SegmentLog: Codable, Identifiable {
     let elapsedSeconds: Int
     let exitReason: String
     let endedAt: Date
+    var segmentIndex: Int? = nil
+    var preparationIndex: Int? = nil
 }
 
 struct PoseSampleRecord: Codable, Identifiable {
@@ -748,12 +750,32 @@ enum WorkoutRuntimeOrigin: String, Codable {
     case physicalDevice = "physical_device", simulator, synthetic, replay, unknown
     static var current: Self {
         #if DEBUG
+        if WorkoutTestClock.stepSeconds != nil { return .synthetic }
         if ProcessInfo.processInfo.environment["COIN_TEST_ROUND_REVIEW"] == "1" { return .synthetic }
         #endif
         #if targetEnvironment(simulator)
         return .simulator
         #else
         return .physicalDevice
+        #endif
+    }
+}
+
+enum WorkoutTestClock {
+    static var stepSeconds: Int? {
+        #if DEBUG
+        #if targetEnvironment(simulator)
+        let environment = ProcessInfo.processInfo.environment
+        guard environment["COIN_TRAINING_DIRECTORY"]?.hasPrefix("workout-ui-") == true,
+              environment["COIN_SERVICE_URL"] == "http://127.0.0.1:1",
+              let raw = environment["COIN_TEST_TIMER_STEP_SECONDS"],
+              let value = Int(raw), (1...300).contains(value) else { return nil }
+        return value
+        #else
+        return nil
+        #endif
+        #else
+        return nil
         #endif
     }
 }
@@ -788,9 +810,14 @@ struct WorkoutCompletionReceipt: Codable, Identifiable {
             "blocks": blocks.map { block -> [String: Any] in
                 var value: [String: Any] = ["block_id": block.blockID.uuidString,
                     "completion_sources": block.completionSources,
-                    "segments": block.segments.map { ["segment_id": $0.id.uuidString,
-                        "elapsed_seconds": $0.elapsedSeconds, "planned_seconds": $0.plannedSeconds,
-                        "is_rest": $0.isRest, "exit_reason": $0.exitReason] as [String: Any] },
+                    "segments": block.segments.map { segment -> [String: Any] in
+                        var row: [String: Any] = ["segment_id": segment.id.uuidString,
+                            "elapsed_seconds": segment.elapsedSeconds, "planned_seconds": segment.plannedSeconds,
+                            "is_rest": segment.isRest, "exit_reason": segment.exitReason]
+                        row["segment_index"] = segment.segmentIndex
+                        row["preparation_index"] = segment.preparationIndex
+                        return row
+                    },
                     "cue_requests": block.cueRequests.map { ["cue_request_id": $0.id.uuidString,
                         "cue_key": $0.cueKey, "language": $0.language, "trigger": $0.trigger,
                         "requested_at_ms": Int($0.requestedAt.timeIntervalSince1970 * 1000),
@@ -1050,11 +1077,14 @@ struct TrainingData: Codable {
         persist()
     }
     func recordSegment(sessionID: UUID, blockID: UUID, activityKey: String?, isRest: Bool,
-                       plannedSeconds: Int, elapsedSeconds: Int, exitReason: String, at date: Date = Date()) {
+                       plannedSeconds: Int, elapsedSeconds: Int, exitReason: String,
+                       segmentIndex: Int? = nil, preparationIndex: Int? = nil, at date: Date = Date()) {
         guard let index = data.sessions.firstIndex(where: { $0.id == sessionID }),
               data.sessions[index].state == .active,
               let block = data.sessions[index].blocks.first(where: { $0.id == blockID }),
               elapsedSeconds >= 0,
+              segmentIndex.map { $0 >= 0 } ?? true,
+              preparationIndex.map { $0 >= 0 } ?? true,
               ["timer_elapsed", "manual_completed", "skipped", "session_finished"].contains(exitReason) else { return }
         let manual = block.isManual && !isRest
         guard manual ? plannedSeconds == 0 : (plannedSeconds > 0 && elapsedSeconds <= plannedSeconds),
@@ -1063,7 +1093,8 @@ struct TrainingData: Codable {
         if data.sessions[index].segmentLogs == nil { data.sessions[index].segmentLogs = [] }
         data.sessions[index].segmentLogs?.append(SegmentLog(blockID: blockID, activityKey: activityKey,
             isRest: isRest, plannedSeconds: plannedSeconds, elapsedSeconds: elapsedSeconds,
-            exitReason: exitReason, endedAt: date))
+            exitReason: exitReason, endedAt: date, segmentIndex: segmentIndex,
+            preparationIndex: preparationIndex))
         persist()
     }
     func recordPoseWindows(sessionID: UUID, windows: [PoseSampleRecord]) {

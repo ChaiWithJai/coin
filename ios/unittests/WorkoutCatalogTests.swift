@@ -96,6 +96,21 @@ import XCTest
         XCTAssertEqual(frontal.map(\.effectiveRestSeconds), [30, 30, 30, 0])
     }
 
+    func testBasicWeekOneDayOneHasExactAcceptanceContract() throws {
+        let template = try XCTUnwrap(WorkoutCatalog.shared.lessons.first { $0.id == "basic-w1-d1" }).template()
+        let timed = template.blocks.filter { !$0.isManual }
+        let manual = template.blocks.filter(\.isManual)
+        XCTAssertEqual(template.blocks.count, 24)
+        XCTAssertEqual(timed.count, 18)
+        XCTAssertEqual(manual.count, 6)
+        XCTAssertEqual(timed.compactMap(\.roundNumber), Array(1...18))
+        XCTAssertEqual(timed.reduce(0) { $0 + $1.effectiveSeconds }, 2_520)
+        XCTAssertEqual(timed.map(\.effectiveRestSeconds).filter { $0 > 0 }, [30, 30, 30])
+        XCTAssertEqual(timed.reduce(0) { $0 + $1.effectiveRestSeconds }, 90)
+        XCTAssertEqual(template.plannedSeconds, 2_610)
+        XCTAssertTrue(manual.allSatisfy { $0.effectiveSeconds == 0 && $0.effectiveRestSeconds == 0 })
+    }
+
     func testGenericSourceSlotsRequireConcreteRuntimeMovement() throws {
         let source = WorkoutCatalog.shared.lessons.flatMap(\.blocks)
         let warmups = source.filter { $0.title == "DYNAMIC WARM-UP:" && $0.instructions == $0.title }
