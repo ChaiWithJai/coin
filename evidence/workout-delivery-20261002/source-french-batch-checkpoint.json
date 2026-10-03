@@ -1,0 +1,61 @@
+{
+  "checkpoint": "source-fr-proposal-v3-boxing-glossary",
+  "lessonID": "basic-w2-d1",
+  "sourceSHA256": "552f658399e91ea206f2a152d364955b5ca48aec05ee1faf35564b62628811a6",
+  "modelIdentity": "gb10:8712/Ternary-Bonsai-2-9B-PTQ1_0.gguf@sha256:d11d367066813107d56f3d0a67362f934b80407a39d86f5bc216fc30929c831c",
+  "jobID": "50a4883c8358328568d1766e1e198369759e6c799359fc4799628ca0b0cbd2ae",
+  "proposalArtifact": "../../../batch-source-french/1790993056912944000/basic-w2-d1-fr-unreviewed.json",
+  "database": "../../../batch-source-french/1790993056912944000/batch.sqlite",
+  "coverage": {
+    "sourceItems": 30,
+    "completedProposals": 30,
+    "modelAttempts": 30,
+    "deliveredMLflowEvents": 30,
+    "finishedMLflowTracesReadBack": 30,
+    "exampleTraceID": "tr-9a7ae67360023084cbce885889743f80"
+  },
+  "quality": {
+    "modelAmbiguityFlagsOnItems": 14,
+    "deterministicExerciseTermWarningsOnItems": 4,
+    "examples": [
+      {
+        "sourceItemID": "p10-b15",
+        "sourceText": "12 JUMP SQUATS",
+        "proposedFrench": "12 SAUTS DE GENOU",
+        "failure": "Jump squats became knee jumps despite preserved numeral."
+      },
+      {
+        "sourceItemID": "p10-b10",
+        "sourceText": "20 KNUCKLE PUSH-UPS AND 20 MOUNTAIN CLIMBERS",
+        "proposedFrench": "20 REPETITIONS DE PUSH-UPS A COU DE POING ET 20 ASCENSIONS DE MONTAGNE",
+        "failure": "Mountain climbers were translated literally."
+      },
+      {
+        "sourceItemID": "p10-b5",
+        "sourceText": "4 ROUNDS OF 2 MINUTES. DO SLIP-THROW 2 PUNCHES WITH STEPS",
+        "proposedFrench": "4 REPRISES DE 2 MINUTES. ESQUIVEZ DU BUSTE, JETEZ 2 COUPS DE POING AVEC DES PAS",
+        "failure": "The compound technique is ambiguous and was flagged by the model."
+      }
+    ]
+  },
+  "comparison": {
+    "firstAttempt": "No JSON: reasoning output exhausted 300 tokens and, on replay, 512 tokens. The raw second response and usage were preserved.",
+    "v2": "Four structure-valid items; contained the false French word POINCES for punches.",
+    "v3": "Same four items used a boxing glossary and no-thinking setting; POINCES disappeared, but the full-day audit still found technique losses."
+  },
+  "telemetryScope": "One source_translation_proposal child span per item in the existing inference experiment. Replay durations are explicit observed values, not physical-phone latency.",
+  "cost": {
+    "surfacedPromptTokens": 11436,
+    "surfacedCompletionTokens": 1343,
+    "actualBilledUSD": null,
+    "estimatedUSD": null
+  },
+  "runtimeEligible": false,
+  "reviewStatus": "unreviewed",
+  "limitations": [
+    "No French copy from this batch was installed in Coin.",
+    "Numeric parity and a few exercise anchors do not establish correct boxing translation.",
+    "Some source items are split sentence fragments; whole-section interpretation needs review before promotion.",
+    "No physical workout, movement recognition, or TestFlight readiness was established."
+  ]
+}

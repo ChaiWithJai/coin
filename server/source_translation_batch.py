@@ -18,15 +18,24 @@ from contextlib import contextmanager
 from pathlib import Path
 
 SCHEMA_VERSION = 1
-PROMPT_VERSION = "source-fr-proposal-v1"
+PROMPT_VERSION = "source-fr-proposal-v3-boxing-glossary"
 PROMPT = (
-    "Translate this exact boxing workout source item into natural French. "
+    "Translate only sourceText into concise, natural French for a boxer. "
+    "Use boxing terms: round = reprise; punches = coups de poing; "
+    "stance = garde; slip = esquive du buste. "
+    "Keep an unclear compound technique in English and flag it; do not guess. "
     "Preserve every number, exercise prescription, and named exercise. "
     "Do not invent coaching advice or infer a performed movement. "
     "Return only JSON with keys proposedFrench (string) and ambiguityFlags "
-    "(array of short strings). Flag unclear text, technique, or typography."
+    "(array of short strings). Empty flags are allowed."
 )
 NUMBERS = re.compile(r"(?<![\w])\d+(?:[.,]\d+)?(?![\w])")
+EXERCISE_ANCHORS = (
+    (re.compile(r"\bJUMP SQUATS?\b", re.I), re.compile(r"\bsquats?\b", re.I), "jump_squat_term_missing"),
+    (re.compile(r"\bPUSH[- ]UPS?\b", re.I), re.compile(r"\b(pompes?|push[- ]ups?)\b", re.I), "pushup_term_missing"),
+    (re.compile(r"\bMOUNTAIN CLIMBERS?\b", re.I), re.compile(r"\b(mountain climbers?|grimpeurs?)\b", re.I), "mountain_climber_term_missing"),
+    (re.compile(r"\bSHADOW BOXING\b", re.I), re.compile(r"\b(boxe|boxing|shadow)\b", re.I), "shadowboxing_term_missing"),
+)
 
 
 def canonical(value):
@@ -93,7 +102,10 @@ def validate_proposal(item, response):
         raise ValueError("Invalid ambiguity flags")
     if NUMBERS.findall(item["sourceText"]) != NUMBERS.findall(french):
         raise ValueError("Numeric prescription mismatch")
-    return {"proposedFrench": french.strip(), "ambiguityFlags": flags}
+    warnings = [label for source, target, label in EXERCISE_ANCHORS
+                if source.search(item["sourceText"]) and not target.search(french)]
+    return {"proposedFrench": french.strip(), "ambiguityFlags": flags,
+            "qualityWarnings": warnings}
 
 
 class Store:
@@ -218,7 +230,10 @@ class Store:
             for source, row in zip(manifest, rows):
                 if canonical(source) != row["source"]:
                     raise ValueError("Source drift")
-                items.append({**source, **json.loads(row["proposal"]), "reviewStatus": "unreviewed"})
+                stored = json.loads(row["proposal"])
+                checked = validate_proposal(source, {key: stored[key] for key in
+                                                     ("proposedFrench", "ambiguityFlags")})
+                items.append({**source, **checked, "reviewStatus": "unreviewed"})
             return {"schemaVersion": SCHEMA_VERSION, "purpose": "translation_proposals_only",
                     "runtimeEligible": False, "lessonID": manifest[0]["lessonID"],
                     "sourceSHA256": manifest[0]["sourceSHA256"], "jobID": job_id,
@@ -249,8 +264,16 @@ def process_one(store, job_id, model_client, *, lease_seconds=180):
         store.finish(job_id, claim, response=response, usage=usage)
         return {"state": "done", "item": claim["item"], "usage": usage}
     except Exception as exc:
-        store.finish(job_id, claim, error=str(exc))
+        store.finish(job_id, claim, response=getattr(exc, "raw_response", None),
+                     error=str(exc), usage=getattr(exc, "usage", None))
         return {"state": "failed", "item": claim["item"], "error": str(exc)}
+
+
+class ProposalResponseError(ValueError):
+    def __init__(self, message, raw_response, usage):
+        super().__init__(message)
+        self.raw_response = raw_response
+        self.usage = usage
 
 
 class ModelClient:
@@ -261,14 +284,19 @@ class ModelClient:
 
     def propose(self, item):
         body = {"model": self.model, "temperature": 0, "max_tokens": 300,
+                "chat_template_kwargs": {"enable_thinking": False},
                 "messages": [{"role": "system", "content": PROMPT},
                              {"role": "user", "content": canonical(item)}]}
         request = urllib.request.Request(self.endpoint, data=canonical(body).encode(),
                                          headers={"Content-Type": "application/json"})
         with urllib.request.urlopen(request, timeout=self.timeout) as response:
             result = json.load(response)
-        content = result["choices"][0]["message"]["content"]
-        return json.loads(content), result.get("usage", {})
+        usage = result.get("usage", {})
+        try:
+            content = result["choices"][0]["message"]["content"]
+            return json.loads(content), usage
+        except (KeyError, IndexError, TypeError, json.JSONDecodeError) as exc:
+            raise ProposalResponseError("Model reply was not valid proposal JSON", result, usage) from exc
 
 
 def main():
