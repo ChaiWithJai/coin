@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "capture_method": "read-only Google Docs DOCX export with document.xml paragraph extraction",
+  "documents": [
+    {
+      "document_id": "1T44tF70cpGnjE2AakliGlj6Awt2fPvmhox1IqNi-jbA",
+      "title": "Steady state running workout",
+      "source_url": "https://docs.google.com/document/d/1T44tF70cpGnjE2AakliGlj6Awt2fPvmhox1IqNi-jbA/edit?usp=sharing",
+      "export_url": "https://docs.google.com/document/d/1T44tF70cpGnjE2AakliGlj6Awt2fPvmhox1IqNi-jbA/export?format=docx",
+      "docx_sha256": "77cb35f59845e027408fba31e9d4026db724974736cec6ae1b5400d562ff554d",
+      "text_path": "steady-state-running-workout.txt",
+      "text_sha256": "b67d04dc281a9cad67e2a14592f6ebf77ca67d18fc8dc9311046d4ca091e1a74"
+    },
+    {
+      "document_id": "1mLJtuKeCIFc4wX_DfA4FH6SmoarMV8-Hp9IQWDqPjLE",
+      "title": "Running workout",
+      "source_url": "https://docs.google.com/document/d/1mLJtuKeCIFc4wX_DfA4FH6SmoarMV8-Hp9IQWDqPjLE/edit?usp=sharing",
+      "export_url": "https://docs.google.com/document/d/1mLJtuKeCIFc4wX_DfA4FH6SmoarMV8-Hp9IQWDqPjLE/export?format=docx",
+      "docx_sha256": "2567af67d096043f3bf2a67b04aa09965f039c85f28dbc7c607a8527696c903b",
+      "text_path": "interval-running-workout.txt",
+      "text_sha256": "d3d140c4a153bad99cc06684d22055d0f130ba4ba9b81072ff96f3385b021da9"
+    }
+  ]
+}

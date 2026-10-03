@@ -152,12 +152,12 @@ import XCTest
             }
         }
         XCTAssertEqual(lessons.count, 70)
-        XCTAssertEqual(workSegments, 1_236)
-        XCTAssertEqual(restSegments, 205)
-        XCTAssertEqual(timedWork, 734)
-        XCTAssertEqual(manualWork, 502)
+        XCTAssertEqual(workSegments, 1_300)
+        XCTAssertEqual(restSegments, 230)
+        XCTAssertEqual(timedWork, 760)
+        XCTAssertEqual(manualWork, 540)
         XCTAssertEqual(requiredChoices, 77)
-        XCTAssertEqual(timedSeconds, 100_935)
+        XCTAssertEqual(timedSeconds, 110_355)
     }
 
     func testBasicWeekOneDayThreeMixedBlockExpandsExactPrescriptions() throws {
@@ -522,6 +522,8 @@ import XCTest
         var roundItems = 0
         var circuitSections = 0
         var circuitItems = 0
+        var linkedSections = 0
+        var linkedSegments = 0
         for lesson in WorkoutCatalog.shared.lessons {
             let blocks = lesson.template().blocks
             for source in lesson.blocks {
@@ -533,6 +535,14 @@ import XCTest
                     circuitSections += 1
                     circuitItems += mapped.count
                     XCTAssertTrue(mapped.allSatisfy { $0.sourceItemID != nil && !$0.isManual })
+                } else if source.reviewedLinkedRunSteps != nil {
+                    linkedSections += 1
+                    linkedSegments += mapped.count
+                    let linkedItem = source.sourceItems?.first {
+                        ($0.referenceURLs ?? []).contains { $0.contains("docs.google.com/document/d/") }
+                    }
+                    XCTAssertNotNil(linkedItem)
+                    XCTAssertTrue(mapped.allSatisfy { $0.sourceItemID == linkedItem?.id })
                 } else if mapped.contains(where: { $0.sourceItemID != nil }) {
                     if source.completion == .manual {
                         expandedSections += 1
@@ -554,6 +564,8 @@ import XCTest
         XCTAssertEqual(roundItems, 25)
         XCTAssertEqual(circuitSections, 2)
         XCTAssertEqual(circuitItems, 60)
+        XCTAssertEqual(linkedSections, 5)
+        XCTAssertEqual(linkedSegments, 69)
     }
 
     func testOnlyFourReviewedSourceItemsEnableExistingRepCandidates() throws {
@@ -675,6 +687,89 @@ import XCTest
             XCTAssertEqual(blocks.count, 1, id)
             XCTAssertTrue(try XCTUnwrap(blocks.first).isManual, id)
             XCTAssertNil(blocks.first?.sourceItemID, id)
+        }
+    }
+
+    func testLinkedSteadyRunUsesExactClockAndKeepsUntimedWorkManual() throws {
+        let expected = [
+            ("competitive-w1-d6", "competitive-w1-d6-p10-s1-1"),
+            ("competitive-w5-d4", "competitive-w5-d4-p40-s9-1"),
+        ]
+        let documentURL = "https://docs.google.com/document/d/1T44tF70cpGnjE2AakliGlj6Awt2fPvmhox1IqNi-jbA/edit?usp=sharing"
+        for value in expected {
+            let lesson = try XCTUnwrap(WorkoutCatalog.shared.lessons.first { $0.id == value.0 })
+            let blocks = lesson.template().blocks.filter { $0.sourceBlockID == value.1 }
+            XCTAssertEqual(blocks.count, 6, value.1)
+            XCTAssertEqual(blocks.map(\.effectiveSeconds), [0, 1_800, 180, 180, 180, 0])
+            XCTAssertEqual(blocks.map(\.effectiveRestSeconds), [0, 0, 60, 60, 0, 0])
+            XCTAssertEqual(blocks.map(\.isManual), [true, false, false, false, false, true])
+            XCTAssertEqual(blocks.map(\.sourceURL), Array(repeating: Optional(documentURL), count: 6))
+            let expectedItem = value.1.contains("p10-") ? "p10-b2" : "p40-b29"
+            XCTAssertTrue(blocks.allSatisfy { $0.sourceItemID == expectedItem })
+            XCTAssertEqual(blocks.filter { $0.kind == .boxing }.map(\.sourceActivityKey),
+                           Array(repeating: Optional("shadowboxing"), count: 3))
+            XCTAssertTrue(blocks[1].sourceInstructions?.contains("135-145 heart beat rate") == true)
+        }
+    }
+
+    func testLinkedIntervalRunPreservesRangesAndDistanceAsManualWork() throws {
+        let expected = [
+            ("basic-w2-d4", "basic-w2-d4-p13-s11-1"),
+            ("basic-w3-d4", "basic-w3-d4-p20-s10-1"),
+            ("competitive-w3-d6", "competitive-w3-d6-p26-s1-1"),
+        ]
+        let documentURL = "https://docs.google.com/document/d/1mLJtuKeCIFc4wX_DfA4FH6SmoarMV8-Hp9IQWDqPjLE/edit?usp=sharing"
+        for value in expected {
+            let lesson = try XCTUnwrap(WorkoutCatalog.shared.lessons.first { $0.id == value.0 })
+            let blocks = lesson.template().blocks.filter { $0.sourceBlockID == value.1 }
+            XCTAssertEqual(blocks.count, 19, value.1)
+            XCTAssertEqual(Array(blocks[1...6]).map(\.effectiveSeconds), Array(repeating: 180, count: 6))
+            XCTAssertEqual(Array(blocks[1...6]).map(\.effectiveRestSeconds),
+                           Array(repeating: 60, count: 5) + [0])
+            XCTAssertTrue(Array(blocks[4...6]).allSatisfy {
+                $0.repetitionText == "Optional · source prescribes 3-6 rounds"
+            })
+            XCTAssertTrue([7, 9, 11, 13, 17].allSatisfy {
+                blocks[$0].isManual && blocks[$0].kind == .recovery && blocks[$0].effectiveSeconds == 0
+            })
+            XCTAssertTrue([8, 10, 12].allSatisfy {
+                blocks[$0].isManual && blocks[$0].repetitionText == "100 meters"
+            })
+            XCTAssertTrue([14, 15, 16].allSatisfy {
+                blocks[$0].isManual && blocks[$0].repetitionText == "8m out/back + 15m out/back"
+            })
+            XCTAssertEqual(blocks[14].effectiveRestSeconds, 60)
+            XCTAssertEqual(blocks[15].effectiveRestSeconds, 60)
+            XCTAssertEqual(blocks[16].effectiveRestSeconds, 0)
+            XCTAssertEqual(blocks.map(\.sourceURL), Array(repeating: Optional(documentURL), count: 19))
+            let expectedItem = value.1.contains("p13-") ? "p13-b55"
+                : (value.1.contains("p20-") ? "p20-b54" : "p26-b2")
+            XCTAssertTrue(blocks.allSatisfy { $0.sourceItemID == expectedItem })
+            XCTAssertTrue(blocks[5].sourceInstructions?.contains("RestT: 1 minute") == true)
+            XCTAssertTrue(blocks[9].sourceInstructions?.hasPrefix("Rest: 1.5 - 2") == true)
+            XCTAssertTrue(blocks[11].sourceInstructions?.hasPrefix("Res: 1.5 - 2") == true)
+            XCTAssertTrue(blocks[14].sourceInstructions?.contains("Resr: 1 minute") == true)
+        }
+    }
+
+    func testLinkedRunExpansionFailsClosedWhenCatalogLinkDrifts() throws {
+        let ids = ["competitive-w1-d6-p10-s1-1", "competitive-w3-d6-p26-s1-1",
+                   "basic-w2-d4-p13-s11-1"]
+        for id in ids {
+            let lesson = try roundSequenceFixture(id) { block in
+                var items = block["sourceItems"] as! [[String: Any]]
+                let index = items.firstIndex {
+                    (($0["referenceURLs"] as? [String]) ?? []).contains { $0.contains("docs.google.com") }
+                }!
+                items[index]["referenceURLs"] = ["https://example.org/drifted"]
+                block["sourceItems"] = items
+            }
+            let source = try XCTUnwrap(lesson.blocks.first)
+            XCTAssertNil(source.reviewedLinkedRunSteps, id)
+            let blocks = lesson.template().blocks
+            XCTAssertEqual(blocks.count, 1, id)
+            XCTAssertTrue(try XCTUnwrap(blocks.first).isManual, id)
+            XCTAssertEqual(blocks.first?.sourceInstructions, source.instructions, id)
         }
     }
 

@@ -115,6 +115,23 @@ struct WorkoutLesson: Decodable, Identifiable {
                                  completionMode: .timed)
                 }
             }
+            if let steps = source.reviewedLinkedRunSteps {
+                let linkedItemID = source.sourceItems?.first {
+                    ($0.referenceURLs ?? []).contains { $0.contains("docs.google.com/document/d/") }
+                }?.id
+                return steps.map { step in
+                    if step.kind == .boxing { roundNumber += 1 }
+                    return SessionBlock(kind: step.kind, minutes: step.durationSeconds / 60,
+                        roundNumber: step.kind == .boxing ? roundNumber : nil,
+                        drillID: step.drillID, restAfterMinutes: step.restSeconds / 60,
+                        durationSeconds: step.durationSeconds, restAfterSeconds: step.restSeconds,
+                        sourceTitle: step.title, sourceInstructions: step.instructions,
+                        sourceURL: step.sourceURL, sourceDemoURLs: source.demoURLs ?? [],
+                        sourceActivityKey: step.activityKey, sourceBlockID: source.id,
+                        sourceItemID: linkedItemID, repetitionText: step.prescription,
+                        completionMode: step.completion)
+                }
+            }
             if let steps = source.reviewedEnduranceCircuitSteps {
                 return steps.map { step in
                     SessionBlock(kind: .exercise, minutes: 1, roundNumber: nil, drillID: nil,
@@ -205,6 +222,7 @@ struct WorkoutSourceBlock: Decodable, Identifiable {
     let sourceText: String?
     let sourceSectionIndex: Int?
     let sourceURL: String?
+    let referenceURLs: [String]?
     let sourceItems: [WorkoutSourceItem]?
 }
 
@@ -212,6 +230,7 @@ struct WorkoutSourceItem: Decodable {
     let id: String
     let text: String
     let demoURLs: [String]?
+    let referenceURLs: [String]?
 }
 
 extension WorkoutSourceBlock {
@@ -461,6 +480,177 @@ extension WorkoutSourceBlock {
         let selected = (sourceItems ?? []).filter { itemIDs.contains($0.id) }
         return selected.flatMap { $0.demoURLs ?? [] }.filter { seen.insert($0).inserted }
     }
+
+    struct ReviewedLinkedRunStep {
+        let title: String
+        let instructions: String
+        let sourceURL: String
+        let kind: SessionBlockKind
+        let durationSeconds: Int
+        let restSeconds: Int
+        let prescription: String?
+        let completion: BlockCompletionMode
+        let activityKey: String?
+        let drillID: String?
+    }
+
+    /// Expands the two linked public running documents only for the five source
+    /// blocks that carry those exact links. Ranges and distance-based work stay
+    /// manual so the runtime does not turn an editorial ambiguity into a clock.
+    /// The interval document prescribes 3-6 fast rounds and then enumerates six;
+    /// rounds four through six are labeled optional and remain skippable.
+    var reviewedLinkedRunSteps: [ReviewedLinkedRunStep]? {
+        struct Snapshot {
+            let sourceURL: String
+            let title: String
+            let instructions: String
+            let items: [(String, String)]
+            let linkedItemID: String
+            let documentURL: String
+            let kind: String
+        }
+        let steadyURL = "https://docs.google.com/document/d/1T44tF70cpGnjE2AakliGlj6Awt2fPvmhox1IqNi-jbA/edit?usp=sharing"
+        let intervalURL = "https://docs.google.com/document/d/1mLJtuKeCIFc4wX_DfA4FH6SmoarMV8-Hp9IQWDqPjLE/edit?usp=sharing"
+        let snapshots: [String: Snapshot] = [
+            "competitive-w1-d6-p10-s1-1": Snapshot(
+                sourceURL: "https://boxing.dharmicdata.org/program/competitive/week/1/day/6#p10-s1",
+                title: "ENDURANCE WORKOUT #1",
+                instructions: "ENDURANCE WORKOUT #1\nsteady state run (click and open\na Google Doc)",
+                items: [("p10-b1", "ENDURANCE WORKOUT #1"),
+                        ("p10-b2", "steady state run (click and open"),
+                        ("p10-b3", "a Google Doc)")],
+                linkedItemID: "p10-b2", documentURL: steadyURL, kind: "steady"),
+            "competitive-w5-d4-p40-s9-1": Snapshot(
+                sourceURL: "https://boxing.dharmicdata.org/program/competitive/week/5/day/4#p40-s9",
+                title: "steady state run",
+                instructions: "steady state run\n(click and open a Google Doc)",
+                items: [("p40-b28", "steady state run"),
+                        ("p40-b29", "(click and open a Google Doc)")],
+                linkedItemID: "p40-b29", documentURL: steadyURL, kind: "steady"),
+            "competitive-w3-d6-p26-s1-1": Snapshot(
+                sourceURL: "https://boxing.dharmicdata.org/program/competitive/week/3/day/6#p26-s1",
+                title: "ENDURANCE WORKOUT #3",
+                instructions: "ENDURANCE WORKOUT #3\ninterval run (click and open\na Google Doc)",
+                items: [("p26-b1", "ENDURANCE WORKOUT #3"),
+                        ("p26-b2", "interval run (click and open"),
+                        ("p26-b3", "a Google Doc)")],
+                linkedItemID: "p26-b2", documentURL: intervalURL, kind: "interval"),
+            "basic-w2-d4-p13-s11-1": Snapshot(
+                sourceURL: "https://boxing.dharmicdata.org/program/basic/week/2/day/4#p13-s11",
+                title: "DON’T FEEL LIKE LIFTING TODAY?!",
+                instructions: "DON’T FEEL LIKE LIFTING TODAY?!\nALTERNATIVE RUNNING WORKOUT",
+                items: [("p13-b54", "DON’T FEEL LIKE LIFTING TODAY?!"),
+                        ("p13-b55", "ALTERNATIVE RUNNING WORKOUT")],
+                linkedItemID: "p13-b55", documentURL: intervalURL, kind: "interval"),
+            "basic-w3-d4-p20-s10-1": Snapshot(
+                sourceURL: "https://boxing.dharmicdata.org/program/basic/week/3/day/4#p20-s10",
+                title: "DON’T FEEL LIKE LIFTING TODAY?!",
+                instructions: "DON’T FEEL LIKE LIFTING TODAY?!\nALTERNATIVE RUNNING WORKOUT",
+                items: [("p20-b53", "DON’T FEEL LIKE LIFTING TODAY?!"),
+                        ("p20-b54", "ALTERNATIVE RUNNING WORKOUT")],
+                linkedItemID: "p20-b54", documentURL: intervalURL, kind: "interval"),
+        ]
+        guard let snapshot = snapshots[id], completion == .manual, kind == .boxing,
+              drillID == "free-boxing-v1", activityKey == nil,
+              rounds == nil, durationSeconds == nil, restSeconds == nil,
+              title == snapshot.title, instructions == snapshot.instructions,
+              sourceText == snapshot.instructions, sourceURL == snapshot.sourceURL,
+              referenceURLs?.contains(snapshot.documentURL) == true,
+              let items = sourceItems,
+              items.map({ ($0.id, $0.text) }).elementsEqual(snapshot.items,
+                  by: { $0.0 == $1.0 && $0.1 == $1.1 }),
+              let linked = items.first(where: { $0.id == snapshot.linkedItemID }),
+              linked.referenceURLs == [snapshot.documentURL], linked.demoURLs?.isEmpty == true else { return nil }
+        return snapshot.kind == "steady" ? steadyRunSteps(sourceURL: snapshot.documentURL)
+                                           : intervalRunSteps(sourceURL: snapshot.documentURL)
+    }
+
+    private func steadyRunSteps(sourceURL: String) -> [ReviewedLinkedRunStep] {
+        let warmup = "Start the workout with a dynamic full-body warm-up.\n" + Self.linkedRunWarmupList
+        let shadow = "After the run you should be a bit tired and that is a perfect time to shadow box. Go for 3 rounds of 3 minutes with one minute of rest in between the rounds. Focus on staying relaxed, being your flow and keeping it realistic."
+        var steps = [ReviewedLinkedRunStep(title: "Dynamic full-body warm-up", instructions: warmup,
+            sourceURL: sourceURL, kind: .warmup, durationSeconds: 0, restSeconds: 0,
+            prescription: nil, completion: .manual, activityKey: nil, drillID: nil),
+            ReviewedLinkedRunStep(title: "30-minute moderate run",
+                instructions: "The main part of the workout includes running with a moderate pace (around 135-145 heart beat rate) for 30 minutes with no breaks.",
+                sourceURL: sourceURL, kind: .exercise, durationSeconds: 1_800, restSeconds: 0,
+                prescription: "Around 135-145 heart beat rate", completion: .timed,
+                activityKey: nil, drillID: nil)]
+        for round in 1...3 {
+            steps.append(ReviewedLinkedRunStep(title: "Shadow box · Round \(round) of 3",
+                instructions: shadow, sourceURL: sourceURL, kind: .boxing, durationSeconds: 180,
+                restSeconds: round < 3 ? 60 : 0, prescription: nil, completion: .timed,
+                activityKey: "shadowboxing", drillID: "free-boxing-v1"))
+        }
+        steps.append(ReviewedLinkedRunStep(title: "Static stretches",
+            instructions: "Static stretches: finish off your workout with a series of static stretches to help your muscles recover and prevent any tightness.\n" + Self.linkedRunStaticStretchList,
+            sourceURL: sourceURL, kind: .cooldown, durationSeconds: 0, restSeconds: 0,
+            prescription: nil, completion: .manual, activityKey: nil, drillID: nil))
+        return steps
+    }
+
+    private func intervalRunSteps(sourceURL: String) -> [ReviewedLinkedRunStep] {
+        let warmup = "Start the workout with a dynamic full-body warm-up.\n" + Self.linkedRunWarmupList
+        let preface = "The main part of the workout includes 3-6 rounds of interval running where instead of rest you jog at a slow pace:"
+        var steps = [ReviewedLinkedRunStep(title: "Dynamic full-body warm-up", instructions: warmup,
+            sourceURL: sourceURL, kind: .warmup, durationSeconds: 0, restSeconds: 0,
+            prescription: nil, completion: .manual, activityKey: nil, drillID: nil)]
+        for round in 1...6 {
+            let restLabel = round == 5 ? "RestT: 1 minute of light jogging" : "Rest: 1 minute of light jogging"
+            let lines = round < 6
+                ? "\(preface)\nRound \(round): 3 minutes of running at a fast pace\n\(restLabel)"
+                : "\(preface)\nRound 6: 3 minutes of running at a fast pace"
+            steps.append(ReviewedLinkedRunStep(
+                title: (round > 3 ? "Optional fast run" : "Fast run") + " · Round \(round) of 6",
+                instructions: lines, sourceURL: sourceURL, kind: .exercise,
+                durationSeconds: 180, restSeconds: round < 6 ? 60 : 0,
+                prescription: round > 3 ? "Optional · source prescribes 3-6 rounds" : nil,
+                completion: .timed, activityKey: nil, drillID: nil))
+        }
+        steps.append(Self.manualLinkedRunStep(title: "Walk 3-4 minutes",
+            instructions: "Rest:\n3-4 minutes of walking", sourceURL: sourceURL, kind: .recovery))
+        for round in 1...3 {
+            steps.append(Self.manualLinkedRunStep(title: "100-meter sprint · Round \(round) of 3",
+                instructions: "Round \(round): 100-meter sprint", sourceURL: sourceURL, kind: .exercise,
+                prescription: "100 meters"))
+            if round < 3 {
+                steps.append(Self.manualLinkedRunStep(title: "Walk 1.5-2 minutes",
+                    instructions: (round == 1 ? "Rest" : "Res") + ": 1.5 - 2 minutes of walking",
+                    sourceURL: sourceURL, kind: .recovery))
+            }
+        }
+        steps.append(Self.manualLinkedRunStep(title: "Walk 3-4 minutes",
+            instructions: "Rest: 3-4 minutes of walking", sourceURL: sourceURL, kind: .recovery))
+        let shuttle = "The final part of the workout consists of 8-15 meter shuttles. Run 8 meters forward, then turn around and run 8 meters back, then turn and run 15 meters forward, turn around and run 15 meters back. That would be one 8-15 meter shuttle:"
+        for round in 1...3 {
+            let restLabel = round == 1 ? "Resr" : "Rest"
+            let lines = round < 3
+                ? "\(shuttle)\nRound \(round): Perform 8-15 meter shuttles (as described above)\n\(restLabel): 1 minute of walking"
+                : "\(shuttle)\nRound 3: Perform 8-15 meter shuttles (as described above)"
+            steps.append(ReviewedLinkedRunStep(title: "8-15 meter shuttles · Round \(round) of 3",
+                instructions: lines, sourceURL: sourceURL, kind: .exercise,
+                durationSeconds: 0, restSeconds: round < 3 ? 60 : 0,
+                prescription: "8m out/back + 15m out/back", completion: .manual,
+                activityKey: nil, drillID: nil))
+        }
+        steps.append(Self.manualLinkedRunStep(title: "Walk 3-4 minutes",
+            instructions: "Rest: 3-4 minutes of walking", sourceURL: sourceURL, kind: .recovery))
+        steps.append(Self.manualLinkedRunStep(title: "Static stretches",
+            instructions: "Static stretches: finish off your workout with a series of static stretches to help your muscles recover and prevent any tightness.\n" + Self.linkedRunStaticStretchList,
+            sourceURL: sourceURL, kind: .cooldown))
+        return steps
+    }
+
+    private static func manualLinkedRunStep(title: String, instructions: String, sourceURL: String,
+                                            kind: SessionBlockKind, prescription: String? = nil)
+        -> ReviewedLinkedRunStep {
+        ReviewedLinkedRunStep(title: title, instructions: instructions, sourceURL: sourceURL,
+            kind: kind, durationSeconds: 0, restSeconds: 0, prescription: prescription,
+            completion: .manual, activityKey: nil, drillID: nil)
+    }
+
+    private static let linkedRunWarmupList = "Ankle circles, calves stretch, leg swings forward and to the sides, hip openers, 90-90s, high knee run, buttkicks, feet kick outs forward and backward, deep controlled squats, wall sit, shoulder circles, arm swings vertical and horizontal, elbow circles, wrists circles, neck twists and turn, torso bends, torso circles, torso twist, floor touches, cossack squats."
+    private static let linkedRunStaticStretchList = "Wide fold, calves stretch, quad stretch, knee over toes lunge position, side lunge hold."
 
     struct EnduranceCircuitStep {
         let item: WorkoutSourceItem
