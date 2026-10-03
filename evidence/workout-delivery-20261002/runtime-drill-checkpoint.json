@@ -6,10 +6,32 @@
     "runtime_instance": "append-only source-linked choice with versioned measurement",
     "interval_evidence": "workout_timer_not_verified_activity",
     "custom_name_transport": "local_only",
-    "candidate_rep_movements": ["squats", "lunges"],
-    "candidate_exchange_movements": ["boxing", "shadowboxing"],
-    "elapsed_only_examples": ["jumping_jacks", "burpees", "box_jumps", "squat_jumps", "frontal_stance", "mobility", "custom"],
-    "measurement_contract": ["recipe_id", "version", "capability", "validation_status", "landmark_groups", "visibility_rule", "observation_unit"]
+    "candidate_rep_movements": [
+      "squats",
+      "lunges"
+    ],
+    "candidate_exchange_movements": [
+      "boxing",
+      "shadowboxing"
+    ],
+    "elapsed_only_examples": [
+      "jumping_jacks",
+      "burpees",
+      "box_jumps",
+      "squat_jumps",
+      "frontal_stance",
+      "mobility",
+      "custom"
+    ],
+    "measurement_contract": [
+      "recipe_id",
+      "version",
+      "capability",
+      "validation_status",
+      "landmark_groups",
+      "visibility_rule",
+      "observation_unit"
+    ]
   },
   "verification": {
     "ios_unit_suite": "pass",
@@ -19,8 +41,19 @@
     "physical_phone_install": "not_done_device_unavailable",
     "physical_movement_validation": "not_done",
     "synthetic_interval_mlflow_trace": "tr-97f6da40245aac5470545b09d0898dd5",
-    "development_usage_run": "3ba264cab94c4918811be0b6c4136397"
+    "development_usage_run": "3ba264cab94c4918811be0b6c4136397",
+    "gb10_service_sha256": "5b5f3ae9d9f84bb5429f31330974adef3ec885ec32727416318649665ca42984",
+    "gb10_service_pid": 2887352,
+    "signed_phone_binary_sha256": "b312c0cfd128dae50b34e37c949bb1911ab66bf83ad75ff31e539bf5190c4beb"
   },
-  "cost": {"actual_billed_usd": null, "api_equivalent_usd": null, "infrastructure_usd": null},
-  "limitations": ["Pose recipes remain unvalidated candidates", "No iPhone measurement of the new selector", "Original source workout instructions remain English"]
+  "cost": {
+    "actual_billed_usd": null,
+    "api_equivalent_usd": null,
+    "infrastructure_usd": null
+  },
+  "limitations": [
+    "Pose recipes remain unvalidated candidates",
+    "No iPhone measurement of the new selector",
+    "Original source workout instructions remain English"
+  ]
 }
