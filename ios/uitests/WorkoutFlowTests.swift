@@ -48,6 +48,30 @@ final class WorkoutFlowTests: XCTestCase {
         option.tap()
     }
 
+    private func waitForSourceTitle(_ title: String, in app: XCUIApplication,
+                                    timeout: TimeInterval = 12) {
+        let sourceTitle = app.staticTexts["workout-source-title"]
+        let predicate = NSPredicate(format: "label == %@", title)
+        expectation(for: predicate, evaluatedWith: sourceTitle)
+        waitForExpectations(timeout: timeout)
+        XCTAssertEqual(sourceTitle.label, title)
+    }
+
+    private func completeManualSourceStep(_ title: String, in app: XCUIApplication) {
+        waitForSourceTitle(title, in: app)
+        let done = app.buttons["complete-manual-step"]
+        XCTAssertTrue(done.waitForExistence(timeout: 2))
+        done.tap()
+    }
+
+    private func waitForTimedRest(in app: XCUIApplication, timeout: TimeInterval = 4) {
+        XCTAssertTrue(app.staticTexts["REST"].waitForExistence(timeout: timeout),
+                      "Expected the native timed rest segment")
+        // The 300-second UI-test clock can take the one-minute rest to zero in
+        // the same accessibility snapshot where REST first becomes visible.
+        XCTAssertTrue(["01:00", "00:00"].contains(app.staticTexts["workout-clock"].label))
+    }
+
     func testBothSourceProgramsReachDay35() throws {
         let app = application(language: "en")
         app.buttons["choose-program"].tap()
@@ -378,5 +402,89 @@ final class WorkoutFlowTests: XCTestCase {
         reveal(saved, in: app)
         saved.tap()
         XCTAssertTrue(app.staticTexts["DYNAMIC WARM-UP:"].waitForExistence(timeout: 5))
+    }
+
+    func testSteadyStateLinkedWorkoutRunsItsExactNativeSequence() throws {
+        let app = application(language: "en", acceleratedSource: true)
+        app.buttons["choose-program"].tap()
+        app.buttons["Competitive"].tap()
+        let day = app.buttons["lesson-competitive-w1-d6"]
+        reveal(day, in: app)
+        day.tap()
+        app.buttons["start-workout"].tap()
+
+        completeManualSourceStep("Dynamic full-body warm-up", in: app)
+        waitForSourceTitle("30-minute moderate run", in: app)
+        XCTAssertEqual(app.staticTexts["workout-clock"].label, "30:00")
+        app.buttons["workout-toggle"].tap()
+
+        waitForSourceTitle("Shadow box · Round 1 of 3", in: app)
+        XCTAssertEqual(app.staticTexts["workout-clock"].label, "03:00")
+        waitForTimedRest(in: app)
+        waitForSourceTitle("Shadow box · Round 2 of 3", in: app)
+        XCTAssertEqual(app.staticTexts["workout-clock"].label, "03:00")
+        waitForTimedRest(in: app)
+        waitForSourceTitle("Shadow box · Round 3 of 3", in: app)
+        XCTAssertEqual(app.staticTexts["workout-clock"].label, "03:00")
+        completeManualSourceStep("Static stretches", in: app)
+
+        XCTAssertTrue(app.buttons["recap-done"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["That's a wrap."].exists)
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(
+            format: "label CONTAINS %@", "30-minute moderate run")).firstMatch.exists)
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(
+            format: "label CONTAINS %@", "Shadow box · Round 3 of 3")).firstMatch.exists)
+    }
+
+    func testIntervalLinkedWorkoutRunsItsExactNativeSequence() throws {
+        let app = application(language: "en", acceleratedSource: true)
+        app.buttons["choose-program"].tap()
+        app.buttons["Competitive"].tap()
+        let day = app.buttons["lesson-competitive-w3-d6"]
+        reveal(day, in: app)
+        day.tap()
+        app.buttons["start-workout"].tap()
+
+        completeManualSourceStep("Dynamic full-body warm-up", in: app)
+        waitForSourceTitle("Fast run · Round 1 of 6", in: app)
+        XCTAssertEqual(app.staticTexts["workout-clock"].label, "03:00")
+        app.buttons["workout-toggle"].tap()
+        waitForTimedRest(in: app)
+        for round in 2...3 {
+            waitForSourceTitle("Fast run · Round \(round) of 6", in: app)
+            XCTAssertEqual(app.staticTexts["workout-clock"].label, "03:00")
+            waitForTimedRest(in: app)
+        }
+        for round in 4...5 {
+            waitForSourceTitle("Optional fast run · Round \(round) of 6", in: app)
+            XCTAssertEqual(app.staticTexts["workout-clock"].label, "03:00")
+            waitForTimedRest(in: app)
+        }
+        waitForSourceTitle("Optional fast run · Round 6 of 6", in: app)
+        XCTAssertEqual(app.staticTexts["workout-clock"].label, "03:00")
+
+        completeManualSourceStep("Walk 3-4 minutes", in: app)
+        completeManualSourceStep("100-meter sprint · Round 1 of 3", in: app)
+        completeManualSourceStep("Walk 1.5-2 minutes", in: app)
+        completeManualSourceStep("100-meter sprint · Round 2 of 3", in: app)
+        completeManualSourceStep("Walk 1.5-2 minutes", in: app)
+        completeManualSourceStep("100-meter sprint · Round 3 of 3", in: app)
+        completeManualSourceStep("Walk 3-4 minutes", in: app)
+        completeManualSourceStep("8-15 meter shuttles · Round 1 of 3", in: app)
+        waitForTimedRest(in: app)
+        waitForSourceTitle("8-15 meter shuttles · Round 2 of 3", in: app)
+        app.buttons["complete-manual-step"].tap()
+        waitForTimedRest(in: app)
+        waitForSourceTitle("8-15 meter shuttles · Round 3 of 3", in: app)
+        app.buttons["complete-manual-step"].tap()
+        completeManualSourceStep("Walk 3-4 minutes", in: app)
+        completeManualSourceStep("Static stretches", in: app)
+
+        XCTAssertTrue(app.buttons["recap-done"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["That's a wrap."].exists)
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(
+            format: "label CONTAINS %@", "Optional fast run · Round 6 of 6")).firstMatch.exists)
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(
+            format: "label CONTAINS %@", "8-15 meter shuttles · Round 3 of 3")).firstMatch.exists)
     }
 }
