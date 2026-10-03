@@ -91,7 +91,12 @@ class SourceItemSliceAuditTests(unittest.TestCase):
                         if p['source_item_id'] == 'conditioning')
         path = Path(self.temp.name) / 'analyst.json'
         path.write_text(json.dumps({'corrections': [{
-            'proposal_id': proposal['proposal_id'],
+            # Proposal IDs include normalization_version. This deliberately
+            # represents an analyst fixture from an earlier candidate job.
+            'proposal_id': 'f' * 64,
+            'source_block_id': proposal['source_block_id'],
+            'source_item_id': proposal['source_item_id'],
+            'exact_source_text': proposal['source_text'],
             'proposed_activity': 'conditioning',
         }]}))
         return path
@@ -115,6 +120,9 @@ class SourceItemSliceAuditTests(unittest.TestCase):
         self.assertEqual(report['slice']['costs']['estimated_cost_usd']['null_count'], 1)
         self.assertEqual(report['slice']['costs']['estimated_cost_usd']['non_null_count'], 1)
         self.assertEqual(report['regression_sentinels']['analyst_corrections']['passed'], 1)
+        fixture = report['regression_sentinels']['analyst_corrections']['items'][0]
+        self.assertEqual(fixture['resolution'], 'stable_source_identity')
+        self.assertNotIn('f' * 64, fixture['resolved_item_id'])
         self.assertEqual(report['regression_sentinels']['virtual_or_virual_sparring']['passed'], 1)
         self.assertEqual(report['regression_sentinels']['explicit_child_modality']['passed'], 2)
         self.assertFalse(report['runtime_eligibility']['promotion_performed'])
@@ -153,6 +161,20 @@ class SourceItemSliceAuditTests(unittest.TestCase):
         self.assertIn('runtime_eligible_not_false', codes)
         self.assertIn('analyst_fixture_mismatch', codes)
         self.assertIn('explicit_child_modality_regression', codes)
+
+    def test_fixture_completed_before_baseline_is_a_population_sentinel(self):
+        # The correction target is deterministic and complete before the
+        # baseline. Only alpha/beta belong to the newly completed slice.
+        self._complete_pending()
+        report = audit_source_item_slice(
+            self.path, self.job, self.baseline, expected_size=2,
+            analyst_fixture=self._fixture())
+        sentinel = report['regression_sentinels']['analyst_corrections']
+        self.assertEqual(sentinel['checked'], 1)
+        self.assertEqual(sentinel['passed'], 1)
+        self.assertEqual(sentinel['items'][0]['actual'], 'conditioning')
+        self.assertNotIn(sentinel['items'][0]['resolved_item_id'],
+                         report['slice']['item_ids'])
 
     def test_fails_if_worker_has_not_reached_the_bounded_size(self):
         report = audit_source_item_slice(self.path, self.job, self.baseline,

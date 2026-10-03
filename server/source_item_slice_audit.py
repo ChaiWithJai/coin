@@ -203,17 +203,40 @@ def audit_source_item_slice(database, job_id, baseline_complete,
     # These sentinels cover the whole completed population because most are
     # deterministic and may predate the worker baseline.
     corrections = _read_fixture(analyst_fixture)
+    proposals_by_stable_source = {}
+    for proposal in proposals:
+        key = (proposal.get('source_block_id'), proposal.get('source_item_id'),
+               proposal.get('source_text'))
+        proposals_by_stable_source.setdefault(key, []).append(proposal)
     correction_results = []
     for fixture in corrections:
-        item_id = 'source-item:' + fixture['proposal_id']
+        fixture_proposal_id = fixture.get('proposal_id')
+        item_id = ('source-item:' + fixture_proposal_id
+                   if isinstance(fixture_proposal_id, str) else None)
+        resolution = 'proposal_id'
+        if item_id not in parsed:
+            stable_key = (fixture.get('source_block_id'), fixture.get('source_item_id'),
+                          fixture.get('exact_source_text'))
+            matches = proposals_by_stable_source.get(stable_key, [])
+            if len(matches) == 1:
+                item_id = 'source-item:' + matches[0]['proposal_id']
+                resolution = 'stable_source_identity'
+            elif not matches:
+                item_id = None
+                resolution = 'not_found'
+            else:
+                item_id = None
+                resolution = 'ambiguous_stable_source_identity'
         pair = parsed.get(item_id)
         actual = pair[1].get('result', {}).get('activity') if pair else None
         passed = actual == fixture.get('proposed_activity')
-        correction_results.append({'proposal_id': fixture['proposal_id'],
+        correction_results.append({'fixture_proposal_id': fixture_proposal_id,
+                                   'resolved_item_id': item_id,
+                                   'resolution': resolution,
                                    'expected': fixture.get('proposed_activity'),
                                    'actual': actual, 'passed': passed})
         if not passed:
-            issues.append(_issue('analyst_fixture_mismatch', item_id,
+            issues.append(_issue('analyst_fixture_mismatch', item_id or fixture_proposal_id,
                                  correction_results[-1]))
 
     virtual_results = []
