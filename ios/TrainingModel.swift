@@ -314,6 +314,34 @@ enum ActivityMeasurementCapability: String, Codable {
 enum ActivityMeasurementValidation: String, Codable {
     case unvalidated, notApplicable = "not_applicable"
 }
+
+enum ActivityIntervalExitReason: String, Codable {
+    case choiceChanged = "choice_changed", segmentEnded = "segment_ended"
+    case sessionFinished = "session_finished", paused
+}
+
+/// Timer attribution to a chosen runtime object, not proof that its movement was performed.
+struct WorkoutActivityInterval: Codable, Identifiable, Equatable {
+    var id = UUID()
+    let blockID: UUID
+    let preparationIndex: Int?
+    let activityInstanceID: UUID
+    let startElapsedSeconds: Int
+    let endElapsedSeconds: Int
+    let exitReason: ActivityIntervalExitReason
+    let closedAt: Date
+    let baselineOnly: Bool
+    var elapsedSeconds: Int { endElapsedSeconds - startElapsedSeconds }
+    var payload: [String: Any] {
+        var result: [String: Any] = ["interval_id": id.uuidString, "block_id": blockID.uuidString,
+            "activity_instance_id": activityInstanceID.uuidString, "start_elapsed_seconds": startElapsedSeconds,
+            "end_elapsed_seconds": endElapsedSeconds, "elapsed_seconds": elapsedSeconds,
+            "exit_reason": exitReason.rawValue, "closed_at_ms": Int(closedAt.timeIntervalSince1970 * 1000),
+            "baseline_only": baselineOnly, "evidence": "workout_timer_not_verified_activity"]
+        result["preparation_index"] = preparationIndex
+        return result
+    }
+}
 enum WorkoutActivityCopy {
     static func name(_ key: String?, customName: String? = nil, language: String) -> String {
         if let customName, !customName.isEmpty { return customName }
@@ -321,6 +349,7 @@ enum WorkoutActivityCopy {
             "jumping_jacks": ["fr": "Jumping jacks", "en": "Jumping jacks"],
             "burpees": ["fr": "Burpees", "en": "Burpees"],
             "box_jumps": ["fr": "Sauts sur caisse", "en": "Box jumps"],
+            "frontal_stance": ["fr": "Garde de face", "en": "Frontal stance"],
             "squat_jumps": ["fr": "Squats sautés", "en": "Squat jumps"],
             "squats": ["fr": "Squats", "en": "Squats"],
             "lunges": ["fr": "Fentes", "en": "Lunges"],
@@ -339,6 +368,30 @@ struct ActivityMeasurementRecipe: Codable, Equatable {
     let capability: ActivityMeasurementCapability
     let validationStatus: ActivityMeasurementValidation
 
+    /// Versioned observation contract. These joints are inputs to a candidate,
+    /// not proof that an exercise was performed or a rep was correct.
+    var landmarkGroups: [[String]] {
+        switch id {
+        case "mediapipe-squat-angle", "mediapipe-lunge-angle":
+            return [["left_hip", "left_knee", "left_ankle"],
+                    ["right_hip", "right_knee", "right_ankle"]]
+        case "coin-exchange-tracker":
+            return [["left_shoulder", "right_shoulder", "left_wrist", "right_wrist", "left_hip", "right_hip"]]
+        default: return []
+        }
+    }
+
+    var visibilityRule: String { landmarkGroups.isEmpty ? "not_applicable" : "any_complete_group" }
+
+    var observationUnit: String {
+        switch capability {
+        case .repCandidate: return "rep_candidate"
+        case .exchangeCandidate: return "exchange_candidate"
+        case .elapsedOnly: return "elapsed_seconds"
+        case .unsupported: return "none"
+        }
+    }
+
     /// Only exact, implemented movements get candidate recognition. A clock measures no movement.
     static func forExercise(_ exerciseKey: String?) -> Self {
         switch exerciseKey {
@@ -350,7 +403,7 @@ struct ActivityMeasurementRecipe: Codable, Equatable {
             return .init(id: "coin-exchange-tracker", version: "v1", capability: .exchangeCandidate, validationStatus: .unvalidated)
         case nil, "unknown":
             return .init(id: "none", version: "v1", capability: .unsupported, validationStatus: .notApplicable)
-        case "jumping_jacks", "burpees", "box_jumps", "squat_jumps", "mobility", "conditioning":
+        case "jumping_jacks", "burpees", "box_jumps", "squat_jumps", "frontal_stance", "mobility", "conditioning":
             return .init(id: "session-clock", version: "v1", capability: .elapsedOnly, validationStatus: .notApplicable)
         default:
             return .init(id: "session-clock", version: "v1", capability: .elapsedOnly, validationStatus: .notApplicable)
@@ -375,7 +428,9 @@ struct WorkoutActivityInstance: Codable, Identifiable, Equatable {
         var value: [String: Any] = ["instance_id": id.uuidString, "block_id": blockID.uuidString,
             "selection_provenance": selectionProvenance.rawValue,
             "measurement": ["id": measurement.id, "version": measurement.version,
-                "capability": measurement.capability.rawValue, "validation_status": measurement.validationStatus.rawValue]]
+                "capability": measurement.capability.rawValue, "validation_status": measurement.validationStatus.rawValue,
+                "landmark_groups": measurement.landmarkGroups, "visibility_rule": measurement.visibilityRule,
+                "observation_unit": measurement.observationUnit]]
         value["preparation_index"] = preparationIndex
         value["source_block_id"] = sourceBlockID
         value["source_item_id"] = sourceItemID
@@ -607,6 +662,7 @@ struct WorkoutCompletionReceipt: Codable, Identifiable {
     let sourceVersion: String?
     let blocks: [Block]
     var activityInstances: [WorkoutActivityInstance]? = nil
+    var activityIntervals: [WorkoutActivityInterval]? = nil
     var remoteEventID: String? = nil
 
     func payload() -> [String: Any] {
@@ -631,6 +687,7 @@ struct WorkoutCompletionReceipt: Codable, Identifiable {
             }]
         result["source_version"] = sourceVersion
         if let activityInstances { result["activity_instances"] = activityInstances.map(\.payload) }
+        if let activityIntervals { result["activity_intervals"] = activityIntervals.map(\.payload) }
         if let startedAt { result["started_at_ms"] = Int(startedAt.timeIntervalSince1970 * 1000) }
         return result
     }
@@ -665,8 +722,12 @@ struct TrainingSession: Codable, Identifiable {
     var runtimeOrigin: WorkoutRuntimeOrigin? = nil
     var completionReceipt: WorkoutCompletionReceipt? = nil
     var activityInstances: [WorkoutActivityInstance]? = nil
+    var activityIntervals: [WorkoutActivityInterval]? = nil
     func activityInstance(blockID: UUID, preparationIndex: Int? = nil) -> WorkoutActivityInstance? {
         activityInstances?.last { $0.blockID == blockID && $0.preparationIndex == preparationIndex }
+    }
+    func activityElapsedSeconds(instanceID: UUID) -> Int {
+        (activityIntervals ?? []).filter { $0.activityInstanceID == instanceID }.reduce(0) { $0 + $1.elapsedSeconds }
     }
     var plannedSeconds: Int { blocks.reduce(0) { $0 + $1.effectiveSeconds + $1.effectiveRestSeconds } }
     var isOpenEnded: Bool { blocks.contains(where: \.isManual) }
@@ -746,9 +807,9 @@ struct TrainingData: Codable {
             if FileManager.default.fileExists(atPath: file.path) { data = try JSONDecoder().decode(TrainingData.self, from: Data(contentsOf: file)) }
         } catch { self.error = error.localizedDescription }
     }
-    private func persist() {
-        do { try JSONEncoder().encode(data).write(to: file, options: .atomic) }
-        catch { self.error = error.localizedDescription }
+    @discardableResult private func persist() -> Bool {
+        do { try JSONEncoder().encode(data).write(to: file, options: .atomic); return true }
+        catch { self.error = error.localizedDescription; return false }
     }
     @discardableResult func start(_ template: TrainingTemplate, at date: Date = Date(), origin: WorkoutRuntimeOrigin = .current) -> UUID {
         for index in data.sessions.indices where data.sessions[index].state == .active {
@@ -763,6 +824,7 @@ struct TrainingData: Codable {
         session.startedAt = date
         session.runtimeOrigin = origin
         session.activityInstances = template.blocks.flatMap { WorkoutActivityInstance.initial(for: $0, at: date) }
+        session.activityIntervals = []
         session.timerElapsedSeconds = 0
         data.sessions.insert(session, at: 0); persist(); return session.id
     }
@@ -811,6 +873,45 @@ struct TrainingData: Codable {
             exerciseKey: key, customName: trimmedName, selectionProvenance: provenance, measurement: .forExercise(key),
             selectedAt: key == nil ? nil : date))
         persist()
+        return true
+    }
+    @discardableResult func recordActivityInterval(sessionID: UUID, blockID: UUID, preparationIndex: Int? = nil,
+                                                   activityInstanceID: UUID, cumulativeElapsedSeconds: Int,
+                                                   exitReason: ActivityIntervalExitReason, at date: Date = Date()) -> Bool {
+        guard let index = data.sessions.firstIndex(where: { $0.id == sessionID }),
+              data.sessions[index].state == .active, (0...86400).contains(cumulativeElapsedSeconds),
+              date.timeIntervalSince1970 >= 0,
+              let block = data.sessions[index].blocks.first(where: { $0.id == blockID }),
+              (data.sessions[index].activityIntervals?.count ?? 0) < 2000,
+              data.sessions[index].activityInstances?.contains(where: {
+                  $0.id == activityInstanceID && $0.blockID == blockID && $0.preparationIndex == preparationIndex
+              }) == true else { return false }
+        let preparations = block.activities ?? []
+        if let preparationIndex {
+            guard preparations.indices.contains(preparationIndex),
+                  cumulativeElapsedSeconds <= preparations[preparationIndex].minutes * 60 else { return false }
+        } else {
+            guard preparations.isEmpty, block.isManual || cumulativeElapsedSeconds <= block.effectiveSeconds else { return false }
+        }
+        let session = data.sessions[index]
+        let previousEnd = (session.activityIntervals ?? []).filter {
+            $0.blockID == blockID && $0.preparationIndex == preparationIndex
+        }.map(\.endElapsedSeconds).max()
+        // A pre-upgrade active session has no attributable history. Establish its
+        // first boundary without charging old timer seconds to the current choice.
+        let baseline = session.activityIntervals == nil
+        let start = baseline ? cumulativeElapsedSeconds : (previousEnd ?? 0)
+        guard cumulativeElapsedSeconds >= start,
+              baseline || cumulativeElapsedSeconds > start else { return false }
+        let interval = WorkoutActivityInterval(blockID: blockID, preparationIndex: preparationIndex,
+            activityInstanceID: activityInstanceID, startElapsedSeconds: start,
+            endElapsedSeconds: cumulativeElapsedSeconds, exitReason: exitReason, closedAt: date, baselineOnly: baseline)
+        if data.sessions[index].activityIntervals == nil { data.sessions[index].activityIntervals = [] }
+        data.sessions[index].activityIntervals?.append(interval)
+        guard persist() else {
+            data.sessions[index].activityIntervals = session.activityIntervals
+            return false
+        }
         return true
     }
     func completeBlock(sessionID: UUID, blockID: UUID, source: String = "boxer_check_in") {
@@ -984,7 +1085,7 @@ struct TrainingData: Codable {
                     completionSources: (session.blockLogs ?? []).filter { $0.blockID == block.id }.map(\.evidenceSource),
                     segments: (session.segmentLogs ?? []).filter { $0.blockID == block.id },
                     cueRequests: (session.cueRequests ?? []).filter { $0.blockID == block.id })
-            }, activityInstances: session.activityInstances)
+            }, activityInstances: session.activityInstances, activityIntervals: session.activityIntervals)
         persist()
     }
     func nextPendingWorkoutCompletion() -> WorkoutCompletionReceipt? {

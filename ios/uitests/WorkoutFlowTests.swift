@@ -214,13 +214,20 @@ final class WorkoutFlowTests: XCTestCase {
             chooser.tap()
             app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Squats,")).firstMatch.tap()
             XCTAssertTrue(chooser.label.contains("Squats"))
+            let toggle = app.buttons["workout-toggle"]
+            if toggle.label.contains(language == "fr" ? "Commencer" : "Start") { toggle.tap() }
+            let twoSeconds = NSPredicate(format: "label != %@ AND label != %@", "00:00", "00:01")
+            expectation(for: twoSeconds, evaluatedWith: app.staticTexts["workout-clock"])
+            waitForExpectations(timeout: 6)
             chooser.tap()
             app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Burpees,")).firstMatch.tap()
             XCTAssertTrue(chooser.label.contains("Burpees"))
+            Thread.sleep(forTimeInterval: 2.1)
             app.buttons["complete-manual-step"].tap()
             XCTAssertTrue(app.buttons["recap-done"].waitForExistence(timeout: 5))
             XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "candidate reps")).firstMatch.exists
                 || app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "répétitions candidates")).firstMatch.exists)
+            XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", language == "fr" ? "Squats · 0 répétitions candidates ·" : "Squats · 0 candidate reps ·")).firstMatch.exists)
             XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", language == "fr" ? "Burpees · durée seulement" : "Burpees · time only")).firstMatch.exists)
             let viewLog = app.buttons["recap-view-log"]
             reveal(viewLog, in: app)

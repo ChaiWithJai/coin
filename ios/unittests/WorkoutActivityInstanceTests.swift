@@ -72,6 +72,10 @@ import XCTest
         }
         XCTAssertEqual(ActivityMeasurementRecipe.forExercise(nil).capability, .unsupported)
         XCTAssertEqual(ActivityMeasurementRecipe.forExercise("unknown").capability, .unsupported)
+        XCTAssertEqual(ActivityMeasurementRecipe.forExercise("frontal_stance").capability, .elapsedOnly)
+        XCTAssertEqual(ActivityMeasurementRecipe.forExercise("squats").landmarkGroups.count, 2)
+        XCTAssertEqual(ActivityMeasurementRecipe.forExercise("squats").visibilityRule, "any_complete_group")
+        XCTAssertEqual(ActivityMeasurementRecipe.forExercise("squats").observationUnit, "rep_candidate")
     }
     func testOpenConditioningStartsUnchosenDespiteBroadSourceBoxingTag() throws {
         let lesson = try XCTUnwrap(WorkoutCatalog.shared.lessons.first { $0.id == "basic-w2-d1" })
@@ -84,6 +88,7 @@ import XCTest
         XCTAssertEqual(initial.measurement.capability, .unsupported)
         XCTAssertEqual(WorkoutActivityCopy.name("squat_jumps", language: "fr"), "Squats sautés")
         XCTAssertEqual(WorkoutActivityCopy.name("lunges", language: "en"), "Lunges")
+        XCTAssertEqual(WorkoutActivityCopy.name("frontal_stance", language: "fr"), "Garde de face")
     }
     func testSourceSpecifiedAndUserSelectionAreDistinctEvenForSameExercise() throws {
         let (store, folder) = makeStore()
@@ -131,7 +136,7 @@ import XCTest
         XCTAssertEqual(lineage.count, 2)
         XCTAssertEqual(lineage.last?["exercise_key"] as? String, "burpees")
         XCTAssertEqual(lineage.last?["source_item_id"] as? String, "strength-item")
-        XCTAssertEqual((lineage.last?["measurement"] as? [String: String])?["capability"], "elapsed_only")
+        XCTAssertEqual((lineage.last?["measurement"] as? [String: Any])?["capability"] as? String, "elapsed_only")
         XCTAssertNil(lineage.last?["reps"])
         XCTAssertNil(lineage.last?["success"])
         XCTAssertEqual(receipt.activityInstances, TrainingStore(directory: folder).data.sessions[0].activityInstances)

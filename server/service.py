@@ -82,6 +82,9 @@ class CompletionMeasurement(BaseModel):
     version:str=Field(max_length=40)
     capability:Literal['rep_candidate','exchange_candidate','elapsed_only','unsupported']
     validation_status:Literal['unvalidated','not_applicable']
+    landmark_groups:list[list[str]]|None=Field(default=None,max_length=4)
+    visibility_rule:Literal['any_complete_group','not_applicable']|None=None
+    observation_unit:Literal['rep_candidate','exchange_candidate','elapsed_seconds','none']|None=None
 
 class CompletionActivityInstance(BaseModel):
     instance_id:uuid.UUID
@@ -93,6 +96,19 @@ class CompletionActivityInstance(BaseModel):
     selection_provenance:Literal['source_specified','user_selected','unchosen']
     measurement:CompletionMeasurement
     selected_at_ms:int|None=Field(default=None,ge=0)
+
+class CompletionActivityInterval(BaseModel):
+    interval_id:uuid.UUID
+    block_id:uuid.UUID
+    preparation_index:int|None=Field(default=None,ge=0,le=1000)
+    activity_instance_id:uuid.UUID
+    start_elapsed_seconds:int=Field(ge=0,le=86400)
+    end_elapsed_seconds:int=Field(ge=0,le=86400)
+    elapsed_seconds:int=Field(ge=0,le=86400)
+    exit_reason:Literal['choice_changed','segment_ended','session_finished','paused']
+    closed_at_ms:int=Field(ge=0)
+    baseline_only:bool
+    evidence:Literal['workout_timer_not_verified_activity']
 
 class WorkoutCompletion(BaseModel):
     schema_version:Literal['workout-completion-v1']
@@ -106,6 +122,7 @@ class WorkoutCompletion(BaseModel):
     pose_sharing_enabled:bool
     blocks:list[CompletionBlock]=Field(max_length=500)
     activity_instances:list[CompletionActivityInstance]|None=Field(default=None,max_length=1000)
+    activity_intervals:list[CompletionActivityInterval]|None=Field(default=None,max_length=2000)
 
 class Punch(BaseModel):
     hand:Literal['lead','rear']
@@ -357,6 +374,32 @@ def workout_completion(body:WorkoutCompletion):
             raise HTTPException(422,'Activity instance references unknown block')
         if len({item.instance_id for item in body.activity_instances})!=len(body.activity_instances):
             raise HTTPException(422,'Duplicate activity instance')
+    if body.activity_intervals is not None:
+        instances={item.instance_id:item for item in body.activity_instances or []}
+        ends={}
+        interval_ids=set()
+        for interval in body.activity_intervals:
+            instance=instances.get(interval.activity_instance_id)
+            if instance is None or (instance.block_id,instance.preparation_index)!=(interval.block_id,interval.preparation_index):
+                raise HTTPException(422,'Activity interval references an unknown instance or slot')
+            if interval.interval_id in interval_ids:
+                raise HTTPException(422,'Duplicate activity interval')
+            interval_ids.add(interval.interval_id)
+            slot=(interval.block_id,interval.preparation_index)
+            previous=ends.get(slot)
+            duration=interval.end_elapsed_seconds-interval.start_elapsed_seconds
+            if duration<0 or duration!=interval.elapsed_seconds:
+                raise HTTPException(422,'Activity interval duration does not match timer bounds')
+            if interval.baseline_only:
+                if duration!=0 or previous is not None:
+                    raise HTTPException(422,'A legacy baseline must be a zero-duration first boundary')
+            elif duration==0:
+                raise HTTPException(422,'Empty activity interval is not a legacy baseline')
+            elif previous is None and interval.start_elapsed_seconds!=0:
+                raise HTTPException(422,'First activity interval needs a zero start or explicit legacy baseline')
+            if previous is not None and interval.start_elapsed_seconds<previous:
+                raise HTTPException(422,'Activity intervals overlap or regress within a slot')
+            ends[slot]=interval.end_elapsed_seconds
     record=body.model_dump(mode='json')
     payload={'session_id':str(body.session_id),'window_id':str(body.request_id),
              'captured_at':body.ended_at_ms/1000,'origin':body.runtime_origin,
@@ -370,6 +413,9 @@ def workout_completion(body:WorkoutCompletion):
                         'outputs':{'blocks':record['blocks'],'activity_instances':record.get('activity_instances'),
                                    'completion_evidence':body.completion_evidence},
                         'duration_ms':0}]}
+    # Omit the new field for old receipts so their durable retry payload stays identical.
+    if body.activity_intervals is not None:
+        payload['stages'][0]['outputs']['activity_intervals']=record['activity_intervals']
     try:
         event_id=OUTBOX.enqueue(payload,event_id=str(body.request_id))
     except ValueError as exc:

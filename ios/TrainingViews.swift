@@ -439,7 +439,17 @@ private struct WorkoutActivityEvidenceView: View {
         return all.filter { instance in
             instance.selectionProvenance == .userSelected
                 || instance.measurement.capability == .repCandidate
+                || (instance.exerciseKey != nil && session.activityElapsedSeconds(instanceID: instance.id) > 0)
         }
+    }
+    private var attributedSeconds: Int {
+        let visibleIDs = Set(visibleInstances.map(\.id))
+        return (session.activityIntervals ?? []).filter { visibleIDs.contains($0.activityInstanceID) }
+            .reduce(0) { $0 + $1.elapsedSeconds }
+    }
+    private var workSeconds: Int {
+        (session.segmentLogs ?? []).filter { $0.blockID == block.id && !$0.isRest }
+            .reduce(0) { $0 + $1.elapsedSeconds }
     }
 
     var body: some View {
@@ -449,12 +459,16 @@ private struct WorkoutActivityEvidenceView: View {
                     let name = WorkoutActivityCopy.name(instance.exerciseKey,
                         customName: instance.customName, language: language)
                     let count = (session.exerciseReps ?? []).filter { $0.activityInstanceID == instance.id }.count
+                    let seconds = (session.activityIntervals ?? []).filter { $0.activityInstanceID == instance.id }
+                        .reduce(0) { $0 + $1.elapsedSeconds }
+                    let timed = seconds > 0 ? String(format: " · %02d:%02d %@", seconds / 60, seconds % 60,
+                        language == "fr" ? "au chrono" : "timed") : ""
                     Text(instance.measurement.capability == .repCandidate
-                         ? (language == "fr" ? "\(name) · \(count) répétitions candidates" : "\(name) · \(count) candidate reps")
-                         : (language == "fr" ? "\(name) · durée seulement" : "\(name) · time only"))
+                         ? (language == "fr" ? "\(name) · \(count) répétitions candidates\(timed)" : "\(name) · \(count) candidate reps\(timed)")
+                         : (language == "fr" ? "\(name) · durée seulement\(timed)" : "\(name) · time only\(timed)"))
                         .font(.caption2).foregroundStyle(Noir.muted)
                 }
-                if visibleInstances.count > 1 {
+                if workSeconds > attributedSeconds {
                     Text(language == "fr" ? "Durée par mouvement non attribuée" : "Time per movement not attributed")
                         .font(.caption2).foregroundStyle(Noir.muted)
                 }

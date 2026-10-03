@@ -691,12 +691,25 @@ struct LiveWorkoutView: View {
         return current.block.activityChoiceFamily == "conditioning" || current.activityKey == "mobility"
     }
     private func chooseActivity(_ key: String?) {
+        captureElapsedFromDeadline()
+        let previous = current.flatMap { activityInstance(for: $0) }
         guard let current, training.selectActivity(sessionID: sessionID, blockID: current.block.id,
             preparationIndex: current.preparationIndex, exerciseKey: key,
             customName: key == "custom" ? customActivityName : nil) else { return }
+        if let previous, activityInstance(for: current)?.id != previous.id {
+            recordActivityInterval(for: current, instanceID: previous.id, reason: .choiceChanged)
+        }
         squatTracker = SquatTracker()
         camera.resetExchanges()
         showActivityChoice = false
+    }
+    private func recordActivityInterval(for segment: Segment, instanceID: UUID? = nil,
+                                        reason: ActivityIntervalExitReason) {
+        guard !segment.isRest, let instanceID = instanceID ?? activityInstance(for: segment)?.id else { return }
+        let elapsed = segment.isManual ? manualElapsed : max(0, segment.seconds - remaining)
+        training.recordActivityInterval(sessionID: sessionID, blockID: segment.block.id,
+            preparationIndex: segment.preparationIndex, activityInstanceID: instanceID,
+            cumulativeElapsedSeconds: elapsed, exitReason: reason)
     }
     private var boxingFocus: String? {
         guard let current, current.block.kind == .boxing, !current.isRest, current.block.sourceTitle == nil else { return nil }
@@ -1029,14 +1042,16 @@ struct LiveWorkoutView: View {
             NavigationStack {
                 List {
                     Section(language == "fr" ? "Mouvement pour ce segment" : "Movement for this segment") {
-                        ForEach(["jumping_jacks", "burpees", "box_jumps", "squat_jumps", "squats", "lunges", "mobility"], id: \.self) { key in
+                        ForEach(["jumping_jacks", "burpees", "box_jumps", "squat_jumps", "squats", "lunges", "frontal_stance", "shadowboxing", "mobility"], id: \.self) { key in
                             Button {
                                 chooseActivity(key)
                             } label: {
                                 VStack(alignment: .leading, spacing: 3) {
                                     Text(activityLabel(key))
-                                    Text(key == "squats" || key == "lunges"
+                                    Text(ActivityMeasurementRecipe.forExercise(key).capability == .repCandidate
                                          ? (language == "fr" ? "Répétitions candidates · non validées" : "Candidate reps · unvalidated")
+                                         : ActivityMeasurementRecipe.forExercise(key).capability == .exchangeCandidate
+                                         ? (language == "fr" ? "Échanges candidats · non validés" : "Candidate exchanges · unvalidated")
                                          : (language == "fr" ? "Durée seulement · aucun comptage de pose" : "Time only · no pose count"))
                                         .font(.caption).foregroundStyle(Noir.muted)
                                 }
@@ -1136,6 +1151,7 @@ struct LiveWorkoutView: View {
     private func advance(completed: Bool = false) {
         guard let current else { return }
         captureElapsedFromDeadline()
+        recordActivityInterval(for: current, reason: .segmentEnded)
         flushTimedSeconds()
         training.recordSegment(sessionID: sessionID, blockID: current.block.id,
                                activityKey: loggedActivityKey(for: current), isRest: current.isRest,
@@ -1216,6 +1232,7 @@ struct LiveWorkoutView: View {
     private func finishWorkout() {
         guard workout?.state == .active else { return }
         captureElapsedFromDeadline()
+        if let current { recordActivityInterval(for: current, reason: .sessionFinished) }
         if let current, current.block.kind == .boxing, !current.isRest { submitRound(current) }
         flushTimedSeconds()
         if let current {
@@ -1244,6 +1261,7 @@ struct LiveWorkoutView: View {
     }
     private func pause() {
         captureElapsedFromDeadline()
+        if let current { recordActivityInterval(for: current, reason: .paused) }
         flushTimedSeconds()
         if let deadline { remaining = max(0, Int(ceil(deadline.timeIntervalSinceNow))) }
         deadline = nil
