@@ -79,6 +79,62 @@ struct SourceWorkoutFrenchOverlay: Decodable {
         }
         return byID
     }
+
+    /// Resolve every expanded runtime line against its pinned source item. A
+    /// single unmappable line rejects the entire day, so a session never mixes
+    /// French headings with English exercise instructions.
+    func localizedBlocks(for lesson: WorkoutLesson, blocks: [SessionBlock]) -> [SessionBlock]? {
+        guard let copyByID = validated(for: lesson) else { return nil }
+        let sourceByID = Dictionary(uniqueKeysWithValues: lesson.blocks.map { ($0.id, $0) })
+        var result: [SessionBlock] = []
+        for block in blocks {
+            guard let sourceID = block.sourceBlockID,
+                  let source = sourceByID[sourceID],
+                  let copy = copyByID[sourceID],
+                  let localized = localizedText(for: block, source: source, copy: copy) else { return nil }
+            var translated = block
+            translated.localizedSourceTitleFR = localized.title
+            translated.localizedSourceInstructionsFR = localized.instructions
+            result.append(translated)
+        }
+        return result
+    }
+
+    private func localizedText(for block: SessionBlock, source: WorkoutSourceBlock,
+                               copy: Block) -> (title: String, instructions: String)? {
+        if block.sourceTitle == source.title && block.sourceInstructions == source.instructions {
+            return (copy.titleFR, copy.instructionsFR)
+        }
+        let byID = Dictionary(uniqueKeysWithValues: copy.sourceItems.map { ($0.itemID, $0) })
+        if let steps = source.manualSteps,
+           let itemID = block.sourceItemID,
+           let step = steps.first(where: { $0.item.id == itemID }),
+           block.sourceTitle == step.item.text,
+           block.sourceInstructions == step.instructions,
+           let itemCopy = byID[itemID] {
+            // Each generated line must be one complete source item. Repeated
+            // identical source lines may resolve only to identical translations.
+            var byText: [String: String] = [:]
+            for item in source.sourceItems ?? [] {
+                guard let translated = byID[item.id]?.textFR else { return nil }
+                if let previous = byText[item.text], previous != translated { return nil }
+                byText[item.text] = translated
+            }
+            let lines = step.instructions.components(separatedBy: "\n")
+            let translatedLines = lines.map { byText[$0] }
+            guard translatedLines.allSatisfy({ $0 != nil }) else { return nil }
+            return (itemCopy.textFR, translatedLines.compactMap { $0 }.joined(separator: "\n"))
+        }
+        if let roundItems = source.reviewedPadRoundItems,
+           let itemID = block.sourceItemID,
+           let item = roundItems.first(where: { $0.id == itemID }),
+           block.sourceTitle == item.text,
+           block.sourceInstructions == source.title + "\n" + item.text,
+           let itemCopy = byID[itemID] {
+            return (itemCopy.textFR, copy.titleFR + "\n" + itemCopy.textFR)
+        }
+        return nil
+    }
 }
 
 extension SessionBlock {

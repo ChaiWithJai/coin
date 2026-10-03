@@ -103,22 +103,9 @@ struct WorkoutLesson: Decodable, Identifiable {
         }
         var localizedTitleFR: String?
         if let overlay = SourceWorkoutFrenchOverlay.bundled(for: id),
-           let copyByID = overlay.validated(for: self),
-           sessionBlocks.allSatisfy({ block in
-               guard let sourceID = block.sourceBlockID,
-                     let sourceCopy = copyByID[sourceID] else { return false }
-               return block.sourceTitle == sourceCopy.sourceTitle &&
-                   block.sourceInstructions == sourceCopy.sourceInstructions
-           }) {
+           let localizedBlocks = overlay.localizedBlocks(for: self, blocks: sessionBlocks) {
             localizedTitleFR = overlay.sourceTitleFR
-            sessionBlocks = sessionBlocks.map { block in
-                var localized = block
-                if let sourceID = block.sourceBlockID, let sourceCopy = copyByID[sourceID] {
-                    localized.localizedSourceTitleFR = sourceCopy.titleFR
-                    localized.localizedSourceInstructionsFR = sourceCopy.instructionsFR
-                }
-                return localized
-            }
+            sessionBlocks = localizedBlocks
         }
         let seconds = sessionBlocks.reduce(0) { $0 + $1.effectiveSeconds + $1.effectiveRestSeconds }
         return TrainingTemplate(id: id, durationMinutes: Int(ceil(Double(seconds) / 60)),
@@ -154,7 +141,7 @@ struct WorkoutSourceItem: Decodable {
     let demoURLs: [String]?
 }
 
-private extension WorkoutSourceBlock {
+extension WorkoutSourceBlock {
     var reviewedWholeBlockItemID: String? {
         activityKey == nil && reviewedWholeBlockActivityKey == "squat_jumps" ? sourceItems?.first?.id : nil
     }

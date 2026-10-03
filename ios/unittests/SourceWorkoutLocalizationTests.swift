@@ -14,6 +14,23 @@ import XCTest
                                         from: JSONSerialization.data(withJSONObject: raw))
     }
 
+    private func syntheticReviewedOverlay(for lesson: WorkoutLesson) throws -> SourceWorkoutFrenchOverlay {
+        let raw: [String: Any] = [
+            "schemaVersion": 1, "lessonID": lesson.id, "sourceSHA256": lesson.sourceSHA256,
+            "sourceTitleFR": "Séance test", "status": "reviewed", "reviewFlags": [:],
+            "blocks": lesson.blocks.map { block in
+                ["blockID": block.id, "sourceTitle": block.title,
+                 "sourceInstructions": block.instructions, "titleFR": "FR " + block.title,
+                 "instructionsFR": "FR " + block.instructions,
+                 "sourceItems": (block.sourceItems ?? []).map { item in
+                    ["itemID": item.id, "sourceText": item.text, "textFR": "FR " + item.text]
+                 }] as [String: Any]
+            },
+        ]
+        return try JSONDecoder().decode(SourceWorkoutFrenchOverlay.self,
+            from: JSONSerialization.data(withJSONObject: raw))
+    }
+
     func testCompletePinnedDayDisplaysFrenchWithoutChangingSourceOrTiming() throws {
         let lesson = try lesson
         let overlay = try XCTUnwrap(SourceWorkoutFrenchOverlay.bundled)
@@ -96,5 +113,44 @@ import XCTest
         XCTAssertNil(reviewed.validated(for: original))
         XCTAssertNil(SourceWorkoutFrenchOverlay.bundled(for: futureID))
         XCTAssertNil(SourceWorkoutFrenchOverlay.bundled(for: "../BasicW1D1French"))
+    }
+
+    func testExpandedManualStepsTranslateExactSourceItemLines() throws {
+        let lesson = try XCTUnwrap(WorkoutCatalog.shared.lessons.first { $0.id == "basic-w1-d6" })
+        let english = lesson.template().blocks
+        let overlay = try syntheticReviewedOverlay(for: lesson)
+        let localized = try XCTUnwrap(overlay.localizedBlocks(for: lesson, blocks: english))
+        XCTAssertGreaterThan(localized.count, 1)
+        XCTAssertEqual(localized.map(\.sourceItemID), english.map(\.sourceItemID))
+        XCTAssertEqual(localized.map(\.sourceInstructions), english.map(\.sourceInstructions))
+        XCTAssertTrue(localized.allSatisfy { $0.localizedSourceTitleFR == "FR " + ($0.sourceTitle ?? "") })
+        XCTAssertTrue(localized.allSatisfy { block in
+            let englishLines = (block.sourceInstructions ?? "").components(separatedBy: "\n")
+            let frenchLines = (block.localizedSourceInstructionsFR ?? "").components(separatedBy: "\n")
+            return frenchLines == englishLines.map { "FR " + $0 }
+        })
+        var bad = english
+        bad[1].sourceInstructions = (bad[1].sourceInstructions ?? "") + "\nUNMAPPED"
+        XCTAssertNil(overlay.localizedBlocks(for: lesson, blocks: bad))
+    }
+
+    func testPadRoundFocusUsesExactItemAndHeading() throws {
+        let lesson = try XCTUnwrap(WorkoutCatalog.shared.lessons.first { $0.id == "competitive-w1-d4" })
+        let english = lesson.template().blocks
+        let overlay = try syntheticReviewedOverlay(for: lesson)
+        let localized = try XCTUnwrap(overlay.localizedBlocks(for: lesson, blocks: english))
+        let padID = "competitive-w1-d4-p8-s4-1"
+        let rounds = localized.filter { $0.sourceBlockID == padID }
+        XCTAssertEqual(rounds.count, 5)
+        XCTAssertEqual(Set(rounds.compactMap(\.sourceItemID)).count, 5)
+        for round in rounds {
+            XCTAssertEqual(round.localizedSourceTitleFR, "FR " + (round.sourceTitle ?? ""))
+            XCTAssertEqual(round.localizedSourceInstructionsFR,
+                           "FR VIRTUAL PAD WORK (5 ROUNDS OF 3 MINUTES)\nFR " + (round.sourceTitle ?? ""))
+        }
+        var bad = english
+        let index = try XCTUnwrap(bad.firstIndex { $0.sourceBlockID == padID })
+        bad[index].sourceTitle = "DIFFERENT FOCUS"
+        XCTAssertNil(overlay.localizedBlocks(for: lesson, blocks: bad))
     }
 }
