@@ -3,7 +3,8 @@ import XCTest
 final class WorkoutFlowTests: XCTestCase {
     override func setUpWithError() throws { continueAfterFailure = false }
 
-    private func application(language: String, directory: String = UUID().uuidString, shortFreestyle: Bool = false) -> XCUIApplication {
+    private func application(language: String, directory: String = UUID().uuidString, shortFreestyle: Bool = false,
+                             activityFixture: Bool = false) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["-noAutoStart", "-language", language]
         app.launchEnvironment["COIN_TRAINING_DIRECTORY"] = "workout-ui-" + directory
@@ -13,6 +14,7 @@ final class WorkoutFlowTests: XCTestCase {
             app.launchEnvironment["COIN_TEST_FREESTYLE"] = "1"
             app.launchEnvironment["COIN_TEST_ROUND_REVIEW"] = "1"
         }
+        if activityFixture { app.launchEnvironment["COIN_TEST_ACTIVITY_CHOOSER"] = "1" }
         app.launch()
         return app
     }
@@ -200,5 +202,37 @@ final class WorkoutFlowTests: XCTestCase {
         reveal(reflection, in: app)
         XCTAssertTrue(reflection.exists)
         attach("freestyle-finished-saved-review", app: app)
+    }
+
+    func testChangedConditioningChoicePersistsInRecapAndSavedReview() throws {
+        for language in ["en", "fr"] {
+            let directory = UUID().uuidString
+            let app = application(language: language, directory: directory, activityFixture: true)
+            app.buttons["start-workout"].tap()
+            let chooser = app.buttons["workout-activity-choice"]
+            XCTAssertTrue(chooser.waitForExistence(timeout: 5))
+            chooser.tap()
+            app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Squats,")).firstMatch.tap()
+            XCTAssertTrue(chooser.label.contains("Squats"))
+            chooser.tap()
+            app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Burpees,")).firstMatch.tap()
+            XCTAssertTrue(chooser.label.contains("Burpees"))
+            app.buttons["complete-manual-step"].tap()
+            XCTAssertTrue(app.buttons["recap-done"].waitForExistence(timeout: 5))
+            XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "candidate reps")).firstMatch.exists
+                || app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "répétitions candidates")).firstMatch.exists)
+            XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", language == "fr" ? "Burpees · durée seulement" : "Burpees · time only")).firstMatch.exists)
+            let viewLog = app.buttons["recap-view-log"]
+            reveal(viewLog, in: app)
+            viewLog.tap()
+            XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", language == "fr" ? "Burpees · durée seulement" : "Burpees · time only")).firstMatch.waitForExistence(timeout: 3))
+            app.terminate()
+            let reopened = application(language: language, directory: directory, activityFixture: true)
+            let saved = reopened.buttons["saved-session-activity-choice-ui-v1"]
+            reveal(saved, in: reopened)
+            saved.tap()
+            XCTAssertTrue(reopened.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", language == "fr" ? "Burpees · durée seulement" : "Burpees · time only")).firstMatch.waitForExistence(timeout: 3))
+            reopened.terminate()
+        }
     }
 }

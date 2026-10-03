@@ -1,0 +1,112 @@
+{
+  "scope": "basic-w1-d6 exact ten source items",
+  "job_id": "5afbb7faf64059a11e3b990067e8f893dc34aad4256070ca28d62271e9cec9b9",
+  "catalog_sha256": "dd1c6b7e2815ef6bd31ad461e6ad8de8063ae7ce2455a3b632888d177146b70c",
+  "item_count": 10,
+  "all_finished": true,
+  "model_calls": 0,
+  "actual_cost_usd": null,
+  "cost_note": "Deterministic normalization used zero model tokens; infrastructure cost and billed total unknown.",
+  "items": [
+    {
+      "source_item_id": "p8-b7",
+      "exercise_key": "pallof_press",
+      "measurement_capability": "elapsed_only",
+      "run_id": "0e038cae923c4992851dfeec7be7b4f2",
+      "trace_id": "tr-2c9e80268e60198190216753b06e832f",
+      "state": "FINISHED",
+      "outbox_state": "delivered",
+      "inference_performed": false
+    },
+    {
+      "source_item_id": "p8-b17",
+      "exercise_key": "inverted_row",
+      "measurement_capability": "elapsed_only",
+      "run_id": "9d61edd94bc740e7bcb1d66d0280fbca",
+      "trace_id": "tr-9fb30c0196d737636cab5b85fa41a1eb",
+      "state": "FINISHED",
+      "outbox_state": "delivered",
+      "inference_performed": false
+    },
+    {
+      "source_item_id": "p8-b9",
+      "exercise_key": "scap_pushups",
+      "measurement_capability": "elapsed_only",
+      "run_id": "f2ed3456c21946419618a7ea450fe7c6",
+      "trace_id": "tr-f403fd6929157de8d0f739532c329981",
+      "state": "FINISHED",
+      "outbox_state": "delivered",
+      "inference_performed": false
+    },
+    {
+      "source_item_id": "p8-b11",
+      "exercise_key": "kettlebell_swing",
+      "measurement_capability": "elapsed_only",
+      "run_id": "d0487c84a58f4d88a76216b0e7a14504",
+      "trace_id": "tr-6ad75cdc6366643d5d09182cc82b8eb1",
+      "state": "FINISHED",
+      "outbox_state": "delivered",
+      "inference_performed": false
+    },
+    {
+      "source_item_id": "p8-b16",
+      "exercise_key": "stretch_series",
+      "measurement_capability": "elapsed_only",
+      "run_id": "271bb1cbe94c4c37a1b608ba3a298525",
+      "trace_id": "tr-92cf88432b52b8dd058b91948f50c058",
+      "state": "FINISHED",
+      "outbox_state": "delivered",
+      "inference_performed": false
+    },
+    {
+      "source_item_id": "p8-b18",
+      "exercise_key": "dumbbell_overhead_walk",
+      "measurement_capability": "elapsed_only",
+      "run_id": "7f891ba32b6c41a4a74c86fa53783602",
+      "trace_id": "tr-d4df3f6b0cb66ce30dd8199ef2854297",
+      "state": "FINISHED",
+      "outbox_state": "delivered",
+      "inference_performed": false
+    },
+    {
+      "source_item_id": "p8-b8",
+      "exercise_key": "hip_airplanes",
+      "measurement_capability": "elapsed_only",
+      "run_id": "3fdd126ae8f44151aa0a10518c0fb8ef",
+      "trace_id": "tr-111b3825b60a64ee8918f4cf81e4d1ad",
+      "state": "FINISHED",
+      "outbox_state": "delivered",
+      "inference_performed": false
+    },
+    {
+      "source_item_id": "p8-b15",
+      "exercise_key": "plyo_pushups",
+      "measurement_capability": "elapsed_only",
+      "run_id": "ac4db465ea6948408bf6e0439dfd7adf",
+      "trace_id": "tr-f7ea6a8e6601c93aa76c2c20ccf1607a",
+      "state": "FINISHED",
+      "outbox_state": "delivered",
+      "inference_performed": false
+    },
+    {
+      "source_item_id": "p8-b10",
+      "exercise_key": "depth_drop",
+      "measurement_capability": "elapsed_only",
+      "run_id": "8a03da22f0c84ecca255d5c605da5b55",
+      "trace_id": "tr-bca7e4fd00ef7b25d5c5736ef7be75f9",
+      "state": "FINISHED",
+      "outbox_state": "delivered",
+      "inference_performed": false
+    },
+    {
+      "source_item_id": "p8-b6",
+      "exercise_key": "squats",
+      "measurement_capability": "rep_candidate",
+      "run_id": "05da5cade60c41e7bdbbdfc0f8f5ce5c",
+      "trace_id": "tr-47ca90a53f0560540ac58a8fc5a3c245",
+      "state": "FINISHED",
+      "outbox_state": "delivered",
+      "inference_performed": false
+    }
+  ]
+}

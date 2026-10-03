@@ -73,6 +73,18 @@ import XCTest
         XCTAssertEqual(ActivityMeasurementRecipe.forExercise(nil).capability, .unsupported)
         XCTAssertEqual(ActivityMeasurementRecipe.forExercise("unknown").capability, .unsupported)
     }
+    func testOpenConditioningStartsUnchosenDespiteBroadSourceBoxingTag() throws {
+        let lesson = try XCTUnwrap(WorkoutCatalog.shared.lessons.first { $0.id == "basic-w2-d1" })
+        let block = try XCTUnwrap(lesson.template().blocks.first { $0.activityChoiceFamily == "conditioning" })
+        XCTAssertNil(block.sourceActivityKey)
+        XCTAssertEqual(block.kind, .boxing)
+        let initial = try XCTUnwrap(WorkoutActivityInstance.initial(for: block, at: Date()).first)
+        XCTAssertNil(initial.exerciseKey)
+        XCTAssertEqual(initial.selectionProvenance, .unchosen)
+        XCTAssertEqual(initial.measurement.capability, .unsupported)
+        XCTAssertEqual(WorkoutActivityCopy.name("squat_jumps", language: "fr"), "Squats sautés")
+        XCTAssertEqual(WorkoutActivityCopy.name("lunges", language: "en"), "Lunges")
+    }
     func testSourceSpecifiedAndUserSelectionAreDistinctEvenForSameExercise() throws {
         let (store, folder) = makeStore()
         defer { try? FileManager.default.removeItem(at: folder) }

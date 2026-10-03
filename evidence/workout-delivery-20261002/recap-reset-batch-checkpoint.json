@@ -1,0 +1,26 @@
+{
+  "date_local": "2026-10-02 20:13 America/New_York",
+  "coin_bundle_id": "com.coinboxing.prototype",
+  "simulator_result": "/tmp/coin-workout-derived/Logs/Test/Test-Coin-2026.10.02_20-07-24--0400.xcresult",
+  "simulator_passed": 79,
+  "simulator_failed": 0,
+  "server_tests_passed": 55,
+  "phone_install_url": "/private/var/containers/Bundle/Application/E265981B-76B4-40C6-8905-6A28DB02EDDD/Coin.app/",
+  "phone_binary_sha256": "76b4686efd942696b0adadeb8c401c8d756a940f9c89410f57c8726f41e1efd1",
+  "phone_launch": "denied_locked",
+  "gb10_service_pid": 2833502,
+  "gb10_service_sha256": "60e238c2ab0fc8d0e3f6f11c88b0c1a49b59f87eb4ae51d5b2c9fff45fc7321f",
+  "gb10_round_harness_sha256": "0ca97e0e51fecadc216290fd50948f0a622421fe782a22ec24ca4b33d114dcc7",
+  "gb10_forwarder_pid": 2526383,
+  "reset_replay_evidence": "reset-evidence-replay-checkpoint.json",
+  "item_batch_evidence": "source-item-batch-checkpoint.json",
+  "codex_usage_mlflow_run_id": "c59d2feafc574b93b4664fb9f5a2c7a5",
+  "actual_billed_usd": null,
+  "remaining": [
+    "Real phone workout and reset evidence on new frames not verified",
+    "Mid-segment choice time remains unattributed",
+    "Source instructions remain English",
+    "Batch item normalization scoped to ten items",
+    "TestFlight readiness not verified"
+  ]
+}

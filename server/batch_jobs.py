@@ -19,6 +19,7 @@ from contextlib import contextmanager
 
 VERSION = 'completed-round-batch-v2.1'
 CURRICULUM_VERSION = 'source-annotation-atomic-v2.1'
+SOURCE_ITEM_VERSION = 'source-item-normalization-v1'
 MAX_EXCHANGES = 200
 MAX_INPUT_BYTES = 2_000_000
 
@@ -38,6 +39,80 @@ def encoded(value):
 
 def digest(value):
     return hashlib.sha256(encoded(value).encode()).hexdigest()
+
+
+def normalize_day_six_items(catalog):
+    """Normalize a bounded, reviewed source list; never infer performed movements.
+
+    Unknown item text stays in the proposal with unsupported measurement. Missing,
+    duplicate or extra source items fail coverage rather than silently disappearing.
+    """
+    workout_id, block_id = 'basic-w1-d6', 'basic-w1-d6-p8-s1-1'
+    exact = {
+        'p8-b6': ('Squat', 'squats'),
+        'p8-b7': ('Pallof Press', 'pallof_press'),
+        'p8-b8': ('Hip Airplanes', 'hip_airplanes'),
+        'p8-b9': ('Scap Push-Up', 'scap_pushups'),
+        'p8-b10': ('Depth Drop', 'depth_drop'),
+        'p8-b11': ('Kettlebell Swing', 'kettlebell_swing'),
+        'p8-b16': ('Stretch Series', 'stretch_series'),
+        'p8-b15': ('Plyo Push-Up', 'plyo_pushups'),
+        'p8-b17': ('Inverted Row', 'inverted_row'),
+        'p8-b18': ('Dumbbell Overhead Walk (20 Steps Each)', 'dumbbell_overhead_walk'),
+    }
+    context = {'p8-b1': 'WARM UP:', 'p8-b2': 'LIFT #3 WARM UP:',
+               'p8-b3': '3 SETS OF 10 REPS EACH EXERCISE',
+               'p8-b12': '2 SETS OF 5-8 REPS EACH EXERCISE'}
+    workouts = [w for w in catalog.get('workouts', []) if w.get('id') == workout_id]
+    if len(workouts) != 1:
+        raise ValueError('Expected exactly one basic-w1-d6 workout')
+    workout = workouts[0]
+    blocks = [b for b in workout.get('blocks', []) if b.get('id') == block_id]
+    if len(blocks) != 1 or blocks[0].get('completion') != 'manual':
+        raise ValueError('Expected the manual day-six warm-up source block')
+    block = blocks[0]
+    items = block.get('sourceItems', [])
+    ids = [item.get('id') for item in items]
+    if len(ids) != len(set(ids)) or set(ids) != set(exact) | set(context):
+        raise ValueError('Day-six item coverage changed: missing, duplicate or extra source items')
+    if not isinstance(workout.get('sourceSHA256'), str) or not workout['sourceSHA256']:
+        raise ValueError('Missing immutable workout source hash')
+    for item in items:
+        if not isinstance(item.get('text'), str) or not item['text'].strip() or len(item['text']) > 2000:
+            raise ValueError('Invalid bounded source item text')
+        if item['id'] in context and item['text'] != context[item['id']]:
+            raise ValueError('Source group prescription or heading changed; review scope again')
+    catalog_sha, proposals, prescription = digest(catalog), [], None
+    for item in items:
+        item_id, text = item['id'], item['text']
+        if item_id in context:
+            if item_id in ('p8-b3', 'p8-b12'):
+                prescription = {'source_item_id': item_id, 'text': text}
+            continue
+        if prescription is None:
+            raise ValueError('Exercise item precedes its source prescription')
+        expected, exercise_key = exact[item_id]
+        if text != expected:
+            exercise_key = None
+        recipe = ({'id': 'none', 'version': 'v1', 'capability': 'unsupported', 'validation_status': 'not_applicable'}
+                  if exercise_key is None else
+                  {'id': 'mediapipe-squat-angle', 'version': 'v1', 'capability': 'rep_candidate', 'validation_status': 'unvalidated'}
+                  if exercise_key == 'squats' else
+                  {'id': 'session-clock', 'version': 'v1', 'capability': 'elapsed_only', 'validation_status': 'not_applicable'})
+        proposal_id = digest({'catalog_sha256': catalog_sha, 'source_block_id': block_id,
+                              'source_item_id': item_id, 'normalization_version': SOURCE_ITEM_VERSION,
+                              'measurement': recipe})
+        proposals.append({'proposal_id': proposal_id, 'workout_id': workout_id,
+                          'catalog_sha256': catalog_sha, 'source_sha256': workout['sourceSHA256'],
+                          'source_block_id': block_id, 'source_item_id': item_id,
+                          'source_text': text, 'source_text_sha256': digest(text),
+                          'source_prescription': dict(prescription), 'source_url': block.get('sourceURL', workout.get('sourceURL')),
+                          'demo_urls': item.get('demoURLs', []), 'exercise_key': exercise_key,
+                          'normalization_status': 'exact_source_match' if exercise_key else 'unknown',
+                          'measurement': recipe, 'normalization_version': SOURCE_ITEM_VERSION,
+                          'review_state': 'source_rule_proposal_not_promoted',
+                          'evidence_status': 'prescription_only_not_observed_activity'})
+    return proposals
 
 
 def validate_round(record):
@@ -165,6 +240,29 @@ class Store:
                         'source_text_sha256': digest(block['sourceText']), 'workout_id': workout['id']}
                 db.execute('INSERT INTO items(job_id,item_id,kind,input) VALUES(?,?,?,?)',
                            (job_id, 'workout:' + block['id'], 'workout', encoded(data)))
+        return job_id
+
+    def submit_source_items(self, catalog):
+        """Create a separate completed deterministic job; section-level jobs stay intact."""
+        proposals = normalize_day_six_items(catalog)
+        provenance = {'origin': 'source_curriculum', 'source_id': 'basic-w1-d6',
+                      'catalog_sha256': digest(catalog), 'annotation_version': SOURCE_ITEM_VERSION}
+        job_id = digest({'provenance': provenance, 'proposal_ids': [p['proposal_id'] for p in proposals]})
+        with self.db() as db:
+            if db.execute('SELECT 1 FROM jobs WHERE id=?', (job_id,)).fetchone():
+                return job_id
+            db.execute('INSERT INTO jobs VALUES(?,?,?,?,?)',
+                       (job_id, encoded(catalog), encoded(provenance), 'complete', time.time()))
+            for proposal in proposals:
+                item_id = 'source-item:' + proposal['proposal_id']
+                output = encoded({'result': proposal, 'prompt_version': SOURCE_ITEM_VERSION,
+                                  'inference_performed': False, 'cache_hit': False,
+                                  'usage': {'prompt_tokens': 0, 'completion_tokens': 0, 'total_tokens': 0},
+                                  'actual_cost_usd': None, 'estimated_cost_usd': None, 'duration_ms': 0})
+                db.execute('INSERT INTO items(job_id,item_id,kind,input,state,attempts,output) VALUES(?,?,?,?,?,?,?)',
+                           (job_id, item_id, 'source_item', encoded(proposal), 'complete', 1, output))
+                db.execute('INSERT INTO attempts VALUES(?,?,?,?,?,?,?)',
+                           (job_id, item_id, 1, 'complete', output, None, '{}'))
         return job_id
 
     def control(self, job_id, action):
@@ -553,6 +651,7 @@ def main():
     submit.add_argument('file', help='JSON object with round and provenance keys')
     submit.add_argument('--job-id')
     sub.add_parser('submit-catalog').add_argument('file', help='Immutable compiled workout catalog JSON')
+    sub.add_parser('submit-source-items').add_argument('file', help='Normalize only the ten basic-w1-d6 source items, without inference')
     for cmd in ('pause', 'resume', 'retry'):
         sub.add_parser(cmd).add_argument('job_id')
     sub.add_parser('status').add_argument('--job-id')
@@ -569,6 +668,8 @@ def main():
         print(store.submit(data['round'], data['provenance'], args.job_id))
     elif args.command == 'submit-catalog':
         print(store.submit_catalog(json.loads(Path(args.file).read_text())))
+    elif args.command == 'submit-source-items':
+        print(store.submit_source_items(json.loads(Path(args.file).read_text())))
     elif args.command in ('pause', 'resume', 'retry'):
         store.control(args.job_id, args.command)
         print(encoded(store.inspect(args.job_id)))

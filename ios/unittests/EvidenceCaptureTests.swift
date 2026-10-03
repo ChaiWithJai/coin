@@ -6,7 +6,8 @@ final class EvidenceCaptureTests: XCTestCase {
         LabeledExchange(id: 3, startMs: 1000, endMs: 1600,
                         punches: [ExchangePunch(hand: "lead", atMs: 1000, peakSpeed: 9, rearHandLow: true),
                                   ExchangePunch(hand: "rear", atMs: 1600, peakSpeed: 10, rearHandLow: false)],
-                        opener: "probe", resetMs: nil, lateralShift: 0.1, cue: nil)
+                        opener: "probe", resetMs: nil, lateralShift: 0.1, cue: nil,
+                        resetEvidence: ResetEvidence(status: .notDetected, observedDurationMs: 1600, windowDurationMs: 1600))
     }
 
     func testEachFaultPicksTheMomentThatShowsIt() {

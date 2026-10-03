@@ -13,6 +13,9 @@ SMALL_URL = os.environ.get('COIN_SMALL_URL', 'http://127.0.0.1:8712')   # 9B dec
 REPORT_URL = os.environ.get('COIN_REPORT_URL', 'http://127.0.0.1:8712')  # 9B writes the report (the family's cap for Coin)
 
 DRILLS = {
+    'review_evidence': {'fault': None,
+        'fr': 'Continue le travail prévu. Vérifie les images avant de choisir une correction.',
+        'en': 'Continue the planned work. Review the footage before choosing a correction.'},
     'guard_return': {'fault': 'rear_hand_low',
         'fr': 'Jab isolé au ralenti, main arrière collée au visage, puis retour en garde avant le suivant. 3 séries de 10.',
         'en': 'Slow single jabs with the rear hand glued to your face, back to guard before the next one. 3 sets of 10.'},
@@ -40,7 +43,7 @@ def main_issue(fault_counts, commits, n):
     """The one thing to fix, chosen by code: the most frequent fault, or committing without probing."""
     ranked = sorted(fault_counts.items(), key=lambda kv: (-kv[1], list(ISSUE_FOR_FAULT).index(kv[0])))
     if commits / max(n, 1) >= 0.6 and (not ranked or ranked[0][1] < commits): return 'probe_then_commit'
-    return ISSUE_FOR_FAULT[ranked[0][0]] if ranked else 'probe_then_commit'
+    return ISSUE_FOR_FAULT[ranked[0][0]] if ranked else 'review_evidence'
 
 
 CHOICES = {
@@ -64,16 +67,30 @@ def _post(url, body, timeout):
         return json.load(r)
 
 
+def reset_status(ex):
+    """Missing legacy measurements are unknown, not negative technique labels."""
+    reset = ex.get('resetMs')
+    if isinstance(reset, (int, float)) and not isinstance(reset, bool) and math.isfinite(reset) and reset >= 0:
+        return 'observed'
+    evidence = ex.get('resetEvidence') or {}
+    window, observed = evidence.get('windowDurationMs'), evidence.get('observedDurationMs')
+    if (evidence.get('version') == 'pose-reset-observability-v1'
+            and evidence.get('status') == 'not_detected'
+            and type(window) is int and type(observed) is int and 0 < window <= 10000 and observed == window):
+        return 'not_detected'
+    return 'unobservable'
+
+
 def describe(ex):
     hands = ' '.join(p['hand'] for p in ex['punches'])
     gaps = [ex['punches'][i + 1]['atMs'] - ex['punches'][i]['atMs'] for i in range(len(ex['punches']) - 1)]
     faults = [f for f, on in (('rear_hand_low', any(p['rearHandLow'] for p in ex['punches'])),
-                              ('no_reset', ex.get('resetMs') is None),
+                              ('no_reset', reset_status(ex) == 'not_detected'),
                               ('no_exit', len(ex['punches']) >= 2 and ex['lateralShift'] < 0.35)) if on]
     first = 'lead hand (jab)' if ex['punches'][0]['hand'] == 'lead' else 'rear hand (cross or power)'
     return (f"opening punch: {first}; punches in order: {hands} ({len(ex['punches'])}); gaps between punches (ms): {gaps or 'none'}; "
             f"peak speeds (shoulder widths/s): {[p['peakSpeed'] for p in ex['punches']]}; "
-            f"back to guard after: {str(ex['resetMs']) + ' ms' if ex.get('resetMs') is not None else 'not seen'}; "
+            f"reset observation: {reset_status(ex)}; back to guard after: {str(ex['resetMs']) + ' ms' if reset_status(ex) == 'observed' else 'unknown'}; "
             f"lateral move after: {ex['lateralShift']} shoulder widths; rule faults: {faults or 'none'}; "
             f"live cue already given: {ex.get('cue') or 'none'}"), faults
 
@@ -116,17 +133,33 @@ def report(summary, labels, language):
     for ex in exchanges:
         for f in describe(ex)[1]: fault_counts[f] = fault_counts.get(f, 0) + 1
     probes = sum(1 for e in exchanges if e['opener'] == 'probe')   # facts come from the phone's rules
+    reset_counts = {key: sum(reset_status(e) == key for e in exchanges)
+                    for key in ('observed', 'not_detected', 'unobservable')}
+    reset_evaluable = reset_counts['observed'] + reset_counts['not_detected']
     facts = {'round': summary['round'], 'duration_s': summary['duration_s'], 'exchanges': n,
              'punches': sum(len(e['punches']) for e in exchanges),
              'probe_openers': probes, 'commit_openers': n - probes, 'fault_counts': fault_counts,
-             'reset_rate': round(sum(1 for e in exchanges if e.get('resetMs') is not None) / max(n, 1), 2),
+             'reset_evidence_counts': reset_counts, 'reset_evaluable_exchanges': reset_evaluable,
+             'reset_rate': round(reset_counts['observed'] / reset_evaluable, 2) if reset_evaluable else None,
              'live_cues': [e['cue'] for e in exchanges if e.get('cue')],
              'opener_source': 'phone_rule_not_model_judgment',
              'flagged_for_review': [l['id'] for l in labels if l['intervention'] == 'review']}
     drill_id = main_issue(fault_counts, n - probes, n)
-    plain = {'en': {'no_reset': 'not back to guard', 'no_exit': 'stayed on the line after the combination',
+    if drill_id == 'review_evidence':
+        facts['main_issue'] = None
+        out = {'observation': (f"{n} échanges repérés ; {reset_counts['unobservable']} retours en garde non évaluables." if language == 'fr'
+                               else f"{n} exchanges observed; {reset_counts['unobservable']} resets could not be assessed."),
+               'interpretation': ('Ces mesures ne permettent pas de choisir une correction.' if language == 'fr'
+                                  else 'These measurements do not establish a corrective issue.'),
+               'constraint': DRILLS[drill_id][language],
+               'prediction': ('La technique reste à vérifier sur les images.' if language == 'fr'
+                              else 'Technique still needs checking against the footage.'),
+               'drill_id': drill_id, '_model': None}
+        return out, facts, {'name': 'report.reset_evidence_gate', 'span_type': 'TOOL',
+                            'inputs': facts, 'outputs': {'report': out, 'inference_performed': False}, 'duration_ms': 0}
+    plain = {'en': {'no_reset': 'return to guard not detected', 'no_exit': 'stayed on the line after the combination',
                     'rear_hand_low': 'rear hand dropped on the jab', 'commit_without_probe': 'opened without a jab'},
-             'fr': {'no_reset': 'pas de retour en garde', 'no_exit': 'resté sur la ligne après la combinaison',
+             'fr': {'no_reset': 'retour en garde non détecté', 'no_exit': 'resté sur la ligne après la combinaison',
                     'rear_hand_low': 'main arrière basse sur le jab', 'commit_without_probe': 'ouverture sans jab'}}[language]
     facts['fault_counts'] = {plain[k]: v for k, v in fault_counts.items()}
     facts['main_issue'] = plain[DRILLS[drill_id]['fault']]
@@ -143,6 +176,7 @@ def report(summary, labels, language):
                 {'role': 'system', 'content':
                     f"You are a boxing coach writing a between-round report in {lang} for a boxer training alone with a phone camera. "
                     "Use only the round facts given (pose tracking: punch onsets, exchange phases, guard and reset checks). "
+                    "Unobservable resets are unknown and excluded from reset_rate. Not detected means a pose-rule candidate, not proof of a technique failure. "
                     f"The one thing to fix next round is already chosen: {facts['main_issue']}, and the boxer will be told: "
                     f"\"{CONSTRAINTS[drill_id]['en']}\". Write one short, plain sentence per field, consistent with that choice, in everyday boxing words (no underscores or field names). "
                     "observation: the numbers that show the problem. interpretation: why it matters in a fight. "
@@ -183,7 +217,8 @@ def run(summary):
     stages.append(stage)
     response = {'observation': out['observation'], 'interpretation': out['interpretation'], 'constraint': out['constraint'],
                 'prediction': out['prediction'], 'drill': DRILLS[out['drill_id']][language], 'labels': labels,
-                'models': ['rules'] + list(dict.fromkeys([stage.get('outputs',{}).get('resolved_model') for stage in stages if stage.get('outputs',{}).get('resolved_model')] + [out.pop('_model')])),
+                'models': ['rules'] + list(dict.fromkeys(model for model in
+                    [stage.get('outputs',{}).get('resolved_model') for stage in stages] + [out.pop('_model')] if model)),
                 'latency_ms': int((time.perf_counter() - t0) * 1000)}
     return response, stages, facts
 

@@ -678,6 +678,14 @@ struct LiveWorkoutView: View {
         if let instance = activityInstance(for: segment) { return instance.exerciseKey }
         return segment.activityKey
     }
+    private func loggedActivityKey(for segment: Segment) -> String? {
+        let choices = workout?.activityInstances?.filter {
+            $0.blockID == segment.block.id && $0.preparationIndex == segment.preparationIndex
+        } ?? []
+        // A change can occur at any point in the segment. Do not assign the
+        // whole elapsed interval to its last selection.
+        return choices.count > 1 ? nil : activityKey(for: segment)
+    }
     private var canChooseActivity: Bool {
         guard let current, !current.isRest else { return false }
         return current.block.activityChoiceFamily == "conditioning" || current.activityKey == "mobility"
@@ -775,7 +783,7 @@ struct LiveWorkoutView: View {
                     }
                     if canChooseActivity {
                         Button { showActivityChoice = true } label: {
-                            Label(language == "fr" ? "Mouvement · \(activityInstance(for: current)?.customName ?? activityKey(for: current) ?? "à choisir")" : "Movement · \(activityInstance(for: current)?.customName ?? activityKey(for: current) ?? "choose")", systemImage: "figure.mixed.cardio")
+                            Label(language == "fr" ? "Mouvement · \(WorkoutActivityCopy.name(activityKey(for: current), customName: activityInstance(for: current)?.customName, language: language))" : "Movement · \(WorkoutActivityCopy.name(activityKey(for: current), customName: activityInstance(for: current)?.customName, language: language))", systemImage: "figure.mixed.cardio")
                                 .font(.caption).foregroundStyle(Noir.gold)
                         }.accessibilityIdentifier("workout-activity-choice")
                     }
@@ -1069,23 +1077,14 @@ struct LiveWorkoutView: View {
         }
     }
     private var poseStatusForCurrentActivity: String {
-        guard current?.activityKey == "squats" || current?.activityKey == "lunges", camera.poseStatusKey == "pose_partial" || camera.poseStatusKey == "pose_visible" else {
+        guard let current, activityKey(for: current) == "squats" || activityKey(for: current) == "lunges",
+              camera.poseStatusKey == "pose_partial" || camera.poseStatusKey == "pose_visible" else {
             return camera.poseStatusKey
         }
         return camera.poseSample?.lowerBodyVisible == true ? "pose_legs_visible" : "pose_show_legs"
     }
     private func activityLabel(_ key: String) -> String {
-        let labels: [String: [String: String]] = [
-            "jumping_jacks": ["fr": "Jumping jacks", "en": "Jumping jacks"],
-            "burpees": ["fr": "Burpees", "en": "Burpees"],
-            "box_jumps": ["fr": "Sauts sur caisse", "en": "Box jumps"],
-            "squat_jumps": ["fr": "Squats sautés", "en": "Squat jumps"],
-            "squats": ["fr": "Squats", "en": "Squats"],
-            "lunges": ["fr": "Fentes", "en": "Lunges"],
-            "mobility": ["fr": "Mobilité", "en": "Mobility"],
-            "custom": ["fr": "Libre", "en": "Custom"]
-        ]
-        return labels[key]?[language] ?? key
+        WorkoutActivityCopy.name(key, language: language)
     }
     private func clock(_ seconds: Int) -> String { String(format: "%02d:%02d", max(0, seconds) / 60, max(0, seconds) % 60) }
     private func announceCurrent() {
@@ -1139,7 +1138,7 @@ struct LiveWorkoutView: View {
         captureElapsedFromDeadline()
         flushTimedSeconds()
         training.recordSegment(sessionID: sessionID, blockID: current.block.id,
-                               activityKey: activityKey(for: current), isRest: current.isRest,
+                               activityKey: loggedActivityKey(for: current), isRest: current.isRest,
                                plannedSeconds: current.seconds,
                                elapsedSeconds: current.isManual ? manualElapsed : max(0, current.seconds - remaining),
                                exitReason: current.isManual ? (completed ? "manual_completed" : "skipped") : (remaining == 0 ? "timer_elapsed" : "skipped"))
@@ -1221,12 +1220,12 @@ struct LiveWorkoutView: View {
         flushTimedSeconds()
         if let current {
             let alreadyLogged = workout?.segmentLogs?.last.map {
-                $0.blockID == current.block.id && $0.activityKey == activityKey(for: current)
+                $0.blockID == current.block.id && $0.activityKey == loggedActivityKey(for: current)
                     && $0.isRest == current.isRest && $0.exitReason == "timer_elapsed"
             } ?? false
             if !alreadyLogged {
                 training.recordSegment(sessionID: sessionID, blockID: current.block.id,
-                                       activityKey: activityKey(for: current), isRest: current.isRest,
+                                       activityKey: loggedActivityKey(for: current), isRest: current.isRest,
                                        plannedSeconds: current.seconds,
                                        elapsedSeconds: current.isManual ? manualElapsed : max(0, current.seconds - remaining),
                                        exitReason: "session_finished")

@@ -97,4 +97,67 @@ final class ExchangeTrackerTests: XCTestCase {
         XCTAssertTrue(json.contains("\"request_id\":\"r1\""))
         XCTAssertTrue(json.contains("\"duration_s\":180"))
     }
+
+    func testOcclusionAfterPunchIsUnobservableAndNeverRequestsResetCue() throws {
+        var body = Body()
+        step(body, frames: 5); jab(&body)
+        for _ in 0..<20 { t += 90; events += tracker.feed(timeMs: t, joints: []) }
+        let exchange = try XCTUnwrap(exchanges.first)
+        XCTAssertEqual(exchange.resetEvidence?.status, .unobservable)
+        XCTAssertFalse(exchange.faults.contains("no_reset"))
+        var policy = ExchangeCuePolicy()
+        XCTAssertNil(policy.cue(for: exchange, nowMs: t))
+    }
+
+    func testTrackingGapPreventsNegativeResetEvenAfterVisibleLowHands() throws {
+        var body = Body()
+        step(body, frames: 5); jab(&body)
+        body.lead.1 = 0.5; body.rear.1 = 0.5
+        t += 500; events += tracker.feed(timeMs: t, joints: body.joints())
+        step(body, frames: 20)
+        let exchange = try XCTUnwrap(exchanges.first)
+        XCTAssertEqual(exchange.resetEvidence?.status, .unobservable)
+        XCTAssertLessThan(exchange.resetEvidence!.observedDurationMs, 1600)
+        XCTAssertFalse(exchange.resetNotDetected)
+    }
+
+    func testObservedResetSurvivesLaterMovementAndOcclusion() throws {
+        var body = Body()
+        step(body, frames: 5); jab(&body); step(body, frames: 3)
+        // Small movement does not create another punch, but leaves the guard.
+        for _ in 0..<8 { body.lead.1 += 0.03; body.rear.1 += 0.03; step(body) }
+        for _ in 0..<20 { t += 90; events += tracker.feed(timeMs: t, joints: []) }
+        let exchange = try XCTUnwrap(exchanges.first)
+        XCTAssertEqual(exchange.resetEvidence?.status, .observed)
+        XCTAssertNotNil(exchange.resetMs)
+        XCTAssertFalse(exchange.faults.contains("no_reset"))
+    }
+
+    func testRoundEndingBeforeResetWindowAbstains() throws {
+        var body = Body()
+        step(body, frames: 5); jab(&body)
+        events += tracker.finish(atMs: t)
+        let exchange = try XCTUnwrap(exchanges.first)
+        XCTAssertEqual(exchange.resetEvidence?.status, .unobservable)
+        XCTAssertFalse(exchange.resetNotDetected)
+    }
+
+    func testCompleteVisibleNonResetCarriesEvidenceAndSurvivesSerialization() throws {
+        var body = Body()
+        step(body, frames: 5); jab(&body)
+        for _ in 0..<8 { body.lead.1 += 0.03; body.rear.1 += 0.03; step(body) }
+        step(body, frames: 20)
+        let exchange = try XCTUnwrap(exchanges.first)
+        XCTAssertEqual(exchange.resetEvidence?.status, .notDetected)
+        XCTAssertEqual(exchange.resetEvidence?.observedDurationMs, 1600)
+        XCTAssertTrue(exchange.resetNotDetected)
+        let decoded = try JSONDecoder().decode(LabeledExchange.self, from: JSONEncoder().encode(exchange))
+        XCTAssertEqual(decoded.resetEvidence, exchange.resetEvidence)
+        XCTAssertTrue(decoded.resetNotDetected)
+        var legacy = exchange
+        legacy.resetEvidence = nil
+        let legacyDecoded = try JSONDecoder().decode(LabeledExchange.self, from: JSONEncoder().encode(legacy))
+        XCTAssertFalse(legacyDecoded.resetNotDetected)
+        XCTAssertFalse(legacyDecoded.faults.contains("no_reset"))
+    }
 }

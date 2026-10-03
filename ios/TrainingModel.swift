@@ -314,6 +314,25 @@ enum ActivityMeasurementCapability: String, Codable {
 enum ActivityMeasurementValidation: String, Codable {
     case unvalidated, notApplicable = "not_applicable"
 }
+enum WorkoutActivityCopy {
+    static func name(_ key: String?, customName: String? = nil, language: String) -> String {
+        if let customName, !customName.isEmpty { return customName }
+        let names: [String: [String: String]] = [
+            "jumping_jacks": ["fr": "Jumping jacks", "en": "Jumping jacks"],
+            "burpees": ["fr": "Burpees", "en": "Burpees"],
+            "box_jumps": ["fr": "Sauts sur caisse", "en": "Box jumps"],
+            "squat_jumps": ["fr": "Squats sautés", "en": "Squat jumps"],
+            "squats": ["fr": "Squats", "en": "Squats"],
+            "lunges": ["fr": "Fentes", "en": "Lunges"],
+            "mobility": ["fr": "Mobilité", "en": "Mobility"],
+            "shadowboxing": ["fr": "Boxe dans le vide", "en": "Shadowboxing"],
+            "boxing": ["fr": "Boxe", "en": "Boxing"],
+            "custom": ["fr": "Libre", "en": "Custom"]
+        ]
+        guard let key else { return language == "fr" ? "Non choisi" : "Unchosen" }
+        return names[key]?[language] ?? key.replacingOccurrences(of: "_", with: " ")
+    }
+}
 struct ActivityMeasurementRecipe: Codable, Equatable {
     let id: String
     let version: String
@@ -376,7 +395,9 @@ struct WorkoutActivityInstance: Codable, Identifiable, Equatable {
         if let activities = block.activities, !activities.isEmpty {
             return activities.enumerated().map { make($0.element.key, index: $0.offset) }
         }
-        return [make(block.sourceActivityKey ?? (block.kind == .boxing ? "boxing" : nil), index: nil)]
+        let initialKey = block.activityChoiceFamily == nil
+            ? (block.sourceActivityKey ?? (block.kind == .boxing ? "boxing" : nil)) : nil
+        return [make(initialKey, index: nil)]
     }
 }
 

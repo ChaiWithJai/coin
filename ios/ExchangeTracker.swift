@@ -12,6 +12,15 @@ struct ExchangePunch: Codable, Equatable {
     var rearHandLow: Bool       // lead-hand punch thrown with the rear hand below the guard line
 }
 
+struct ResetEvidence: Codable, Equatable {
+    enum Status: String, Codable { case observed, notDetected = "not_detected", unobservable }
+    static let currentVersion = "pose-reset-observability-v1"
+    var version = ResetEvidence.currentVersion
+    let status: Status
+    let observedDurationMs: Int
+    let windowDurationMs: Int
+}
+
 struct LabeledExchange: Codable, Equatable, Identifiable {
     var id: Int
     var startMs: Int            // initiate: first punch onset
@@ -21,14 +30,20 @@ struct LabeledExchange: Codable, Equatable, Identifiable {
     var resetMs: Int?           // reset: time from the last punch back to guard; nil = no reset seen
     var lateralShift: Double    // hip-center lateral travel after the last punch, in shoulder widths
     var cue: String?            // the live cue spoken for this exchange, if any
+    var resetEvidence: ResetEvidence? = nil
 
     var rearHandLow: Bool { punches.contains { $0.rearHandLow } }
     var reset: Bool { resetMs != nil }
+    var resetNotDetected: Bool {
+        guard !reset, let evidence = resetEvidence else { return false }
+        return evidence.version == ResetEvidence.currentVersion && evidence.status == .notDetected
+            && evidence.windowDurationMs > 0 && evidence.observedDurationMs == evidence.windowDurationMs
+    }
     var exitOffLine: Bool { lateralShift >= ExchangeTracker.exitShift }
     var faults: [String] {
         var result: [String] = []
         if rearHandLow { result.append("rear_hand_low") }
-        if !reset { result.append("no_reset") }
+        if resetNotDetected { result.append("no_reset") }
         if punches.count >= 2 && !exitOffLine { result.append("no_exit") }
         return result
     }
@@ -50,9 +65,11 @@ struct ExchangeTracker {
                            var leadShoulder: (Double, Double); var rearShoulder: (Double, Double)
                            var hip: (Double, Double); var shoulderY: Double; var scale: Double }
     private var previous: Frame?
+    private var lastFedMs: Int?
     private var lastOnset: [String: Int] = [:]
     private var current: (start: Int, punches: [ExchangePunch], hipStart: Double)?
-    private var settledSince: Int?
+    private var observedResetAt: Int?
+    private var resetObservedDurationMs = 0
     private var maxShift = 0.0
     private var nextID = 1
     private(set) var exchanges: [LabeledExchange] = []
@@ -61,6 +78,8 @@ struct ExchangeTracker {
 
     /// Feed one pose frame. Returns punches as they start and exchanges when they finish.
     mutating func feed(timeMs: Int, joints: [PoseJoint]) -> [Event] {
+        guard lastFedMs.map({ timeMs > $0 }) ?? true else { return [] }
+        lastFedMs = timeMs
         guard let frame = makeFrame(timeMs, joints) else { previous = nil; return closeIfDue(timeMs) }
         defer { previous = frame }
         var events: [Event] = []
@@ -82,17 +101,25 @@ struct ExchangeTracker {
                                           rearHandLow: hand == "lead" && frame.rear.1 - frame.shoulderY > guardLowScale * frame.scale)
                 if current == nil { current = (frame.t, [], frame.hip.0); maxShift = 0 }
                 current!.punches.append(punch)
-                settledSince = nil
+                observedResetAt = nil
+                resetObservedDurationMs = 0
                 events.append(.punch(punch))
             }
             if let open = current {
                 let lastPunch = open.punches.last!.atMs
                 if frame.t > lastPunch {
+                    let coveredStart = max(prev.t, lastPunch)
+                    let coveredEnd = min(frame.t, lastPunch + resetWindowMs)
+                    resetObservedDurationMs += max(0, coveredEnd - coveredStart)
                     maxShift = max(maxShift, abs(frame.hip.0 - open.hipStart) / frame.scale)
                     let wrists: [(Double, Double)] = [frame.lead, frame.rear]
                     let inGuard = wrists.allSatisfy { $0.1 - frame.shoulderY <= guardLowScale * frame.scale }
                     let settled = inGuard && speeds.values.allSatisfy { $0 < settledSpeed }
-                    if settled { if settledSince == nil { settledSince = frame.t } } else { settledSince = nil }
+                    // A return already observed after the last punch remains
+                    // evidence even if the boxer moves again before closure.
+                    if settled && frame.t - lastPunch <= resetWindowMs && observedResetAt == nil {
+                        observedResetAt = frame.t
+                    }
                 }
             }
         }
@@ -105,12 +132,17 @@ struct ExchangeTracker {
     private mutating func closeIfDue(_ t: Int, force: Bool = false) -> [Event] {
         guard let open = current, let last = open.punches.last?.atMs else { return [] }
         guard force || t - last >= max(exchangeGapMs, resetWindowMs) else { return [] }
-        let resetAt = settledSince.flatMap { $0 - last <= resetWindowMs ? $0 - last : nil }
+        let resetAt = observedResetAt.map { $0 - last }
+        let observedDuration = min(resetWindowMs, resetObservedDurationMs)
+        let status: ResetEvidence.Status = resetAt != nil ? .observed :
+            (t - last >= resetWindowMs && observedDuration == resetWindowMs ? .notDetected : .unobservable)
         let exchange = LabeledExchange(id: nextID, startMs: open.start, endMs: last, punches: open.punches,
                                        opener: open.punches.first!.hand == "lead" ? "probe" : "commit",
-                                       resetMs: resetAt, lateralShift: (maxShift * 100).rounded() / 100, cue: nil)
+                                       resetMs: resetAt, lateralShift: (maxShift * 100).rounded() / 100, cue: nil,
+                                       resetEvidence: ResetEvidence(status: status, observedDurationMs: observedDuration,
+                                                                    windowDurationMs: resetWindowMs))
         nextID += 1
-        current = nil; settledSince = nil; maxShift = 0
+        current = nil; observedResetAt = nil; resetObservedDurationMs = 0; maxShift = 0
         exchanges.append(exchange)
         return [.exchange(exchange)]
     }
@@ -147,7 +179,7 @@ struct ExchangeCuePolicy {
         commitStreak = exchange.opener == "commit" ? commitStreak + 1 : 0
         guard nowMs - lastCueMs >= cooldownMs else { return nil }
         let pick: String?
-        if !exchange.reset { pick = "reset_guard" }
+        if exchange.resetNotDetected { pick = "reset_guard" }
         else if exchange.rearHandLow { pick = "rear_hand_up" }
         else if exchange.punches.count >= 2 && !exchange.exitOffLine { pick = "exit_reset" }
         else if commitStreak >= 3 { pick = "probe_first"; commitStreak = 0 }

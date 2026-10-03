@@ -75,6 +75,17 @@ struct TrainingHomeView: View {
     @State private var showPrograms = false
     @StateObject private var voice = WorkoutSpeechController()
     private var selectedTemplate: TrainingTemplate {
+        #if DEBUG
+        let testEnvironment = ProcessInfo.processInfo.environment
+        if testEnvironment["COIN_TEST_ACTIVITY_CHOOSER"] == "1",
+           let token = testEnvironment["COIN_TRAINING_DIRECTORY"], token.hasPrefix("workout-ui-"),
+           let lesson = WorkoutCatalog.shared.lessons.first(where: { $0.id == "basic-w2-d1" }),
+           let block = lesson.template().blocks.first(where: { $0.activityChoiceFamily == "conditioning" }) {
+            return TrainingTemplate(id: "activity-choice-ui-v1", durationMinutes: 0, blocks: [block],
+                                    sourceTitle: lesson.title, sourceURL: lesson.sourceURL,
+                                    sourceVersion: lesson.sourceSHA256)
+        }
+        #endif
         if let lesson = selectedLesson { return lesson.template() }
         if freestyle {
             #if DEBUG
@@ -402,6 +413,7 @@ struct TrainingSessionView: View {
                     Text(TrainingCopy.format("pose_samples", language, pose.visible, pose.sampled))
                         .font(.caption2).foregroundStyle(Noir.muted)
                 }
+                WorkoutActivityEvidenceView(session: session, block: block, language: language)
                 if cueCount > 0 {
                     Text(cueCount == 1 ? TrainingCopy.text("cue_request_one", language)
                          : TrainingCopy.format("cue_requests", language, cueCount))
@@ -412,6 +424,43 @@ struct TrainingSessionView: View {
         }
         .padding(.vertical, 5)
         .listRowBackground(Noir.black)
+    }
+}
+
+private struct WorkoutActivityEvidenceView: View {
+    let session: TrainingSession
+    let block: SessionBlock
+    let language: String
+
+    private var visibleInstances: [WorkoutActivityInstance] {
+        let all = (session.activityInstances ?? []).filter { $0.blockID == block.id }
+        // One current choice per slot, plus prior boxer changes so review does
+        // not erase a movement practiced earlier in the same segment.
+        return all.filter { instance in
+            instance.selectionProvenance == .userSelected
+                || instance.measurement.capability == .repCandidate
+        }
+    }
+
+    var body: some View {
+        if !visibleInstances.isEmpty {
+            VStack(alignment: .leading, spacing: 3) {
+                ForEach(visibleInstances) { instance in
+                    let name = WorkoutActivityCopy.name(instance.exerciseKey,
+                        customName: instance.customName, language: language)
+                    let count = (session.exerciseReps ?? []).filter { $0.activityInstanceID == instance.id }.count
+                    Text(instance.measurement.capability == .repCandidate
+                         ? (language == "fr" ? "\(name) · \(count) répétitions candidates" : "\(name) · \(count) candidate reps")
+                         : (language == "fr" ? "\(name) · durée seulement" : "\(name) · time only"))
+                        .font(.caption2).foregroundStyle(Noir.muted)
+                }
+                if visibleInstances.count > 1 {
+                    Text(language == "fr" ? "Durée par mouvement non attribuée" : "Time per movement not attributed")
+                        .font(.caption2).foregroundStyle(Noir.muted)
+                }
+            }
+            .accessibilityIdentifier("workout-activity-evidence")
+        }
     }
 }
 
@@ -432,7 +481,9 @@ struct WorkoutRecapView: View {
             guard !work.isEmpty,
                   work.allSatisfy({ $0.exitReason == (block.isManual ? "manual_completed" : "timer_elapsed") }) else { return false }
             if let activities = block.activities {
-                guard activities.allSatisfy({ activity in work.contains { $0.activityKey == activity.key } }) else { return false }
+                // User choices can replace a preparation movement. Completion
+                // follows the timed slots, not their original movement names.
+                guard work.count == activities.count else { return false }
             }
             return block.effectiveRestSeconds == 0 || logs.contains {
                 $0.blockID == block.id && $0.isRest && $0.exitReason == "timer_elapsed"
@@ -476,13 +527,17 @@ struct WorkoutRecapView: View {
                                             Text(SessionCopy.blockTitle(block, language: language))
                                                 .font(.system(size: 17, weight: .medium, design: .serif))
                                                 .foregroundStyle(Noir.ink)
-                                            let elapsed = String(format: "%02d:%02d", record.elapsedSeconds / 60, record.elapsedSeconds % 60)
+                                            let blockElapsed = (session.segmentLogs ?? [])
+                                                .filter { $0.blockID == block.id && !$0.isRest }
+                                                .reduce(0) { $0 + $1.elapsedSeconds }
+                                            let elapsed = String(format: "%02d:%02d", blockElapsed / 60, blockElapsed % 60)
                                             let statusKey = record.exitReason == "timer_elapsed" ? "recap_round_elapsed" :
                                                 (record.exitReason == "skipped" ? "recap_round_skipped" : "recap_round_early")
                                             Text(record.exitReason == "manual_completed"
                                                  ? (language == "fr" ? "\(elapsed) au chrono · confirmé par toi" : "\(elapsed) timed · marked done by you")
                                                  : TrainingCopy.format(statusKey, language, elapsed))
                                                 .font(.caption.monospaced()).foregroundStyle(Noir.muted)
+                                            WorkoutActivityEvidenceView(session: session, block: block, language: language)
                                         }
                                         Spacer()
                                     }

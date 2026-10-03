@@ -1,0 +1,26 @@
+{
+  "evidence": "historical real round summaries; no underlying frames or new accuracy claim",
+  "reset_recipe_version": "pose-reset-observability-v1",
+  "server_deployed_service_sha256": "60e238c2ab0fc8d0e3f6f11c88b0c1a49b59f87eb4ae51d5b2c9fff45fc7321f",
+  "server_deployed_harness_sha256": "0ca97e0e51fecadc216290fd50948f0a622421fe782a22ec24ca4b33d114dcc7",
+  "replays": [
+    {
+      "request_id": "fc8b1922-c100-448b-a183-c9798c21c83f",
+      "trace_id": "tr-11ab5a5bea8e1fce66e73bc6838ee9fd",
+      "exchanges": 16,
+      "legacy_null_reset_count": 16,
+      "eligible_no_reset_faults_after_gate": 0,
+      "observed": 0,
+      "unobservable": 16
+    },
+    {
+      "request_id": "c3c23d9d-4c77-4fc5-a84a-6be66a084921",
+      "trace_id": "tr-3b19f9b43a23893a5e326d2ea0f29489",
+      "exchanges": 8,
+      "legacy_null_reset_count": 7,
+      "eligible_no_reset_faults_after_gate": 0,
+      "observed": 1,
+      "unobservable": 7
+    }
+  ]
+}

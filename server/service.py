@@ -3,7 +3,7 @@ import os,json,time,secrets,threading,urllib.request,sqlite3,uuid
 from pathlib import Path
 from contextlib import asynccontextmanager,closing
 from fastapi import FastAPI,Header,HTTPException,Depends
-from pydantic import BaseModel,Field
+from pydantic import BaseModel,Field,model_serializer
 from typing import Literal
 from telemetry import Outbox
 from drills import eligible,render_selection,VERSION
@@ -112,6 +112,11 @@ class Punch(BaseModel):
     atMs:int
     peakSpeed:float=Field(ge=0,le=200)
     rearHandLow:bool
+class ResetEvidence(BaseModel):
+    version:str=Field(max_length=80)
+    status:Literal['observed','not_detected','unobservable']
+    observedDurationMs:int=Field(ge=0,le=10000)
+    windowDurationMs:int=Field(gt=0,le=10000)
 class Exchange(BaseModel):
     id:int=Field(ge=0)
     startMs:int
@@ -119,8 +124,14 @@ class Exchange(BaseModel):
     punches:list[Punch]=Field(min_length=1,max_length=20)
     opener:Literal['probe','commit']
     resetMs:int|None=None
+    resetEvidence:ResetEvidence|None=None
     lateralShift:float=Field(ge=0,le=20)
     cue:str|None=Field(default=None,max_length=40)
+    @model_serializer(mode='wrap')
+    def preserve_legacy_payload(self,handler):
+        record=handler(self)
+        if self.resetEvidence is None:record.pop('resetEvidence',None)
+        return record
 class RoundSummary(BaseModel):
     request_id:uuid.UUID
     language:Literal['fr','en']='fr'
