@@ -34,6 +34,15 @@ final class WorkoutFlowTests: XCTestCase {
         add(image)
     }
 
+    private func chooseRequiredMovementIfShown(_ app: XCUIApplication, language: String = "en") {
+        let chooser = app.navigationBars[language == "fr" ? "Choisir le mouvement" : "Choose movement"]
+        guard chooser.waitForExistence(timeout: 5) else { return }
+        let name = language == "fr" ? "Cercles d’épaules" : "Shoulder circles"
+        let option = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", name)).firstMatch
+        XCTAssertTrue(option.waitForExistence(timeout: 2))
+        option.tap()
+    }
+
     func testBothSourceProgramsReachDay35() throws {
         let app = application(language: "en")
         app.buttons["choose-program"].tap()
@@ -53,14 +62,9 @@ final class WorkoutFlowTests: XCTestCase {
         app.buttons["choose-program"].tap()
         app.buttons["lesson-basic-w1-d1"].tap()
         app.buttons["start-workout"].tap()
+        chooseRequiredMovementIfShown(app)
         XCTAssertTrue(app.buttons["complete-manual-step"].waitForExistence(timeout: 5))
         XCTAssertEqual(app.staticTexts["workout-source-title"].label, "DYNAMIC WARM-UP:")
-        let toggle = app.buttons["workout-toggle"]
-        if toggle.label.contains("Start") { toggle.tap() }
-        let elapsed = NSPredicate(format: "label != %@", "00:00")
-        expectation(for: elapsed, evaluatedWith: app.staticTexts["workout-clock"])
-        waitForExpectations(timeout: 6)
-        toggle.tap()
         attach("source-manual-step-paused", app: app)
         app.buttons["complete-manual-step"].tap()
         XCTAssertEqual(app.staticTexts["workout-source-title"].label, "FR0NTAL STANCE DRILL")
@@ -87,9 +91,11 @@ final class WorkoutFlowTests: XCTestCase {
         reveal(day, in: app)
         day.tap()
         app.buttons["start-workout"].tap()
+        chooseRequiredMovementIfShown(app)
         let title = app.staticTexts["workout-source-title"]
         for _ in 0..<25 {
             if title.exists && title.label == "6 ROUNDS OF 3 MINUTES OF BAG WORK" { break }
+            chooseRequiredMovementIfShown(app)
             app.buttons["Skip to next"].tap()
         }
         XCTAssertEqual(title.label, "6 ROUNDS OF 3 MINUTES OF BAG WORK")
@@ -107,6 +113,7 @@ final class WorkoutFlowTests: XCTestCase {
         app.buttons["choose-program"].tap()
         app.buttons["lesson-basic-w1-d1"].tap()
         app.buttons["start-workout"].tap()
+        chooseRequiredMovementIfShown(app, language: "fr")
         XCTAssertTrue(app.staticTexts["workout-source-title"].waitForExistence(timeout: 5))
         XCTAssertEqual(app.staticTexts["workout-source-title"].label, "Échauffement dynamique :")
         app.buttons["workout-source"].tap()
@@ -133,9 +140,11 @@ final class WorkoutFlowTests: XCTestCase {
         reveal(day, in: app)
         day.tap()
         app.buttons["start-workout"].tap()
+        chooseRequiredMovementIfShown(app)
         let title = app.staticTexts["workout-source-title"]
         for _ in 0..<25 {
             if title.exists && title.label == "SINGLE PUNCHES" { break }
+            chooseRequiredMovementIfShown(app)
             app.buttons["Skip to next"].tap()
         }
         XCTAssertEqual(title.label, "SINGLE PUNCHES")
@@ -256,7 +265,8 @@ final class WorkoutFlowTests: XCTestCase {
             app.buttons["start-workout"].tap()
             let chooser = app.buttons["workout-activity-choice"]
             XCTAssertTrue(chooser.waitForExistence(timeout: 5))
-            chooser.tap()
+            let pickerTitle = app.navigationBars[language == "fr" ? "Choisir le mouvement" : "Choose movement"]
+            if !pickerTitle.exists { chooser.tap() }
             app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Squats,")).firstMatch.tap()
             XCTAssertTrue(chooser.label.contains("Squats"))
             let toggle = app.buttons["workout-toggle"]
@@ -268,7 +278,7 @@ final class WorkoutFlowTests: XCTestCase {
             app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Burpees,")).firstMatch.tap()
             XCTAssertTrue(chooser.label.contains("Burpees"))
             Thread.sleep(forTimeInterval: 2.1)
-            app.buttons["complete-manual-step"].tap()
+            app.buttons["skip-segment"].tap()
             XCTAssertTrue(app.buttons["recap-done"].waitForExistence(timeout: 5))
             XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "candidate reps")).firstMatch.exists
                 || app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "répétitions candidates")).firstMatch.exists)

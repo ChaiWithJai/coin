@@ -81,7 +81,8 @@ import XCTest
     func testRuntimeDefinitionsKeepConditioningSpecificWithoutInventingPoseCounts() {
         let choices = WorkoutMovementDefinition.choices(for: "conditioning")
         XCTAssertEqual(Array(choices.prefix(6)).map(\.key), ["jumping_jacks", "burpees", "box_jumps", "squat_jumps", "squats", "lunges"])
-        XCTAssertTrue(choices.contains { $0.key == "shadowboxing" })
+        XCTAssertEqual(choices.count, 6)
+        XCTAssertFalse(choices.contains { $0.key == "shadowboxing" })
         XCTAssertEqual(WorkoutMovementDefinition.forKey("box_jumps")?.equipment, "box")
         XCTAssertEqual(WorkoutMovementDefinition.forKey("burpees")?.family, "conditioning")
         let instance = WorkoutActivityInstance(blockID: UUID(), preparationIndex: nil,
@@ -95,7 +96,9 @@ import XCTest
         XCTAssertEqual(definition?["observable_phases"] as? [String], ["floor", "flight", "box_landing", "reset"])
         XCTAssertEqual(definition?["target_unit"] as? String, "rep")
         XCTAssertEqual(instance.measurement.capability, .elapsedOnly)
-        XCTAssertTrue(WorkoutMovementDefinition.choices(for: "mobility").contains { $0.key == "mobility" })
+        XCTAssertFalse(WorkoutMovementDefinition.choices(for: "mobility").contains { $0.key == "mobility" })
+        XCTAssertEqual(Array(WorkoutMovementDefinition.choices(for: "mobility").prefix(4)).map(\.key),
+                       ["shoulder_circles", "hip_circles", "thoracic_rotations", "hamstring_sweeps"])
         XCTAssertEqual(WorkoutMovementDefinition.forKey("mobility")?.requiredView, "depends_on_selected_movement")
         XCTAssertEqual(WorkoutMovementDefinition.forKey("burpees")?.observablePhases, ["standing", "floor", "standing"])
     }
@@ -112,6 +115,8 @@ import XCTest
         XCTAssertEqual(WorkoutActivityCopy.name("lunges", language: "en"), "Lunges")
         XCTAssertEqual(WorkoutActivityCopy.name("frontal_stance", language: "fr"), "Garde de face")
         XCTAssertFalse(WorkoutActivityRouting.allowsExchange(initial))
+        XCTAssertTrue(WorkoutActivityRouting.requiresRuntimeSelection(choiceFamily: block.activityChoiceFamily,
+            sourceActivityKey: block.sourceActivityKey, instance: initial))
     }
     func testExchangeRoutingUsesResolvedMovementInsteadOfBroadBlockKind() throws {
         let (store, folder) = makeStore()
@@ -208,6 +213,23 @@ import XCTest
         XCTAssertEqual(restored[0].activityInstanceID, squat.id)
         XCTAssertEqual(restored[0].activityKey, "squats")
         XCTAssertNil(store.data.sessions[0].blocks[0].sourceActivityKey)
+    }
+    func testRepCandidateRejectsSamplesCapturedBeforeRuntimeSelection() throws {
+        let (store, folder) = makeStore()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let block = sourceBlock(), id = store.start(TrainingTemplate(id: "source", durationMinutes: 0, blocks: [block]))
+        let selectedAt = Date(timeIntervalSince1970: 2_000)
+        XCTAssertTrue(store.selectActivity(sessionID: id, blockID: block.id, exerciseKey: "squats", at: selectedAt))
+        let instance = try XCTUnwrap(store.data.sessions[0].activityInstance(blockID: block.id))
+        XCTAssertFalse(WorkoutActivityRouting.allowsRepCandidate(instance, sampledAt: selectedAt.addingTimeInterval(-0.001)))
+        store.recordExerciseRep(sessionID: id, blockID: block.id, activityKey: "squats",
+            sourceVersion: "mediapipe-squat-angle-v1", activityInstanceID: instance.id,
+            at: selectedAt.addingTimeInterval(-0.001))
+        XCTAssertEqual(store.data.sessions[0].exerciseReps?.count, 0)
+        XCTAssertTrue(WorkoutActivityRouting.allowsRepCandidate(instance, sampledAt: selectedAt))
+        store.recordExerciseRep(sessionID: id, blockID: block.id, activityKey: "squats",
+            sourceVersion: "mediapipe-squat-angle-v1", activityInstanceID: instance.id, at: selectedAt)
+        XCTAssertEqual(store.data.sessions[0].exerciseReps?.count, 1)
     }
     func testSourceMappedSquatLungeCandidatesAcceptInstanceAndLegacyCalls() throws {
         let (store, folder) = makeStore()

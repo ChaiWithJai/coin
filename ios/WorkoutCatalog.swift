@@ -151,6 +151,9 @@ extension WorkoutSourceBlock {
     /// mixed conditioning sections must remain unassigned.
     var reviewedWholeBlockActivityKey: String? {
         if let activityKey { return activityKey }
+        if id == "basic-w1-d5-p7-s6-4", completion == .manual,
+           title == "CONDITIONING BAG WORK DRILL (1 ROUND)", instructions == title,
+           sourceText == title { return "bag_work" }
         let stanceOnly: [String: (title: String, instructions: String)] = [
             "basic-w1-d1-p3-s3-1": ("FR0NTAL STANCE DRILL",
                 "FR0NTAL STANCE DRILL\n4 ROUNDS OF 2 MINUTES WITH 30 SECONDS OF REST IN BETWEEN."),
@@ -184,6 +187,9 @@ extension WorkoutSourceBlock {
     /// These source sections name a conditioning slot but no movement. Runtime
     /// choice is product metadata, not an edit to the source prescription.
     var reviewedChoiceFamily: String? {
+        if title == instructions, sourceText == instructions {
+            if title == "DYNAMIC WARM-UP:" || title == "STRETCHES" { return "mobility" }
+        }
         let genericConditioning: Set<String> = [
             "basic-w2-d1-p10-s7-2", "basic-w2-d5-p14-s6-2",
             "basic-w3-d1-p17-s7-2", "basic-w3-d5-p21-s6-2",

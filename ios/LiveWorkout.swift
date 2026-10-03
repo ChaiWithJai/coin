@@ -640,6 +640,7 @@ struct LiveWorkoutView: View {
     @State private var manualAnchor: Date?
     @State private var showSource = false
     @State private var showActivityChoice = false
+    @State private var selectionRequiredToStart = false
     @State private var customActivityName = ""
     @State private var running = false
     @State private var muted = false
@@ -693,6 +694,10 @@ struct LiveWorkoutView: View {
         guard let current, !current.isRest else { return false }
         return current.block.activityChoiceFamily != nil || current.activityKey == "mobility"
     }
+    private func requiresRuntimeSelection(_ segment: Segment) -> Bool {
+        WorkoutActivityRouting.requiresRuntimeSelection(choiceFamily: segment.block.activityChoiceFamily,
+            sourceActivityKey: segment.activityKey, instance: activityInstance(for: segment))
+    }
     private func tracksExchanges(_ segment: Segment) -> Bool {
         !segment.isRest && WorkoutActivityRouting.allowsExchange(activityInstance(for: segment))
     }
@@ -714,7 +719,12 @@ struct LiveWorkoutView: View {
             camera.resetExchanges()
             squatTracker = SquatTracker()
         }
+        customActivityName = ""
         showActivityChoice = false
+        if selectionRequiredToStart {
+            selectionRequiredToStart = false
+            DispatchQueue.main.async { begin() }
+        }
     }
     private func recordActivityInterval(for segment: Segment, instanceID: UUID? = nil,
                                         reason: ActivityIntervalExitReason) {
@@ -884,6 +894,7 @@ struct LiveWorkoutView: View {
                                 .background(Noir.panel, in: RoundedRectangle(cornerRadius: 7))
                         }
                         .accessibilityLabel(TrainingCopy.text("skip", language))
+                        .accessibilityIdentifier("skip-segment")
                     }
                     .font(.subheadline.weight(.semibold))
                 } else {
@@ -1000,12 +1011,14 @@ struct LiveWorkoutView: View {
         }
         .onReceive(camera.$poseSample) { sample in
             guard running, let current, !current.isRest, let sample else { return }
-            if let key = activityKey(for: current), key == "squats" || key == "lunges" {
+            let instance = activityInstance(for: current)
+            if let key = instance?.exerciseKey, (key == "squats" || key == "lunges"),
+               WorkoutActivityRouting.allowsRepCandidate(instance, sampledAt: sample.sampledAt) {
                 let angle = key == "lunges" ? sample.lungeKneeAngle : sample.squatKneeAngle
                 if squatTracker.observe(angle: angle, at: sample.sampledAt) {
                     training.recordExerciseRep(sessionID: sessionID, blockID: current.block.id,
                                                activityKey: key, sourceVersion: "mediapipe-\(key == "lunges" ? "lunge" : "squat")-angle-v1",
-                                               activityInstanceID: activityInstance(for: current)?.id,
+                                               activityInstanceID: instance?.id,
                                                at: sample.sampledAt)
                 }
             }
@@ -1066,6 +1079,10 @@ struct LiveWorkoutView: View {
                             } label: {
                                 VStack(alignment: .leading, spacing: 3) {
                                     Text(activityLabel(movement.key))
+                                    Text(language == "fr"
+                                         ? "Cadrage · \(WorkoutActivityCopy.viewRequirement(movement.requiredView, language: language))"
+                                         : "Framing · \(WorkoutActivityCopy.viewRequirement(movement.requiredView, language: language))")
+                                        .font(.caption).foregroundStyle(Noir.muted)
                                     Text(ActivityMeasurementRecipe.forExercise(movement.key).capability == .repCandidate
                                          ? (language == "fr" ? "Répétitions candidates · non validées" : "Candidate reps · unvalidated")
                                          : ActivityMeasurementRecipe.forExercise(movement.key).capability == .exchangeCandidate
@@ -1080,6 +1097,7 @@ struct LiveWorkoutView: View {
                             .accessibilityIdentifier("custom-activity-name")
                         Button(language == "fr" ? "Choisir mon mouvement" : "Choose my movement") { chooseActivity("custom") }
                             .disabled(customActivityName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                            .accessibilityIdentifier("choose-custom-activity")
                     }
                     Section {
                         Text(language == "fr" ? "Le choix précise ce que tu fais. La consigne d'origine reste visible. « Libre » mesure la durée, pas le mouvement." : "Your choice names the movement. The original instruction remains visible. Custom tracks time, not movement.")
@@ -1200,6 +1218,12 @@ struct LiveWorkoutView: View {
         training.saveRuntime(sessionID: sessionID, segmentIndex: segmentIndex, remainingSeconds: remaining, elapsedSeconds: 0)
         if self.current == nil {
             finishWorkout()
+        } else if running, let next = self.current, requiresRuntimeSelection(next) {
+            running = false
+            deadline = nil
+            manualAnchor = nil
+            selectionRequiredToStart = true
+            showActivityChoice = true
         } else if running { announceCurrent() }
     }
     /// Big enough to read from across the room while boxing.
@@ -1300,6 +1324,11 @@ struct LiveWorkoutView: View {
     }
     private func begin() {
         guard !running, let current, remaining > 0 || current.isManual else { return }
+        if requiresRuntimeSelection(current) {
+            selectionRequiredToStart = true
+            showActivityChoice = true
+            return
+        }
         announceCurrent()
         running = true
         UIApplication.shared.isIdleTimerDisabled = true

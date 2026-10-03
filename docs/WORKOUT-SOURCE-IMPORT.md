@@ -12,7 +12,7 @@ This is the existing source capture used by the Shadowbox Coach pipeline. It is 
 
 Each catalog day keeps its canonical lesson URL, PDF URL, snapshot filename, and SHA-256. Each playable block keeps the source section, original text items, demonstration links, and any other linked references. Endurance workouts with Google Doc references retain those links.
 
-The generated catalog contains 70 days and 535 blocks. There are 231 blocks with an explicit round timer and 304 blocks that require the athlete to advance them. Timed blocks may expand into several rounds. A manual block can contain several sets or exercises; it is not a claim that the app recognizes each exercise. Two source sections with distinct prescriptions were split at exact source-item boundaries; no source item or demo link was changed.
+The generated catalog contains 70 days and 535 blocks. There are 233 blocks with an explicit timer and 302 blocks that require the athlete to advance them. Timed blocks may expand into several rounds. The two exact `CONDITIONING DRILL (4 MINUTES)` prescriptions run as one four-minute timer each. A manual block can contain several sets or exercises; it is not a claim that the app recognizes each exercise. Two source sections with distinct prescriptions were split at exact source-item boundaries; no source item or demo link was changed.
 
 ## Prescription rules
 
@@ -22,6 +22,7 @@ The generated catalog contains 70 days and 535 blocks. There are 231 blocks with
 - Source sections sometimes put strength and endurance exercises inside elements marked `header`. Those exercises are retained. Basic week 1, day 6 includes its squat, Pallof press, hip airplanes, and other strength prescriptions.
 - Daily lifestyle checklists, nutrition advice, productivity tips, and motivational copy do not enter the workout coach. Exclusions keep source IDs, text, and a reason in the catalog.
 - Imported boxing blocks use the free-boxing policy. They do not inherit the jab, combination, angle-exit fault policy unless a future reviewed mapping explicitly selects it.
+- Exact generic dynamic warm-ups and stretches are runtime mobility slots. Coin pauses before the slot and asks for the concrete movement so pose and timer evidence do not attach to a generic label. The source wording remains unchanged.
 
 Every one of the 2,709 nonempty source items is accounted for exactly once: 1,773 items are in workout blocks and 936 have recorded exclusions. This establishes capture coverage, not recognition accuracy or perfect prescription interpretation.
 

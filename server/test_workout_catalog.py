@@ -75,6 +75,11 @@ class PrescriptionTests(unittest.TestCase):
         value = prescription('1 ROUND OF 3 MINUTES')
         self.assertEqual(value['durationSeconds'],180)
         self.assertIsNone(value['restSeconds'])
+    def test_standalone_duration_is_a_single_timer(self):
+        value = prescription('CONDITIONING DRILL (4 MINUTES)')
+        self.assertEqual((value['completion'], value['rounds'], value['durationSeconds']),
+                         ('timed', 1, 240))
+        self.assertEqual(prescription('CONDITIONING DRILL (1 ROUND)')['completion'], 'manual')
     def test_mixed_set_and_round_remain_manual(self):
         for text in ['BAG WORK. 6 ROUNDS OF 3 MINUTES. 2 SETS OF 15 REPS',
                      '1 ROUND OF 3 MINUTES. 20 PUSH-UPS',

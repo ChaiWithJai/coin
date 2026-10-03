@@ -50,6 +50,7 @@ class Document(HTMLParser):
         self.stack[-1].children.append(data)
 
 TIMING = re.compile(r'\b(\d+)\s*ROUNDS?\s*OF\s*(\d+)\s*(MINUTES?|MINS?|SECONDS?|SECS?)\b', re.I)
+DURATION_ONLY = re.compile(r'\((\d+)\s*(MINUTES?|MINS?|SECONDS?|SECS?)\)', re.I)
 REST = re.compile(r'\b(\d+)\s*(SECONDS?|SECS?|MINUTES?|MINS?)\s+OF\s+REST\b', re.I)
 NEW_DRILL = re.compile(r'^(?:FR[O0]NTAL STANCE|FIGHTING ST[AN]*CE|BAG WORK|PARTNER WORK|VIRTUAL |LIGHT SPARRING|DRILLS WITH |CONDITIONING DRILL|MEDICINE BALL|MED BALL|STRETCHES|COOL[ -]DOWN|HAMMERS|PUNCHING UP|FREESTYLE (?:EXERCISES|SHADOW)|\d+\s+(?:KNUCKLE |JUMP |CLAP |MOUNTAIN )?(?:PUSH[ -]?UPS|SQUATS|BURPEES|CLIMBERS))', re.I)
 EXERCISE = re.compile(r'PUSH[ -]?UPS|SQUATS|BURPEES|CLIMBERS|MEDICINE BALL|MED BALL|PLYOMETRIC|PPLYOMETRIC|TUCKS|LEG RAISES|JUMPS', re.I)
@@ -108,6 +109,13 @@ def prescription(text):
         elif len(rests)>1 or re.search(r'\bREST\b', text, re.I):
             result.update(completion='manual', durationSeconds=None, rounds=None,
                           parseStatus='ambiguous_rest_prescription')
+    elif not timings and not sets and not reps and not EXERCISE.search(text):
+        durations = list(DURATION_ONLY.finditer(text))
+        if len(durations) == 1 and not re.search(r'\bREST\b', text, re.I):
+            match = durations[0]
+            result.update(completion='timed', rounds=1,
+                          durationSeconds=int(match[1])*(60 if match[2].lower().startswith('min') else 1),
+                          parseStatus='explicit_duration_prescription')
     return result
 
 

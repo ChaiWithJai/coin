@@ -4695,13 +4695,13 @@
           "demoURLs": [
             "https://www.youtube.com/shorts/6K7nDwLo9k8"
           ],
-          "completion": "manual",
-          "rounds": null,
-          "durationSeconds": null,
+          "completion": "timed",
+          "rounds": 1,
+          "durationSeconds": 240,
           "restSeconds": null,
           "sets": null,
           "reps": null,
-          "parseStatus": "manual_source_prescription"
+          "parseStatus": "explicit_duration_prescription"
         },
         {
           "id": "basic-w2-d1-p10-s8-1",
@@ -8974,13 +8974,13 @@
           "demoURLs": [
             "https://www.youtube.com/shorts/yvKk-CUl_nM"
           ],
-          "completion": "manual",
-          "rounds": null,
-          "durationSeconds": null,
+          "completion": "timed",
+          "rounds": 1,
+          "durationSeconds": 240,
           "restSeconds": null,
           "sets": null,
           "reps": null,
-          "parseStatus": "manual_source_prescription"
+          "parseStatus": "explicit_duration_prescription"
         },
         {
           "id": "basic-w3-d1-p17-s8-1",

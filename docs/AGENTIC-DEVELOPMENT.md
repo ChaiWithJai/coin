@@ -58,8 +58,8 @@ Run the deterministic source and queue checks without making inference calls:
 ```sh
 cd server
 python3 -m unittest test_workout_catalog.py
-/Users/jaibhagat/code/prismml/bonsai-lab/.venv/bin/python -m unittest discover -s tests
 cd ..
+/Users/jaibhagat/code/prismml/bonsai-lab/.venv/bin/python -m unittest discover -s server/tests
 ```
 
 Inspect the paused baseline without restarting it:

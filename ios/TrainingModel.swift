@@ -209,6 +209,7 @@ enum TrainingCopy {
             "footwork": ["fr": "Déplacements et angles", "en": "Footwork and angles"],
             "free_boxing": ["fr": "Boxe libre", "en": "Open round"],
             "boxing": ["fr": "Boxe", "en": "Boxing"],
+            "bag_work": ["fr": "Travail au sac", "en": "Bag work"],
             "rest": ["fr": "Récupération", "en": "Rest"],
             "pose_waiting": ["fr": "Recherche du corps", "en": "Waiting for body"],
             "pose_model_unavailable": ["fr": "Modèle de pose indisponible", "en": "Pose model unavailable"],
@@ -223,7 +224,11 @@ enum TrainingCopy {
             "camera_permission": ["fr": "Autorise la caméra", "en": "Allow camera access"],
             "camera_on": ["fr": "Caméra active", "en": "Camera on"],
             "framing_cue": ["fr": "Replace-toi dans le cadre pour que je puisse te suivre.", "en": "Move back into frame so I can track you."],
-            "mobility": ["fr": "Mobilité", "en": "Mobility"],
+        "mobility": ["fr": "Mobilité", "en": "Mobility"],
+            "shoulder_circles": ["fr": "Cercles d’épaules", "en": "Shoulder circles"],
+            "hip_circles": ["fr": "Cercles de hanches", "en": "Hip circles"],
+            "thoracic_rotations": ["fr": "Rotations thoraciques", "en": "Thoracic rotations"],
+            "hamstring_sweeps": ["fr": "Balayages ischio-jambiers", "en": "Hamstring sweeps"],
             "squats": ["fr": "Squats", "en": "Squats"],
             "squat_observed_reps": ["fr": "%d squats observés", "en": "%d squats observed"],
             "lunge_observed_reps": ["fr": "%d fentes observées", "en": "%d lunges observed"],
@@ -361,6 +366,22 @@ enum WorkoutActivityCopy {
         guard let key else { return language == "fr" ? "Non choisi" : "Unchosen" }
         return names[key]?[language] ?? key.replacingOccurrences(of: "_", with: " ")
     }
+    static func viewRequirement(_ key: String, language: String) -> String {
+        let labels: [String: [String: String]] = [
+            "full_body": ["fr": "corps entier", "en": "full body"],
+            "full_body_and_floor": ["fr": "corps entier et sol", "en": "full body and floor"],
+            "full_body_and_box": ["fr": "corps entier et caisse", "en": "full body and box"],
+            "hips_knees_ankles": ["fr": "hanches, genoux et chevilles", "en": "hips, knees and ankles"],
+            "upper_body_and_hips": ["fr": "buste et hanches", "en": "upper body and hips"],
+            "upper_body": ["fr": "buste", "en": "upper body"],
+            "hips_and_knees": ["fr": "hanches et genoux", "en": "hips and knees"],
+            "shoulders_and_hips": ["fr": "épaules et hanches", "en": "shoulders and hips"],
+            "upper_body_and_floor": ["fr": "buste et sol", "en": "upper body and floor"],
+            "upper_body_and_equipment": ["fr": "buste et matériel", "en": "upper body and equipment"],
+            "boxer_and_bag": ["fr": "boxeur et sac", "en": "boxer and bag"]
+        ]
+        return labels[key]?[language] ?? key.replacingOccurrences(of: "_", with: " ")
+    }
 }
 
 /// A source section is a prescription; this registry describes the concrete
@@ -388,7 +409,12 @@ struct WorkoutMovementDefinition {
         .init(key: "frontal_stance", family: "boxing", equipment: "none", version: "v1", requiredView: "full_body", observablePhases: ["stance", "movement", "stance"], targetUnit: "duration"),
         .init(key: "shadowboxing", family: "boxing", equipment: "none", version: "v1", requiredView: "upper_body_and_hips", observablePhases: ["probe", "exchange", "reset"], targetUnit: "exchange_candidate"),
         .init(key: "boxing", family: "boxing", equipment: "none", version: "v1", requiredView: "upper_body_and_hips", observablePhases: ["probe", "exchange", "reset"], targetUnit: "exchange_candidate"),
+        .init(key: "bag_work", family: "boxing", equipment: "heavy_bag", version: "v1", requiredView: "boxer_and_bag", observablePhases: ["engage", "combination", "exit"], targetUnit: "duration"),
         .init(key: "mobility", family: "mobility", equipment: "none", version: "v1", requiredView: "depends_on_selected_movement", observablePhases: [], targetUnit: "duration"),
+        .init(key: "shoulder_circles", family: "mobility", equipment: "none", version: "v1", requiredView: "upper_body", observablePhases: ["neutral", "circle", "neutral"], targetUnit: "duration"),
+        .init(key: "hip_circles", family: "mobility", equipment: "none", version: "v1", requiredView: "hips_and_knees", observablePhases: ["neutral", "circle", "neutral"], targetUnit: "duration"),
+        .init(key: "thoracic_rotations", family: "mobility", equipment: "none", version: "v1", requiredView: "shoulders_and_hips", observablePhases: ["center", "rotation", "center"], targetUnit: "duration"),
+        .init(key: "hamstring_sweeps", family: "mobility", equipment: "none", version: "v1", requiredView: "full_body", observablePhases: ["standing", "sweep", "standing"], targetUnit: "duration"),
         .init(key: "pushups", family: "strength", equipment: "none", version: "v1", requiredView: "upper_body_and_floor", observablePhases: ["top", "bottom", "top"], targetUnit: "rep"),
         .init(key: "bench_press", family: "strength", equipment: "bench", version: "v1", requiredView: "upper_body_and_equipment", observablePhases: ["extended", "lowered", "extended"], targetUnit: "rep"),
     ]
@@ -398,11 +424,10 @@ struct WorkoutMovementDefinition {
         let preferred: [String]
         switch family {
         case "conditioning": preferred = ["jumping_jacks", "burpees", "box_jumps", "squat_jumps", "squats", "lunges"]
-        case "mobility": preferred = ["mobility", "frontal_stance", "shadowboxing", "squats", "lunges"]
-        default: preferred = all.map(\.key)
+        case "mobility": preferred = ["shoulder_circles", "hip_circles", "thoracic_rotations", "hamstring_sweeps", "frontal_stance", "shadowboxing"]
+        default: preferred = all.map(\.key).filter { $0 != "mobility" }
         }
-        // Keep cross-training choices available; the family only orders them.
-        return (preferred + all.map(\.key).filter { !preferred.contains($0) }).compactMap(forKey)
+        return preferred.compactMap(forKey)
     }
 }
 
@@ -512,6 +537,16 @@ struct WorkoutActivityInstance: Codable, Identifiable, Equatable {
 enum WorkoutActivityRouting {
     static func allowsExchange(_ instance: WorkoutActivityInstance?) -> Bool {
         instance?.measurement.capability == .exchangeCandidate
+    }
+    static func allowsRepCandidate(_ instance: WorkoutActivityInstance?, sampledAt: Date) -> Bool {
+        guard let instance, instance.measurement.capability == .repCandidate,
+              let selectedAt = instance.selectedAt else { return false }
+        return sampledAt >= selectedAt
+    }
+    static func requiresRuntimeSelection(choiceFamily: String?, sourceActivityKey: String?,
+                                         instance: WorkoutActivityInstance?) -> Bool {
+        guard choiceFamily != nil || sourceActivityKey == "mobility" else { return false }
+        return instance?.exerciseKey == nil || instance?.exerciseKey == "mobility"
     }
     static func changed(from previous: WorkoutActivityInstance?, to current: WorkoutActivityInstance?) -> Bool {
         previous?.id != current?.id
@@ -1058,6 +1093,7 @@ struct TrainingData: Codable {
             guard let instance = data.sessions[index].activityInstances?.first(where: { $0.id == activityInstanceID }),
                   instance.blockID == blockID, instance.exerciseKey == activityKey,
                   instance.measurement.capability == .repCandidate,
+                  instance.selectedAt.map({ date >= $0 }) == true,
                   sourceVersion == instance.measurement.id + "-" + instance.measurement.version,
                   data.sessions[index].activityInstance(blockID: blockID, preparationIndex: instance.preparationIndex)?.id == activityInstanceID else { return }
         } else {

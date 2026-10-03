@@ -1,0 +1,44 @@
+{
+  "checkpoint": "runtime-slot-resolution-v1",
+  "recorded_at": "2026-10-02T23:00:00-04:00",
+  "claims": {
+    "generic_source_slots": "50 exact dynamic warm-ups and 21 exact stretches require a concrete runtime mobility choice before their camera clock starts",
+    "conditioning_duration": "two exact CONDITIONING DRILL (4 MINUTES) source blocks compile to one 240-second timer each",
+    "bag_work": "the exact conditioning bag-work block resolves to clock-only bag_work metadata",
+    "pose_boundary": "rep candidates reject pose timestamps earlier than the selected activity instance",
+    "recognition_limit": "only squat/lunge rep candidates and boxing/shadowboxing exchange candidates remain enabled and unvalidated"
+  },
+  "catalog": {
+    "days": 70,
+    "blocks": 535,
+    "timed_blocks": 233,
+    "manual_blocks": 302,
+    "sha256": "d102da18703053fef445d146e08ec91d63ad9c6153028151fa5c86cce04556fc"
+  },
+  "verification": {
+    "source_import_tests": {"passed": 11, "failed": 0},
+    "server_tests": {"passed": 71, "failed": 0},
+    "focused_ios_tests": {"passed": 34, "failed": 0},
+    "integrated_ios_tests": {"passed": 99, "failed": 0, "simulator": "Coin iPhone 11"},
+    "signed_generic_device_build": {
+      "bundle_id": "com.coinboxing.prototype",
+      "codesign_verified": true,
+      "executable_sha256": "5233bf9ed046093c0dd40783eb038d5c0a6445f7b93511b36af7a8aecd101787"
+    }
+  },
+  "failed_attempts": [
+    "The first integrated run passed 98 of 99 tests. Its remaining UI test assumed a generic mobility clock could begin before movement selection; the test was corrected to choose a concrete movement, its focused replay passed, and the clean integrated rerun passed 99 of 99."
+  ],
+  "physical_device": {
+    "device": "Lakshmi",
+    "state": "unavailable",
+    "installed": false,
+    "physical_camera_validation": false
+  },
+  "cost": {
+    "actual_billed_usd": null,
+    "status": "unknown",
+    "development_usage_run_id": "66ce6535a49e45028db3293fb8b5e31d",
+    "coverage": "observed per-response usage only; no hidden reasoning or full inference payload capture"
+  }
+}

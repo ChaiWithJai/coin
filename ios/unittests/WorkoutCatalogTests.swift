@@ -96,6 +96,30 @@ import XCTest
         XCTAssertEqual(frontal.map(\.effectiveRestSeconds), [30, 30, 30, 0])
     }
 
+    func testGenericSourceSlotsRequireConcreteRuntimeMovement() throws {
+        let source = WorkoutCatalog.shared.lessons.flatMap(\.blocks)
+        let warmups = source.filter { $0.title == "DYNAMIC WARM-UP:" && $0.instructions == $0.title }
+        let stretches = source.filter { $0.title == "STRETCHES" && $0.instructions == $0.title }
+        XCTAssertEqual(warmups.count, 50)
+        XCTAssertEqual(stretches.count, 21)
+        for block in warmups + stretches {
+            XCTAssertEqual(block.reviewedChoiceFamily, "mobility")
+            let sessionBlock = try XCTUnwrap(WorkoutCatalog.shared.lessons
+                .first { $0.blocks.contains { $0.id == block.id } }?.template().blocks
+                .first { $0.sourceBlockID == block.id })
+            let instance = try XCTUnwrap(WorkoutActivityInstance.initial(for: sessionBlock, at: Date()).first)
+            XCTAssertTrue(WorkoutActivityRouting.requiresRuntimeSelection(choiceFamily: sessionBlock.activityChoiceFamily,
+                sourceActivityKey: sessionBlock.sourceActivityKey, instance: instance))
+        }
+        let fourMinute = source.filter { $0.title == "CONDITIONING DRILL (4 MINUTES)" }
+        XCTAssertEqual(fourMinute.count, 2)
+        XCTAssertTrue(fourMinute.allSatisfy { $0.completion == .timed && $0.rounds == 1 && $0.durationSeconds == 240 })
+        let bag = try XCTUnwrap(WorkoutCatalog.shared.lessons.first { $0.id == "basic-w1-d5" }?
+            .template().blocks.first { $0.sourceBlockID == "basic-w1-d5-p7-s6-4" })
+        XCTAssertEqual(bag.sourceActivityKey, "bag_work")
+        XCTAssertEqual(WorkoutActivityInstance.initial(for: bag, at: Date()).first?.measurement.capability, .elapsedOnly)
+    }
+
     func testMixedSourcePrescriptionsKeepSeparateClocksAndNoFalseExchangeTracking() throws {
         let basic = try XCTUnwrap(WorkoutCatalog.shared.lessons.first { $0.id == "basic-w1-d5" })
         let blocks = basic.template().blocks
