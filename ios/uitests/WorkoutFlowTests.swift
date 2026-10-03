@@ -5,7 +5,8 @@ final class WorkoutFlowTests: XCTestCase {
 
     private func application(language: String, directory: String = UUID().uuidString, shortFreestyle: Bool = false,
                              activityFixture: Bool = false, acceleratedSource: Bool = false,
-                             zeroDetectionFreestyle: Bool = false) -> XCUIApplication {
+                             zeroDetectionFreestyle: Bool = false,
+                             catalogLessonID: String? = nil) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["-noAutoStart", "-language", language]
         app.launchEnvironment["COIN_TRAINING_DIRECTORY"] = "workout-ui-" + directory
@@ -18,6 +19,9 @@ final class WorkoutFlowTests: XCTestCase {
         if zeroDetectionFreestyle {
             app.launchEnvironment["COIN_TEST_FREESTYLE"] = "1"
             app.launchEnvironment["COIN_TEST_TIMER_STEP_SECONDS"] = "300"
+        }
+        if let catalogLessonID {
+            app.launchEnvironment["COIN_TEST_CATALOG_LESSON_ID"] = catalogLessonID
         }
         if activityFixture { app.launchEnvironment["COIN_TEST_ACTIVITY_CHOOSER"] = "1" }
         if acceleratedSource { app.launchEnvironment["COIN_TEST_TIMER_STEP_SECONDS"] = "300" }
@@ -83,6 +87,51 @@ final class WorkoutFlowTests: XCTestCase {
         XCTAssertTrue(app.buttons["lesson-competitive-w1-d1"].waitForExistence(timeout: 5))
         reveal(app.buttons["lesson-competitive-w5-d7"], in: app)
         attach("competitive-last-source-day", app: app)
+    }
+
+    func testEverySourceWorkoutCanBeChosenAndStartedWithFreshState() throws {
+        var started = 0
+        let runID = UUID().uuidString
+        for program in ["basic", "competitive"] {
+            for week in 1...5 {
+                for day in 1...7 {
+                    let lessonID = "\(program)-w\(week)-d\(day)"
+                    let app = application(language: "en", directory: "catalog-\(runID)-\(lessonID)",
+                                          catalogLessonID: lessonID)
+                    let chooseProgram = app.buttons["choose-program"]
+                    XCTAssertTrue(chooseProgram.waitForExistence(timeout: 3), lessonID)
+                    chooseProgram.tap()
+                    let lesson = app.buttons["lesson-\(lessonID)"]
+                    XCTAssertTrue(lesson.exists, lessonID)
+                    lesson.tap()
+                    let start = app.buttons["start-workout"]
+                    XCTAssertTrue(start.exists, lessonID)
+                    start.tap()
+
+                    let chooser = app.navigationBars["Choose movement"]
+                    if chooser.exists {
+                        let firstChoice = app.buttons.matching(
+                            NSPredicate(format: "identifier BEGINSWITH %@", "activity-choice-")).firstMatch
+                        XCTAssertTrue(firstChoice.exists, lessonID)
+                        firstChoice.tap()
+                    }
+                    let sourceTitle = app.staticTexts["workout-source-title"]
+                    XCTAssertTrue(sourceTitle.exists, lessonID)
+                    XCTAssertFalse(sourceTitle.label.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                                   lessonID)
+                    let manual = app.buttons["complete-manual-step"]
+                    let clock = app.staticTexts["workout-clock"]
+                    XCTAssertTrue(manual.exists || clock.exists, "No startable control for \(lessonID)")
+                    if !manual.exists {
+                        XCTAssertTrue(clock.label.range(of: #"^\d{2}:\d{2}$"#,
+                                                        options: .regularExpression) != nil, lessonID)
+                    }
+                    started += 1
+                    app.terminate()
+                }
+            }
+        }
+        XCTAssertEqual(started, 70)
     }
 
     func testManualSourceStepAdvancesToExactTimedRoundAndResumes() throws {

@@ -810,6 +810,21 @@ struct WorkoutProgramPicker: View {
     @State private var program = "basic"
     let choose: (WorkoutLesson) -> Void
 
+    private var shownLessons: [WorkoutLesson] {
+        let lessons = WorkoutCatalog.shared.lessons
+        #if DEBUG
+        let environment = ProcessInfo.processInfo.environment
+        if let lessonID = environment["COIN_TEST_CATALOG_LESSON_ID"],
+           let directory = environment["COIN_TRAINING_DIRECTORY"],
+           directory.hasPrefix("workout-ui-catalog-"),
+           lessonID.allSatisfy({ $0.isLetter || $0.isNumber || $0 == "-" }),
+           lessons.contains(where: { $0.id == lessonID }) {
+            return lessons.filter { $0.id == lessonID }
+        }
+        #endif
+        return lessons
+    }
+
     var body: some View {
         NavigationStack {
             List {
@@ -823,7 +838,7 @@ struct WorkoutProgramPicker: View {
                 }
                 ForEach(1...5, id: \.self) { week in
                     Section(language == "fr" ? "Semaine \(week)" : "Week \(week)") {
-                        ForEach(WorkoutCatalog.shared.lessons.filter { $0.programID == program && $0.week == week }) { lesson in
+                        ForEach(shownLessons.filter { $0.programID == program && $0.week == week }) { lesson in
                             Button { choose(lesson) } label: {
                                 HStack(alignment: .top, spacing: 12) {
                                     Text(String(format: "%02d", (week - 1) * 7 + lesson.day))
@@ -847,6 +862,11 @@ struct WorkoutProgramPicker: View {
             .scrollContentBackground(.hidden).background(Noir.black)
             .navigationTitle(language == "fr" ? "Choisis ta séance" : "Choose your workout")
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button(language == "fr" ? "Fermer" : "Close") { dismiss() } } }
+            #if DEBUG
+            .onAppear {
+                if let lesson = shownLessons.first, shownLessons.count == 1 { program = lesson.programID }
+            }
+            #endif
         }.tint(Noir.gold).preferredColorScheme(.dark)
     }
 }

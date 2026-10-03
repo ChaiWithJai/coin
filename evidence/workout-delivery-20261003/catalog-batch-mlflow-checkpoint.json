@@ -1,0 +1,48 @@
+{
+  "checkpoint": "complete_source_batch_and_production_workout_entry",
+  "date": "2026-10-03",
+  "catalog": {
+    "source": "https://boxing.dharmicdata.org",
+    "workouts": 70,
+    "basic": 35,
+    "competitive": 35,
+    "freestyle_entry": true
+  },
+  "ui_verification": {
+    "test": "CoinUITests.WorkoutFlowTests.testEverySourceWorkoutCanBeChosenAndStartedWithFreshState",
+    "starts_verified": 70,
+    "passed_tests": 1,
+    "failed_tests": 0,
+    "duration_seconds": 472.995,
+    "device": "Coin iPhone 11 simulator",
+    "xcresult": "/tmp/coin-complex-source-derived/Logs/Test/Test-Coin-2026.10.03_03-06-35--0400.xcresult"
+  },
+  "atomic_batch": {
+    "job_id": "2782f0b73d2d7e96a2796598b17e4578ba0be6b468876f4bf5061126aba75492",
+    "normalization_version": "source-item-normalization-v2.8",
+    "items_complete": 1773,
+    "failed": 0,
+    "full_audit_passed": true,
+    "runtime_promotion": false
+  },
+  "mlflow": {
+    "experiment_id": "40",
+    "expected_attempts": 1773,
+    "finished_attempt_traces": 1773,
+    "missing": 0,
+    "duplicate_traces": 0,
+    "schema_coverage": "1773/1773",
+    "lineage_coverage": "1773/1773",
+    "runtime_gate_coverage": "1773/1773",
+    "usage_coverage": "1773/1773",
+    "cost_status_coverage": "1773/1773",
+    "actual_cost_usd": null
+  },
+  "agentic_formula": "record -> review -> correct -> train -> evaluate -> deploy",
+  "remaining": [
+    "No batch proposal is runtime-promoted without explicit human review.",
+    "A completed physical iPhone workout and normal-placement camera evaluation remain unproven.",
+    "Training, held-out evaluation, and deployment of a learned movement artifact remain incomplete.",
+    "Actual billed cost and GB10 energy cost remain unknown."
+  ]
+}
