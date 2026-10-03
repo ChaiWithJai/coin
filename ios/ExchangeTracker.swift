@@ -203,10 +203,11 @@ struct RoundSummary: Codable {
     var sourceTitle: String? = nil
     var sourceInstructions: String? = nil
     var sourceID: String? = nil
+    var activityInstanceID: String? = nil
 
     enum CodingKeys: String, CodingKey {
         case requestID = "request_id", language, stance, drillID = "drill_id", round, durationS = "duration_s", exchanges
-        case sessionID = "session_id", workoutMode = "workout_mode", sourceTitle = "source_title", sourceInstructions = "source_instructions", sourceID = "source_id"
+        case sessionID = "session_id", workoutMode = "workout_mode", sourceTitle = "source_title", sourceInstructions = "source_instructions", sourceID = "source_id", activityInstanceID = "activity_instance_id"
     }
 }
 

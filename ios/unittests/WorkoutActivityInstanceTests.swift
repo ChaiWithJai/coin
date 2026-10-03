@@ -101,9 +101,15 @@ import XCTest
         XCTAssertTrue(store.selectActivity(sessionID: id, blockID: block.id, exerciseKey: "burpees"))
         XCTAssertFalse(WorkoutActivityRouting.allowsExchange(store.data.sessions[0].activityInstance(blockID: block.id)))
         XCTAssertTrue(store.selectActivity(sessionID: id, blockID: block.id, exerciseKey: "shadowboxing"))
-        XCTAssertTrue(WorkoutActivityRouting.allowsExchange(store.data.sessions[0].activityInstance(blockID: block.id)))
+        let shadow = try XCTUnwrap(store.data.sessions[0].activityInstance(blockID: block.id))
+        XCTAssertTrue(WorkoutActivityRouting.allowsExchange(shadow))
+        XCTAssertNil(WorkoutActivityRouting.outgoingExchangeID(from: shadow, to: shadow))
+        XCTAssertTrue(store.selectActivity(sessionID: id, blockID: block.id, exerciseKey: "shadowboxing"))
+        XCTAssertEqual(store.data.sessions[0].activityInstance(blockID: block.id)?.id, shadow.id)
         XCTAssertTrue(store.selectActivity(sessionID: id, blockID: block.id, exerciseKey: "frontal_stance"))
-        XCTAssertFalse(WorkoutActivityRouting.allowsExchange(store.data.sessions[0].activityInstance(blockID: block.id)))
+        let stance = try XCTUnwrap(store.data.sessions[0].activityInstance(blockID: block.id))
+        XCTAssertFalse(WorkoutActivityRouting.allowsExchange(stance))
+        XCTAssertEqual(WorkoutActivityRouting.outgoingExchangeID(from: shadow, to: stance), shadow.id)
     }
     func testSourceSpecifiedAndUserSelectionAreDistinctEvenForSameExercise() throws {
         let (store, folder) = makeStore()

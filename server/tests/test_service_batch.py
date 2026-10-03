@@ -56,6 +56,19 @@ class ServiceBatchTests(unittest.TestCase):
         self.assertEqual(jobs[0]['provenance']['workout_mode'],'program')
         self.assertTrue(all(x['state']=='pending' for x in jobs[0]['items']))
 
+    def test_runtime_activity_id_survives_round_and_outbox(self):
+        activity_id=uuid.uuid4()
+        body=self.body.model_copy(update={'activity_instance_id':activity_id,'duration_s':12})
+        self.service.round_report(body)
+        self.assertEqual(str(self.mock_model.call_args.args[0]['activity_instance_id']),str(activity_id))
+        with self.service.OUTBOX.connect() as db:
+            payload=json.loads(db.execute('SELECT payload FROM events').fetchone()[0])
+        self.assertEqual(payload['activity_instance_id'],str(activity_id))
+        self.service.enqueue_pending_rounds()
+        store=Store(self.service.DATA/'batch-jobs.sqlite3')
+        job=store.inspect()[0]
+        self.assertEqual(job['provenance']['activity_instance_id'],str(activity_id))
+
     def test_store_failure_leaves_durable_pending_and_report_succeeds(self):
         result=self.service.round_report(self.body)
         with patch.object(Store,'submit',side_effect=OSError('fixture disk error')):

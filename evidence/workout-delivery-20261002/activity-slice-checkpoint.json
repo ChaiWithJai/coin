@@ -1,0 +1,26 @@
+{
+  "checkpoint": "runtime-activity-exchange-slices",
+  "date": "2026-10-02",
+  "observed_failure": "Switching from shadowboxing to conditioning could discard buffered exchanges; switching back could merge reused tracker exchange IDs and overstate slice duration.",
+  "change": {
+    "choice_boundary": "On a changed activity instance, close timer attribution, drain the outgoing exchange-capable slice, then reset camera tracker and UI buffers. An identical user selection does not reset tracking.",
+    "round_lineage": "Each submitted slice has its own request ID, outgoing activity_instance_id and attributed duration_s. The private server preserves the ID in durable round input, offline batch provenance and MLflow event payload.",
+    "source_catalog": "unchanged",
+    "french_proposals": "three Basic W1D1 source items; unreviewed and runtimeEligible=false; source and numeric guards"
+  },
+  "verification": {
+    "integrated_simulator": "86 passed, 0 failed",
+    "server_tests": "62 passed",
+    "french_proposal_tests": "3 passed",
+    "signed_generic_device_build": "passed",
+    "signed_phone_binary_sha256": "719a30a89b980a6ca4d1f5c94a9080a86c94ace827b5d4eebc40f3f9f5f1798c",
+    "gb10_service_sha256": "67bca28f26868bbc1724858228e8640292169484521821d0b91fb305518aec57",
+    "gb10_batch_jobs_sha256": "8cc48abe53018b881f9fa2def1b253606681f2bb4eeb54dd984d06bdef260345",
+    "gb10_service_pid": 2907667,
+    "gb10_openapi_activity_instance_id": true,
+    "physical_phone_install": "not_done_device_unavailable",
+    "physical_exchange_switch_validation": "not_done"
+  },
+  "cost": {"actual_billed_usd": null, "inference_estimate_usd": null},
+  "limitations": ["Simulator has no physical exchange stream", "French source proposals require review before runtime", "No new MLflow inference trace from a phone workout"]
+}

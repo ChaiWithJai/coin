@@ -96,6 +96,10 @@ final class ExchangeTrackerTests: XCTestCase {
         let json = String(data: try JSONEncoder().encode(summary), encoding: .utf8)!
         XCTAssertTrue(json.contains("\"request_id\":\"r1\""))
         XCTAssertTrue(json.contains("\"duration_s\":180"))
+        let linked = RoundSummary(requestID: UUID().uuidString, language: "fr", stance: "orthodox",
+            drillID: nil, round: 1, durationS: 12, exchanges: [], activityInstanceID: UUID().uuidString)
+        let linkedJSON = String(data: try JSONEncoder().encode(linked), encoding: .utf8)!
+        XCTAssertTrue(linkedJSON.contains("\"activity_instance_id\":"))
     }
 
     func testOcclusionAfterPunchIsUnobservableAndNeverRequestsResetCue() throws {

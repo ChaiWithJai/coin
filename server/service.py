@@ -163,6 +163,7 @@ class RoundSummary(BaseModel):
     source_title:str|None=Field(default=None,max_length=500)
     source_instructions:str|None=Field(default=None,max_length=6000)
     source_id:str|None=Field(default=None,max_length=200)
+    activity_instance_id:uuid.UUID|None=None
 
 
 def db():
@@ -204,6 +205,7 @@ def enqueue_pending_rounds(limit=16):
             record=json.loads(payload)
             provenance={'origin':record.get('origin','live'),'source_id':record.get('source_id') or key,
                         'request_id':key,'session_id':record.get('session_id'),
+                        'activity_instance_id':record.get('activity_instance_id'),
                         'workout_mode':record.get('workout_mode'),
                         'source_title':record.get('source_title'),
                         'drill_id':record.get('drill_id')}
@@ -492,6 +494,7 @@ def round_report(body:RoundSummary):
         payload={'session_id':str(body.session_id or body.request_id),'window_id':str(body.request_id),'received_at':time.time(),
                  'model_versions':{'served':response.get('models',[]),'rules':'exchange-tracker-v1'},
                  'workout_mode':body.workout_mode,'source_title':body.source_title,'origin':body.origin,
+                 'activity_instance_id':str(body.activity_instance_id) if body.activity_instance_id else None,
                  'decision':{'status':'complete','constraint':response['constraint'],'facts':facts},'stages':stages}
         response['event_id']=OUTBOX.enqueue(payload,event_id=str(body.request_id))
         response['offline_analysis']=offline

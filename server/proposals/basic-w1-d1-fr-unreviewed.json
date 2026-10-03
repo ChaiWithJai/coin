@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "purpose": "translation_proposals_only",
+  "runtimeEligible": false,
+  "lessonID": "basic-w1-d1",
+  "sourceURL": "https://boxing.dharmicdata.org/program/basic/week/1/day/1",
+  "sourceSHA256": "25b017c54422132ce7308dfa9abf66e660d2f699f68d7afcc6a660c4e4e066cb",
+  "items": [
+    {
+      "blockID": "basic-w1-d1-p3-s2-1",
+      "sourceItemID": "p3-b2",
+      "sourceText": "DYNAMIC WARM-UP:",
+      "sourceTextSHA256": "234511e3e3763bec6a8c70013ac57a2a832793f64cb07d376d1d5bd1a2665f36",
+      "proposedFrench": "ÉCHAUFFEMENT DYNAMIQUE :",
+      "sourceDemoURLs": [
+        "https://youtu.be/NBx2IAu3nkw?si=IsPBNWADdP82Z56s"
+      ],
+      "prescription": {
+        "completion": "manual",
+        "rounds": null,
+        "durationSeconds": null,
+        "restSeconds": null,
+        "sets": null,
+        "reps": null
+      },
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "blockID": "basic-w1-d1-p3-s3-1",
+      "sourceItemID": "p3-b4",
+      "sourceText": "FR0NTAL STANCE DRILL",
+      "sourceTextSHA256": "ffe06a68b8ac89e0495512ca9c954125fa7afb65f6f0fd1d98e07f00b0726d51",
+      "proposedFrench": "EXERCICE DE GARDE DE FACE",
+      "sourceDemoURLs": [
+        "https://www.youtube.com/shorts/rV3m-gHRCXw"
+      ],
+      "prescription": {
+        "completion": "timed",
+        "rounds": 4,
+        "durationSeconds": 120,
+        "restSeconds": 30,
+        "sets": null,
+        "reps": null
+      },
+      "reviewStatus": "unreviewed"
+    },
+    {
+      "blockID": "basic-w1-d1-p3-s3-1",
+      "sourceItemID": "p3-b5",
+      "sourceText": "4 ROUNDS OF 2 MINUTES WITH 30 SECONDS OF REST IN BETWEEN.",
+      "sourceTextSHA256": "c61f306141638a7fba20d6fb5f7359ac467c4eae61021dc6ddc1bdbb58bda67c",
+      "proposedFrench": "4 rounds de 2 minutes avec 30 secondes de repos entre les rounds.",
+      "sourceDemoURLs": [],
+      "prescription": {
+        "completion": "timed",
+        "rounds": 4,
+        "durationSeconds": 120,
+        "restSeconds": 30,
+        "sets": null,
+        "reps": null
+      },
+      "reviewStatus": "unreviewed"
+    }
+  ]
+}

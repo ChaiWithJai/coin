@@ -699,11 +699,18 @@ struct LiveWorkoutView: View {
         guard let current, training.selectActivity(sessionID: sessionID, blockID: current.block.id,
             preparationIndex: current.preparationIndex, exerciseKey: key,
             customName: key == "custom" ? customActivityName : nil) else { return }
-        if let previous, activityInstance(for: current)?.id != previous.id {
+        let selected = activityInstance(for: current)
+        if let previous, WorkoutActivityRouting.changed(from: previous, to: selected) {
             recordActivityInterval(for: current, instanceID: previous.id, reason: .choiceChanged)
+            if let outgoingID = WorkoutActivityRouting.outgoingExchangeID(from: previous, to: selected) {
+                submitRound(current, outgoingInstanceID: outgoingID)
+            }
+            roundExchanges = []
+            roundEvidence = []
+            cuePolicy = ExchangeCuePolicy()
+            camera.resetExchanges()
+            squatTracker = SquatTracker()
         }
-        squatTracker = SquatTracker()
-        camera.resetExchanges()
         showActivityChoice = false
     }
     private func recordActivityInterval(for segment: Segment, instanceID: UUID? = nil,
@@ -1215,8 +1222,9 @@ struct LiveWorkoutView: View {
                                 : "EXCHANGES \(roundExchanges.count) · LAST \(last) · FAULTS \(faults)"
     }
     /// Sends the finished round's exchanges to the harness; never blocks the workout.
-    private func submitRound(_ segment: Segment) {
-        guard tracksExchanges(segment) else { return }
+    private func submitRound(_ segment: Segment, outgoingInstanceID: UUID? = nil) {
+        guard outgoingInstanceID != nil || tracksExchanges(segment) else { return }
+        let instanceID = outgoingInstanceID ?? activityInstance(for: segment)?.id
         var byID = Dictionary(uniqueKeysWithValues: roundExchanges.map { ($0.id, $0) })
         for exchange in camera.takeRoundExchanges() where byID[exchange.id] == nil { byID[exchange.id] = exchange }
         let exchanges = byID.values.sorted { $0.id < $1.id }
@@ -1225,12 +1233,14 @@ struct LiveWorkoutView: View {
         guard !exchanges.isEmpty else { return }
         roundReports.submit(RoundSummary(requestID: UUID().uuidString, language: language, stance: "orthodox",
                                          drillID: segment.block.drillID, round: segment.block.roundNumber ?? 0,
-                                         durationS: segment.isManual ? manualElapsed : max(0, segment.seconds - remaining), exchanges: exchanges,
+                                         durationS: instanceID.map { workout?.activityElapsedSeconds(instanceID: $0) ?? 0 } ?? 0,
+                                         exchanges: exchanges,
                                          sessionID: sessionID.uuidString,
                                          workoutMode: segment.block.sourceURL != nil ? "program" : (segment.block.drillID == "free-boxing-v1" ? "freestyle" : "drill"),
                                          sourceTitle: segment.block.sourceTitle,
                                          sourceInstructions: segment.block.sourceInstructions.map { String($0.prefix(6000)) },
-                                         sourceID: segment.block.sourceBlockID))
+                                         sourceID: segment.block.sourceBlockID,
+                                         activityInstanceID: instanceID?.uuidString))
     }
     private func finishWorkout() {
         guard workout?.state == .active else { return }

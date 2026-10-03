@@ -145,7 +145,7 @@ def validate_round(record):
 def round_context(record):
     context = {key: record.get(key) for key in (
         'round', 'duration_s', 'language', 'drill_id', 'workout_mode', 'source_id',
-        'source_title', 'source_instructions', 'session_id', 'request_id')}
+        'source_title', 'source_instructions', 'session_id', 'request_id', 'activity_instance_id')}
     context['assessment_scope'] = ('assigned_drill_candidates' if
         record.get('drill_id') == 'probe-combine-angle-v1' and
         record.get('workout_mode') not in ('program', 'freestyle') else 'observed_events_only')

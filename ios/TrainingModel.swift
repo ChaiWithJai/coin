@@ -460,6 +460,14 @@ enum WorkoutActivityRouting {
     static func allowsExchange(_ instance: WorkoutActivityInstance?) -> Bool {
         instance?.measurement.capability == .exchangeCandidate
     }
+    static func changed(from previous: WorkoutActivityInstance?, to current: WorkoutActivityInstance?) -> Bool {
+        previous?.id != current?.id
+    }
+    static func outgoingExchangeID(from previous: WorkoutActivityInstance?,
+                                   to current: WorkoutActivityInstance?) -> UUID? {
+        guard changed(from: previous, to: current), allowsExchange(previous) else { return nil }
+        return previous?.id
+    }
 }
 
 struct PreparationActivity: Codable, Hashable {
