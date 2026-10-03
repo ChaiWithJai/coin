@@ -1,0 +1,436 @@
+{
+  "catalog_path": "ios/WorkoutCatalog.json",
+  "catalog_version": "coin-workout-source-v1",
+  "check": "raw_html_sha256",
+  "checked_at": "2026-10-03T07:19:25.919263+00:00",
+  "drift": [],
+  "fetch_count": 70,
+  "fetch_failures": [],
+  "matched_count": 70,
+  "matches": [
+    {
+      "actual_sha256": "25b017c54422132ce7308dfa9abf66e660d2f699f68d7afcc6a660c4e4e066cb",
+      "expected_sha256": "25b017c54422132ce7308dfa9abf66e660d2f699f68d7afcc6a660c4e4e066cb",
+      "url": "https://boxing.dharmicdata.org/program/basic/week/1/day/1/",
+      "workout_id": "basic-w1-d1"
+    },
+    {
+      "actual_sha256": "29cadfaa8a5e38db70524cfad65a2c9e2c0e54721fdf251e62ad574349890e1f",
+      "expected_sha256": "29cadfaa8a5e38db70524cfad65a2c9e2c0e54721fdf251e62ad574349890e1f",
+      "url": "https://boxing.dharmicdata.org/program/basic/week/1/day/2/",
+      "workout_id": "basic-w1-d2"
+    },
+    {
+      "actual_sha256": "4fd95148945e1a842187854c4df1c65f28a7ee683d0a358e9c50c588f8b285d3",
+      "expected_sha256": "4fd95148945e1a842187854c4df1c65f28a7ee683d0a358e9c50c588f8b285d3",
+      "url": "https://boxing.dharmicdata.org/program/basic/week/1/day/3/",
+      "workout_id": "basic-w1-d3"
+    },
+    {
+      "actual_sha256": "280de273f155223a28d35dbe37132abb37b19608ec8263cb0ac3d10aa2426ba9",
+      "expected_sha256": "280de273f155223a28d35dbe37132abb37b19608ec8263cb0ac3d10aa2426ba9",
+      "url": "https://boxing.dharmicdata.org/program/basic/week/1/day/4/",
+      "workout_id": "basic-w1-d4"
+    },
+    {
+      "actual_sha256": "56c47e1b25c3fd1bed4c76a26f2b16db74136fc0e34e439e9e6c0ac2ef438ea5",
+      "expected_sha256": "56c47e1b25c3fd1bed4c76a26f2b16db74136fc0e34e439e9e6c0ac2ef438ea5",
+      "url": "https://boxing.dharmicdata.org/program/basic/week/1/day/5/",
+      "workout_id": "basic-w1-d5"
+    },
+    {
+      "actual_sha256": "9fb31259f21dd7c1d63f059f1b862609d0cd8056dfc64c7aad74d612d5ff497f",
+      "expected_sha256": "9fb31259f21dd7c1d63f059f1b862609d0cd8056dfc64c7aad74d612d5ff497f",
+      "url": "https://boxing.dharmicdata.org/program/basic/week/1/day/6/",
+      "workout_id": "basic-w1-d6"
+    },
+    {
+      "actual_sha256": "168155309b693a56e4c65c4f13fe6da26cd5cc228e6bee0c7a164f77747190ed",
+      "expected_sha256": "168155309b693a56e4c65c4f13fe6da26cd5cc228e6bee0c7a164f77747190ed",
+      "url": "https://boxing.dharmicdata.org/program/basic/week/1/day/7/",
+      "workout_id": "basic-w1-d7"
+    },
+    {
+      "actual_sha256": "552f658399e91ea206f2a152d364955b5ca48aec05ee1faf35564b62628811a6",
+      "expected_sha256": "552f658399e91ea206f2a152d364955b5ca48aec05ee1faf35564b62628811a6",
+      "url": "https://boxing.dharmicdata.org/program/basic/week/2/day/1/",
+      "workout_id": "basic-w2-d1"
+    },
+    {
+      "actual_sha256": "1d8fef91fd1065009aa68e42ab60f2d9f0370fa88a74488b904f601377dae6d6",
+      "expected_sha256": "1d8fef91fd1065009aa68e42ab60f2d9f0370fa88a74488b904f601377dae6d6",
+      "url": "https://boxing.dharmicdata.org/program/basic/week/2/day/2/",
+      "workout_id": "basic-w2-d2"
+    },
+    {
+      "actual_sha256": "223db0fc4e000279cc211f7d81dffb0ab49b31e71ef84d16fa7d2c05eed5be69",
+      "expected_sha256": "223db0fc4e000279cc211f7d81dffb0ab49b31e71ef84d16fa7d2c05eed5be69",
+      "url": "https://boxing.dharmicdata.org/program/basic/week/2/day/3/",
+      "workout_id": "basic-w2-d3"
+    },
+    {
+      "actual_sha256": "07cef732331bf5a5260fa670536ada238db63b239009735367698f8ccd7d5069",
+      "expected_sha256": "07cef732331bf5a5260fa670536ada238db63b239009735367698f8ccd7d5069",
+      "url": "https://boxing.dharmicdata.org/program/basic/week/2/day/4/",
+      "workout_id": "basic-w2-d4"
+    },
+    {
+      "actual_sha256": "a00bbebdb162859e8f9067f742deaf682119118e34d1cb00540a2d1c47c72496",
+      "expected_sha256": "a00bbebdb162859e8f9067f742deaf682119118e34d1cb00540a2d1c47c72496",
+      "url": "https://boxing.dharmicdata.org/program/basic/week/2/day/5/",
+      "workout_id": "basic-w2-d5"
+    },
+    {
+      "actual_sha256": "e2062ee4323de3cdc59b2e3ea65ff8c223d352169aa211bb37f9669b2b74a047",
+      "expected_sha256": "e2062ee4323de3cdc59b2e3ea65ff8c223d352169aa211bb37f9669b2b74a047",
+      "url": "https://boxing.dharmicdata.org/program/basic/week/2/day/6/",
+      "workout_id": "basic-w2-d6"
+    },
+    {
+      "actual_sha256": "5fd00545e205d72d34fcc1122f8870f574b0525454d268798273c0d8f33e1ca6",
+      "expected_sha256": "5fd00545e205d72d34fcc1122f8870f574b0525454d268798273c0d8f33e1ca6",
+      "url": "https://boxing.dharmicdata.org/program/basic/week/2/day/7/",
+      "workout_id": "basic-w2-d7"
+    },
+    {
+      "actual_sha256": "5685fcc51ebe7aa3772df5a908149446179c2f0420356f582f8eef9f37e66335",
+      "expected_sha256": "5685fcc51ebe7aa3772df5a908149446179c2f0420356f582f8eef9f37e66335",
+      "url": "https://boxing.dharmicdata.org/program/basic/week/3/day/1/",
+      "workout_id": "basic-w3-d1"
+    },
+    {
+      "actual_sha256": "d2610397607fc2107182b30dcfe4e649497133e58fa67cda14f0cc6300594ba4",
+      "expected_sha256": "d2610397607fc2107182b30dcfe4e649497133e58fa67cda14f0cc6300594ba4",
+      "url": "https://boxing.dharmicdata.org/program/basic/week/3/day/2/",
+      "workout_id": "basic-w3-d2"
+    },
+    {
+      "actual_sha256": "454fb9ab415228e310c11e2232f7ff59ea9cb0d6e0023d30da2cc932abfc4a11",
+      "expected_sha256": "454fb9ab415228e310c11e2232f7ff59ea9cb0d6e0023d30da2cc932abfc4a11",
+      "url": "https://boxing.dharmicdata.org/program/basic/week/3/day/3/",
+      "workout_id": "basic-w3-d3"
+    },
+    {
+      "actual_sha256": "1141d87b7b7feb39adad979768c821efbca4bb35533d7d2423e4c4d7398af573",
+      "expected_sha256": "1141d87b7b7feb39adad979768c821efbca4bb35533d7d2423e4c4d7398af573",
+      "url": "https://boxing.dharmicdata.org/program/basic/week/3/day/4/",
+      "workout_id": "basic-w3-d4"
+    },
+    {
+      "actual_sha256": "f9099b8d1fb97585f7236dd491e2ab1244c4348f33c1d07c76064b0aac4e2a6b",
+      "expected_sha256": "f9099b8d1fb97585f7236dd491e2ab1244c4348f33c1d07c76064b0aac4e2a6b",
+      "url": "https://boxing.dharmicdata.org/program/basic/week/3/day/5/",
+      "workout_id": "basic-w3-d5"
+    },
+    {
+      "actual_sha256": "0979c500d77aae82ac1bcb6c9469671aae433d45da6dfd3c968e0136f0c0c687",
+      "expected_sha256": "0979c500d77aae82ac1bcb6c9469671aae433d45da6dfd3c968e0136f0c0c687",
+      "url": "https://boxing.dharmicdata.org/program/basic/week/3/day/6/",
+      "workout_id": "basic-w3-d6"
+    },
+    {
+      "actual_sha256": "254c319ed1145dc5c64a85e6b29dca27ff24ba67a86f0f69683ab36fdfd6dd7c",
+      "expected_sha256": "254c319ed1145dc5c64a85e6b29dca27ff24ba67a86f0f69683ab36fdfd6dd7c",
+      "url": "https://boxing.dharmicdata.org/program/basic/week/3/day/7/",
+      "workout_id": "basic-w3-d7"
+    },
+    {
+      "actual_sha256": "f89e973a297fbdeb263cbbcfd8860e7b8b591eee32aecfaa0a547263f97ad6ef",
+      "expected_sha256": "f89e973a297fbdeb263cbbcfd8860e7b8b591eee32aecfaa0a547263f97ad6ef",
+      "url": "https://boxing.dharmicdata.org/program/basic/week/4/day/1/",
+      "workout_id": "basic-w4-d1"
+    },
+    {
+      "actual_sha256": "e4808fcac0859c920fc319fd8630b5b06db4a17ce182b947fba96a4f03513ac3",
+      "expected_sha256": "e4808fcac0859c920fc319fd8630b5b06db4a17ce182b947fba96a4f03513ac3",
+      "url": "https://boxing.dharmicdata.org/program/basic/week/4/day/2/",
+      "workout_id": "basic-w4-d2"
+    },
+    {
+      "actual_sha256": "76171ecee9ae27280db19648223e8582e38e243b380f941c00b00261fe2b17f0",
+      "expected_sha256": "76171ecee9ae27280db19648223e8582e38e243b380f941c00b00261fe2b17f0",
+      "url": "https://boxing.dharmicdata.org/program/basic/week/4/day/3/",
+      "workout_id": "basic-w4-d3"
+    },
+    {
+      "actual_sha256": "92adbee3a2ff222da80db06bde5c4d8a91d53b19d328404c232ae7d8dff38780",
+      "expected_sha256": "92adbee3a2ff222da80db06bde5c4d8a91d53b19d328404c232ae7d8dff38780",
+      "url": "https://boxing.dharmicdata.org/program/basic/week/4/day/4/",
+      "workout_id": "basic-w4-d4"
+    },
+    {
+      "actual_sha256": "0aa64bea61cd5078358e1ae10728b176d2e53e37622a0b1b5051427c32610495",
+      "expected_sha256": "0aa64bea61cd5078358e1ae10728b176d2e53e37622a0b1b5051427c32610495",
+      "url": "https://boxing.dharmicdata.org/program/basic/week/4/day/5/",
+      "workout_id": "basic-w4-d5"
+    },
+    {
+      "actual_sha256": "e17daa83962d11a526f27e2f76fdadb4be295ddb3c81552f2ee1d1464294c845",
+      "expected_sha256": "e17daa83962d11a526f27e2f76fdadb4be295ddb3c81552f2ee1d1464294c845",
+      "url": "https://boxing.dharmicdata.org/program/basic/week/4/day/6/",
+      "workout_id": "basic-w4-d6"
+    },
+    {
+      "actual_sha256": "019603eef94ee212cdccea9272f76a674bbe7973b3066b0a4ff8f0dfbe9f3b2b",
+      "expected_sha256": "019603eef94ee212cdccea9272f76a674bbe7973b3066b0a4ff8f0dfbe9f3b2b",
+      "url": "https://boxing.dharmicdata.org/program/basic/week/4/day/7/",
+      "workout_id": "basic-w4-d7"
+    },
+    {
+      "actual_sha256": "7e1b620498334825ff54c4cab337aed7048442ae05b526295bab196947a20c61",
+      "expected_sha256": "7e1b620498334825ff54c4cab337aed7048442ae05b526295bab196947a20c61",
+      "url": "https://boxing.dharmicdata.org/program/basic/week/5/day/1/",
+      "workout_id": "basic-w5-d1"
+    },
+    {
+      "actual_sha256": "deafeea2cbcce2cc6cf0060c99983b1b15b23f6f1418ad9d44215864ba3a1cae",
+      "expected_sha256": "deafeea2cbcce2cc6cf0060c99983b1b15b23f6f1418ad9d44215864ba3a1cae",
+      "url": "https://boxing.dharmicdata.org/program/basic/week/5/day/2/",
+      "workout_id": "basic-w5-d2"
+    },
+    {
+      "actual_sha256": "5564e84a34ab3cc60b0c6c6c51466b93ec12eb808b2322af302063111939ab3e",
+      "expected_sha256": "5564e84a34ab3cc60b0c6c6c51466b93ec12eb808b2322af302063111939ab3e",
+      "url": "https://boxing.dharmicdata.org/program/basic/week/5/day/3/",
+      "workout_id": "basic-w5-d3"
+    },
+    {
+      "actual_sha256": "6b4f3b9ee47ddbda8eb1a720e0dea4a36e3bb39a3a9b9ba0b44cee31b947a90e",
+      "expected_sha256": "6b4f3b9ee47ddbda8eb1a720e0dea4a36e3bb39a3a9b9ba0b44cee31b947a90e",
+      "url": "https://boxing.dharmicdata.org/program/basic/week/5/day/4/",
+      "workout_id": "basic-w5-d4"
+    },
+    {
+      "actual_sha256": "dd36b3f30a6c561f43aad663de458f87dd9c1bcba5137475824d09a373a06388",
+      "expected_sha256": "dd36b3f30a6c561f43aad663de458f87dd9c1bcba5137475824d09a373a06388",
+      "url": "https://boxing.dharmicdata.org/program/basic/week/5/day/5/",
+      "workout_id": "basic-w5-d5"
+    },
+    {
+      "actual_sha256": "9ed5cb94dd6beeda82c2442fc5c66284263fa546d0a51a8a09d7c5851039fdcd",
+      "expected_sha256": "9ed5cb94dd6beeda82c2442fc5c66284263fa546d0a51a8a09d7c5851039fdcd",
+      "url": "https://boxing.dharmicdata.org/program/basic/week/5/day/6/",
+      "workout_id": "basic-w5-d6"
+    },
+    {
+      "actual_sha256": "8366e7888894c125704cce7809975615d3221c4098d78426d3d8d725b48fbf59",
+      "expected_sha256": "8366e7888894c125704cce7809975615d3221c4098d78426d3d8d725b48fbf59",
+      "url": "https://boxing.dharmicdata.org/program/basic/week/5/day/7/",
+      "workout_id": "basic-w5-d7"
+    },
+    {
+      "actual_sha256": "20a5a2c70b526326198a17cbbe45e0c663f37c882eff9e9ee6f6c856a4b5f493",
+      "expected_sha256": "20a5a2c70b526326198a17cbbe45e0c663f37c882eff9e9ee6f6c856a4b5f493",
+      "url": "https://boxing.dharmicdata.org/program/competitive/week/1/day/1/",
+      "workout_id": "competitive-w1-d1"
+    },
+    {
+      "actual_sha256": "9a65ba4f3415e038847e1d8f9645268e39af471f92945de12f9dadd509afc432",
+      "expected_sha256": "9a65ba4f3415e038847e1d8f9645268e39af471f92945de12f9dadd509afc432",
+      "url": "https://boxing.dharmicdata.org/program/competitive/week/1/day/2/",
+      "workout_id": "competitive-w1-d2"
+    },
+    {
+      "actual_sha256": "7827118a24fb717f142602b1237fcc16889d22ba848f46664ae9d33d56cd9b8b",
+      "expected_sha256": "7827118a24fb717f142602b1237fcc16889d22ba848f46664ae9d33d56cd9b8b",
+      "url": "https://boxing.dharmicdata.org/program/competitive/week/1/day/3/",
+      "workout_id": "competitive-w1-d3"
+    },
+    {
+      "actual_sha256": "cf7feb70c701cdd4cf4daa2dad8a9fa53c24458e87feddc2062962c75703fd5d",
+      "expected_sha256": "cf7feb70c701cdd4cf4daa2dad8a9fa53c24458e87feddc2062962c75703fd5d",
+      "url": "https://boxing.dharmicdata.org/program/competitive/week/1/day/4/",
+      "workout_id": "competitive-w1-d4"
+    },
+    {
+      "actual_sha256": "e6209ddd4ef76917f17c0bc7a4663f175c6c042f881cfcc2fb7fab5720a11746",
+      "expected_sha256": "e6209ddd4ef76917f17c0bc7a4663f175c6c042f881cfcc2fb7fab5720a11746",
+      "url": "https://boxing.dharmicdata.org/program/competitive/week/1/day/5/",
+      "workout_id": "competitive-w1-d5"
+    },
+    {
+      "actual_sha256": "b948ca97cd262bd58497ece1dca66998d49208a6c8ec9d3b5b041e4c55cecde0",
+      "expected_sha256": "b948ca97cd262bd58497ece1dca66998d49208a6c8ec9d3b5b041e4c55cecde0",
+      "url": "https://boxing.dharmicdata.org/program/competitive/week/1/day/6/",
+      "workout_id": "competitive-w1-d6"
+    },
+    {
+      "actual_sha256": "2c8a21f153cee98e8c2d1a66429fecdafc6e134ff468987b41e42734ef0ea793",
+      "expected_sha256": "2c8a21f153cee98e8c2d1a66429fecdafc6e134ff468987b41e42734ef0ea793",
+      "url": "https://boxing.dharmicdata.org/program/competitive/week/1/day/7/",
+      "workout_id": "competitive-w1-d7"
+    },
+    {
+      "actual_sha256": "1f76e1a2d7af45520e0aaf2b22bb564ce1282205562ceb5ee1cfa17be97cdc34",
+      "expected_sha256": "1f76e1a2d7af45520e0aaf2b22bb564ce1282205562ceb5ee1cfa17be97cdc34",
+      "url": "https://boxing.dharmicdata.org/program/competitive/week/2/day/1/",
+      "workout_id": "competitive-w2-d1"
+    },
+    {
+      "actual_sha256": "7d183aae7ec48b25d5f91b5724f768fa50914852a7eb7667ed51b7e89c0987ba",
+      "expected_sha256": "7d183aae7ec48b25d5f91b5724f768fa50914852a7eb7667ed51b7e89c0987ba",
+      "url": "https://boxing.dharmicdata.org/program/competitive/week/2/day/2/",
+      "workout_id": "competitive-w2-d2"
+    },
+    {
+      "actual_sha256": "eb2a0fa95ad63cff572ed824e1f5899017a4d0b49123fe0fd47c4e019ea33e58",
+      "expected_sha256": "eb2a0fa95ad63cff572ed824e1f5899017a4d0b49123fe0fd47c4e019ea33e58",
+      "url": "https://boxing.dharmicdata.org/program/competitive/week/2/day/3/",
+      "workout_id": "competitive-w2-d3"
+    },
+    {
+      "actual_sha256": "05abd9eebace02139c93024643e1d38572110d984da72d4752e8e6af6bae44a7",
+      "expected_sha256": "05abd9eebace02139c93024643e1d38572110d984da72d4752e8e6af6bae44a7",
+      "url": "https://boxing.dharmicdata.org/program/competitive/week/2/day/4/",
+      "workout_id": "competitive-w2-d4"
+    },
+    {
+      "actual_sha256": "f46499a44204b0469d5114a47fde17851620e93348e4c4fefbb2d69b1b51bfbd",
+      "expected_sha256": "f46499a44204b0469d5114a47fde17851620e93348e4c4fefbb2d69b1b51bfbd",
+      "url": "https://boxing.dharmicdata.org/program/competitive/week/2/day/5/",
+      "workout_id": "competitive-w2-d5"
+    },
+    {
+      "actual_sha256": "970c9add0b3f884ca1691b0d38a9426e1c18240c94be63037651913c0b0d5519",
+      "expected_sha256": "970c9add0b3f884ca1691b0d38a9426e1c18240c94be63037651913c0b0d5519",
+      "url": "https://boxing.dharmicdata.org/program/competitive/week/2/day/6/",
+      "workout_id": "competitive-w2-d6"
+    },
+    {
+      "actual_sha256": "ffe0c4d62fa57806464bd6527c6d09dd5de70b72161f5cbe9b67180a11437b74",
+      "expected_sha256": "ffe0c4d62fa57806464bd6527c6d09dd5de70b72161f5cbe9b67180a11437b74",
+      "url": "https://boxing.dharmicdata.org/program/competitive/week/2/day/7/",
+      "workout_id": "competitive-w2-d7"
+    },
+    {
+      "actual_sha256": "317d29ea574146112bb0c4aac86c2a07878531f081b3d2335f6784b8f32991f4",
+      "expected_sha256": "317d29ea574146112bb0c4aac86c2a07878531f081b3d2335f6784b8f32991f4",
+      "url": "https://boxing.dharmicdata.org/program/competitive/week/3/day/1/",
+      "workout_id": "competitive-w3-d1"
+    },
+    {
+      "actual_sha256": "0b874694502f2d3a211dbf73a6f9e22ce377b05c6ce03adc06ebdb7cf5611310",
+      "expected_sha256": "0b874694502f2d3a211dbf73a6f9e22ce377b05c6ce03adc06ebdb7cf5611310",
+      "url": "https://boxing.dharmicdata.org/program/competitive/week/3/day/2/",
+      "workout_id": "competitive-w3-d2"
+    },
+    {
+      "actual_sha256": "8fc9bcf2f90a67942ea4f3e4a49e52a0e1d188142da429067a3b51cac8eaccdc",
+      "expected_sha256": "8fc9bcf2f90a67942ea4f3e4a49e52a0e1d188142da429067a3b51cac8eaccdc",
+      "url": "https://boxing.dharmicdata.org/program/competitive/week/3/day/3/",
+      "workout_id": "competitive-w3-d3"
+    },
+    {
+      "actual_sha256": "cf129d5f4ace69a88e8e63b84b4ce8c4edbab511fa873f455f6ad044dc43c69c",
+      "expected_sha256": "cf129d5f4ace69a88e8e63b84b4ce8c4edbab511fa873f455f6ad044dc43c69c",
+      "url": "https://boxing.dharmicdata.org/program/competitive/week/3/day/4/",
+      "workout_id": "competitive-w3-d4"
+    },
+    {
+      "actual_sha256": "bb67f6901ddeb357718439ad67e98e97c036289112b1d5ceac6683b172964841",
+      "expected_sha256": "bb67f6901ddeb357718439ad67e98e97c036289112b1d5ceac6683b172964841",
+      "url": "https://boxing.dharmicdata.org/program/competitive/week/3/day/5/",
+      "workout_id": "competitive-w3-d5"
+    },
+    {
+      "actual_sha256": "70b09345505e4f633faac5765e4ec3eccbafd63f6b0658bd12663a950040eab9",
+      "expected_sha256": "70b09345505e4f633faac5765e4ec3eccbafd63f6b0658bd12663a950040eab9",
+      "url": "https://boxing.dharmicdata.org/program/competitive/week/3/day/6/",
+      "workout_id": "competitive-w3-d6"
+    },
+    {
+      "actual_sha256": "da2a36ae607e5194003bde526f8ae671a06604d2243aeb9697e5e1649479646c",
+      "expected_sha256": "da2a36ae607e5194003bde526f8ae671a06604d2243aeb9697e5e1649479646c",
+      "url": "https://boxing.dharmicdata.org/program/competitive/week/3/day/7/",
+      "workout_id": "competitive-w3-d7"
+    },
+    {
+      "actual_sha256": "aaabafb830ecfe266a59291bb8455beb76ebf6e4c511a678e0bdea3bbecb524f",
+      "expected_sha256": "aaabafb830ecfe266a59291bb8455beb76ebf6e4c511a678e0bdea3bbecb524f",
+      "url": "https://boxing.dharmicdata.org/program/competitive/week/4/day/1/",
+      "workout_id": "competitive-w4-d1"
+    },
+    {
+      "actual_sha256": "ffdd1d95cda667694c39e58cb480dbe0b6c6877ea2b8de9813c4bc1c00a8d082",
+      "expected_sha256": "ffdd1d95cda667694c39e58cb480dbe0b6c6877ea2b8de9813c4bc1c00a8d082",
+      "url": "https://boxing.dharmicdata.org/program/competitive/week/4/day/2/",
+      "workout_id": "competitive-w4-d2"
+    },
+    {
+      "actual_sha256": "34ac668322f6cd8801acb3b2c10b5c278a715544ca1420fdd23a67dc52aacabf",
+      "expected_sha256": "34ac668322f6cd8801acb3b2c10b5c278a715544ca1420fdd23a67dc52aacabf",
+      "url": "https://boxing.dharmicdata.org/program/competitive/week/4/day/3/",
+      "workout_id": "competitive-w4-d3"
+    },
+    {
+      "actual_sha256": "99d5af65639b53c3182be23d7ad312bbef18f7f40d82b9ac9dc5dee00ab97312",
+      "expected_sha256": "99d5af65639b53c3182be23d7ad312bbef18f7f40d82b9ac9dc5dee00ab97312",
+      "url": "https://boxing.dharmicdata.org/program/competitive/week/4/day/4/",
+      "workout_id": "competitive-w4-d4"
+    },
+    {
+      "actual_sha256": "47968a97be97b0f5377e3d9025403ce00aad695abb5f9f968af97b9f0e283ee4",
+      "expected_sha256": "47968a97be97b0f5377e3d9025403ce00aad695abb5f9f968af97b9f0e283ee4",
+      "url": "https://boxing.dharmicdata.org/program/competitive/week/4/day/5/",
+      "workout_id": "competitive-w4-d5"
+    },
+    {
+      "actual_sha256": "b78e6644e52a4f9868e0b7a42304ea556e0c85014c632caecc3876c19c5c7571",
+      "expected_sha256": "b78e6644e52a4f9868e0b7a42304ea556e0c85014c632caecc3876c19c5c7571",
+      "url": "https://boxing.dharmicdata.org/program/competitive/week/4/day/6/",
+      "workout_id": "competitive-w4-d6"
+    },
+    {
+      "actual_sha256": "316f90253b0b8416b393139828cf9ff418ba52cf93f98d9f60c0ae337db1433d",
+      "expected_sha256": "316f90253b0b8416b393139828cf9ff418ba52cf93f98d9f60c0ae337db1433d",
+      "url": "https://boxing.dharmicdata.org/program/competitive/week/4/day/7/",
+      "workout_id": "competitive-w4-d7"
+    },
+    {
+      "actual_sha256": "967870eab18ed16b217188fd162670364268586c702369947d3b700f374553a9",
+      "expected_sha256": "967870eab18ed16b217188fd162670364268586c702369947d3b700f374553a9",
+      "url": "https://boxing.dharmicdata.org/program/competitive/week/5/day/1/",
+      "workout_id": "competitive-w5-d1"
+    },
+    {
+      "actual_sha256": "0ca8e1debbd14c1b09d35e987635fb77c5c3f8d96f6779cf9da262d2ea2f6f64",
+      "expected_sha256": "0ca8e1debbd14c1b09d35e987635fb77c5c3f8d96f6779cf9da262d2ea2f6f64",
+      "url": "https://boxing.dharmicdata.org/program/competitive/week/5/day/2/",
+      "workout_id": "competitive-w5-d2"
+    },
+    {
+      "actual_sha256": "60f6e2fcb069dffcf9653a2542ec0d6ec7c3917b9e7c0bb7ec079f48b2944235",
+      "expected_sha256": "60f6e2fcb069dffcf9653a2542ec0d6ec7c3917b9e7c0bb7ec079f48b2944235",
+      "url": "https://boxing.dharmicdata.org/program/competitive/week/5/day/3/",
+      "workout_id": "competitive-w5-d3"
+    },
+    {
+      "actual_sha256": "1196ba6dad91d24bf828ced3f2696e58f687315ce9efad6cdfe0e9ee4538d168",
+      "expected_sha256": "1196ba6dad91d24bf828ced3f2696e58f687315ce9efad6cdfe0e9ee4538d168",
+      "url": "https://boxing.dharmicdata.org/program/competitive/week/5/day/4/",
+      "workout_id": "competitive-w5-d4"
+    },
+    {
+      "actual_sha256": "0d13dd20a5e6b4d42ddeb5041ae7a317864ca7f4a69d3287c3d46808b16b5377",
+      "expected_sha256": "0d13dd20a5e6b4d42ddeb5041ae7a317864ca7f4a69d3287c3d46808b16b5377",
+      "url": "https://boxing.dharmicdata.org/program/competitive/week/5/day/5/",
+      "workout_id": "competitive-w5-d5"
+    },
+    {
+      "actual_sha256": "e6994f5e40adb0596bdf478ec113fd1f5849f5f7df7db20ee9ec52061ddc756f",
+      "expected_sha256": "e6994f5e40adb0596bdf478ec113fd1f5849f5f7df7db20ee9ec52061ddc756f",
+      "url": "https://boxing.dharmicdata.org/program/competitive/week/5/day/6/",
+      "workout_id": "competitive-w5-d6"
+    },
+    {
+      "actual_sha256": "319298fc7fe89771ebbc765aefb3b80ee303d2c4ccdb8ef04635f927983b6b50",
+      "expected_sha256": "319298fc7fe89771ebbc765aefb3b80ee303d2c4ccdb8ef04635f927983b6b50",
+      "url": "https://boxing.dharmicdata.org/program/competitive/week/5/day/7/",
+      "workout_id": "competitive-w5-d7"
+    }
+  ],
+  "missing": [],
+  "passed": true,
+  "schema_version": 1,
+  "workout_count": 70
+}
