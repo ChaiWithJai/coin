@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-10-03T01:45:00-04:00",
+  "job_id": "2782f0b73d2d7e96a2796598b17e4578ba0be6b468876f4bf5061126aba75492",
+  "normalization_version": "source-item-normalization-v2.8",
+  "audit_scope": "first bounded 201 worker items after 893 deterministic completions",
+  "job_state_at_audit": "paused",
+  "queue": {
+    "catalog_items": 1773,
+    "complete": 1094,
+    "pending": 679,
+    "running": 0,
+    "failed": 0
+  },
+  "bounded_worker": {
+    "processed_items": 201,
+    "inference_calls": 181,
+    "cache_materializations": 20,
+    "deterministic_results": 0,
+    "prompt_tokens": 29815,
+    "completion_tokens": 181,
+    "total_tokens": 29996,
+    "model": "/home/chaiwithjai/models/bonsai-gen/Ternary-Bonsai-2-9B-gguf/Ternary-Bonsai-2-9B-PTQ1_0.gguf",
+    "endpoint": "http://127.0.0.1:8712",
+    "actual_cost_usd": null,
+    "estimated_cost_usd": null
+  },
+  "completed_population": {
+    "deterministic_results": 893,
+    "inference_calls": 181,
+    "cache_materializations": 20,
+    "known_proposals": 1038,
+    "unknown_proposals": 56
+  },
+  "provenance": {
+    "catalog_sha256_prefix": "d2523d6e",
+    "source_item_manifest_sha256_prefix": "21f533f4",
+    "source_id": "https://boxing.dharmicdata.org",
+    "runtime_promotion": false
+  },
+  "checks": {
+    "completed_outputs_with_exact_source_identity": 1094,
+    "source_identity_mismatches": 0,
+    "known_proposals_without_exact_source_quote": 0,
+    "runtime_eligible_true": 0,
+    "analyst_correction_fixtures_matching": "8/8",
+    "virtual_or_virual_sparring_shadowboxing": "11/11",
+    "explicit_child_modality_regressions": "0/4"
+  },
+  "decision": "bounded_slice_accepted_continue_bounded_processing_no_runtime_promotion",
+  "limitations": [
+    "This is not a completed full-job audit; 679 items were pending at the audit boundary.",
+    "Model proposals remain unreviewed and runtime-ineligible.",
+    "Cost fields are unknown, not zero."
+  ]
+}

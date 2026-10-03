@@ -124,10 +124,14 @@ class SourceItemBatchTests(unittest.TestCase):
             for proposal in selected:
                 with self.subTest(block=block_id, item=proposal["source_item_id"]):
                     self.assertEqual(proposal["activity"], activity)
-                    self.assertEqual(proposal["annotation_origin"], "explicit_parent_source_rule")
-                    self.assertEqual(proposal["evidence_quote"], proposal["source_text"])
-                    self.assertIn(proposal["activity_context_quote"].lower(),
-                                  proposal["source_block_text"].lower())
+                    self.assertIn(proposal["annotation_origin"],
+                                  ["explicit_parent_source_rule", "explicit_source_rule"])
+                    if proposal["annotation_origin"] == "explicit_parent_source_rule":
+                        self.assertEqual(proposal["evidence_quote"], proposal["source_text"])
+                        self.assertIn(proposal["activity_context_quote"].lower(),
+                                      proposal["source_block_text"].lower())
+                    else:
+                        self.assertIsNone(proposal["activity_context_quote"])
                     self.assertEqual(proposal["source_block_text_sha256"],
                                      digest(proposal["source_block_text"]))
 
@@ -148,6 +152,28 @@ class SourceItemBatchTests(unittest.TestCase):
             self.assertEqual(proposal["activity"], "bag_work")
             self.assertEqual(proposal["annotation_origin"], "explicit_parent_source_rule")
             self.assertEqual(proposal["activity_context_quote"], "BAG WORK")
+
+    def test_parent_context_never_overwrites_explicit_child_modality_or_virtual_sparring(self):
+        self.assertIsNone(explicit_parent_activity("VIRTUAL SPARRING\nSINGLE PUNCHES"))
+        self.assertIsNone(explicit_parent_activity("VIRUAL SPARRING\nFREESTYLE"))
+        catalog = copy.deepcopy(self.catalog)
+        catalog["workouts"] = [{
+            "id": "precedence", "sourceSHA256": "a" * 64,
+            "blocks": [{"id": "bag", "kind": "boxing", "sourceText":
+                "BAG WORK\n3 SECOND SPRINTS\n10 PUSH-UPS AND 10 SQUATS\nJAB-CROSS",
+                "sourceItems": [
+                    {"id": "conditioning", "text": "3 SECOND SPRINTS"},
+                    {"id": "strength", "text": "10 PUSH-UPS AND 10 SQUATS"},
+                    {"id": "boxing", "text": "JAB-CROSS"},
+                ]}]}]
+        _, proposals = catalog_source_item_manifest(catalog)
+        by_item = {p["source_item_id"]: p for p in proposals}
+        self.assertEqual(by_item["conditioning"]["activity"], "conditioning")
+        self.assertEqual(by_item["conditioning"]["annotation_origin"], "explicit_source_rule")
+        self.assertEqual(by_item["strength"]["activity"], "strength")
+        self.assertEqual(by_item["strength"]["annotation_origin"], "explicit_source_rule")
+        self.assertEqual(by_item["boxing"]["activity"], "bag_work")
+        self.assertEqual(by_item["boxing"]["annotation_origin"], "explicit_parent_source_rule")
 
     def test_cached_decision_is_rebound_to_current_source_identity(self):
         donor = {"result": {"proposal_id": "donor", "source_block_id": "old",

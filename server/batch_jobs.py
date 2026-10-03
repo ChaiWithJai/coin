@@ -19,7 +19,7 @@ from contextlib import contextmanager
 
 VERSION = 'completed-round-batch-v2.1'
 CURRICULUM_VERSION = 'source-annotation-atomic-v2.1'
-SOURCE_ITEM_VERSION = 'source-item-normalization-v2.7'
+SOURCE_ITEM_VERSION = 'source-item-normalization-v2.8'
 MAX_EXCHANGES = 200
 MAX_INPUT_BYTES = 2_000_000
 
@@ -214,7 +214,13 @@ def catalog_source_item_manifest(catalog):
                 identities.add(identity)
                 source_text_sha = digest(text)
                 item_activity = explicit_activity(text, block.get('kind'), allow_kind_fallback=False)
-                activity = parent or item_activity
+                # Parent modality resolves generic solo-boxing language, but an
+                # explicit child conditioning/strength/mobility prescription
+                # remains its own activity. Virtual sparring is explicitly solo.
+                solo_virtual = bool(re.search(r'\b(?:virtual|virual) sparring\b', text, re.I))
+                parent_applies = bool(parent and not solo_virtual and
+                                      (item_activity is None or item_activity[0] == 'shadowboxing'))
+                activity = parent if parent_applies else item_activity
                 proposal_id = digest({'catalog_sha256': catalog_sha, 'source_sha256': source_sha.lower(),
                                       'workout_id': workout_id, 'source_block_id': block_id,
                                       'source_item_id': item_id, 'source_text_sha256': source_text_sha,
@@ -235,9 +241,9 @@ def catalog_source_item_manifest(catalog):
                 if activity:
                     value, quote = activity
                     proposal.update({'activity': value,
-                                     'evidence_quote': text if parent else quote,
-                                     'activity_context_quote': quote if parent else None,
-                                     'annotation_origin': ('explicit_parent_source_rule' if parent
+                                     'evidence_quote': text if parent_applies else quote,
+                                     'activity_context_quote': quote if parent_applies else None,
+                                     'annotation_origin': ('explicit_parent_source_rule' if parent_applies
                                                            else 'explicit_source_rule'),
                                      'review_state': 'source_rule_proposal_not_promoted'})
                 else:
@@ -770,7 +776,7 @@ def explicit_parent_activity(text):
     heading = ' '.join(lines[:2])
     for activity, pattern in (
             ('bag_work', r'\bBAG WORK\b'),
-            ('partner_work', r'\b(?:PARTNER WORK|SPARRING)\b')):
+            ('partner_work', r'\b(?:PARTNER WORK|(?<!VIRTUAL )(?<!VIRUAL )SPARRING)\b')):
         match = re.search(pattern, heading, re.I)
         if match:
             return activity, match.group(0).strip()
