@@ -88,11 +88,16 @@ import XCTest
             sourceBlockID: "conditioning-source", sourceItemID: nil, exerciseKey: "box_jumps",
             selectionProvenance: .userSelected,
             measurement: .forExercise("box_jumps"), selectedAt: Date())
-        let definition = instance.payload["movement_definition"] as? [String: String]
-        XCTAssertEqual(definition?["key"], "box_jumps")
-        XCTAssertEqual(definition?["version"], "v1")
+        let definition = instance.payload["movement_definition"] as? [String: Any]
+        XCTAssertEqual(definition?["key"] as? String, "box_jumps")
+        XCTAssertEqual(definition?["version"] as? String, "v1")
+        XCTAssertEqual(definition?["required_view"] as? String, "full_body_and_box")
+        XCTAssertEqual(definition?["observable_phases"] as? [String], ["floor", "flight", "box_landing", "reset"])
+        XCTAssertEqual(definition?["target_unit"] as? String, "rep")
         XCTAssertEqual(instance.measurement.capability, .elapsedOnly)
         XCTAssertTrue(WorkoutMovementDefinition.choices(for: "mobility").contains { $0.key == "mobility" })
+        XCTAssertEqual(WorkoutMovementDefinition.forKey("mobility")?.requiredView, "depends_on_selected_movement")
+        XCTAssertEqual(WorkoutMovementDefinition.forKey("burpees")?.observablePhases, ["standing", "floor", "standing"])
     }
     func testOpenConditioningStartsUnchosenDespiteBroadSourceBoxingTag() throws {
         let lesson = try XCTUnwrap(WorkoutCatalog.shared.lessons.first { $0.id == "basic-w2-d1" })

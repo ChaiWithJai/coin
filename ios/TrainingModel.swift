@@ -371,20 +371,26 @@ struct WorkoutMovementDefinition {
     let family: String
     let equipment: String
     let version: String
+    /// A drill's observation contract is distinct from the detector currently shipped.
+    /// These fields describe what must be visible before a movement-specific model
+    /// can be trained and validated; they do not enable rep counting.
+    let requiredView: String
+    let observablePhases: [String]
+    let targetUnit: String
 
     static let all: [Self] = [
-        .init(key: "jumping_jacks", family: "conditioning", equipment: "none", version: "v1"),
-        .init(key: "burpees", family: "conditioning", equipment: "none", version: "v1"),
-        .init(key: "box_jumps", family: "conditioning", equipment: "box", version: "v1"),
-        .init(key: "squat_jumps", family: "conditioning", equipment: "none", version: "v1"),
-        .init(key: "squats", family: "strength", equipment: "none", version: "v1"),
-        .init(key: "lunges", family: "strength", equipment: "none", version: "v1"),
-        .init(key: "frontal_stance", family: "boxing", equipment: "none", version: "v1"),
-        .init(key: "shadowboxing", family: "boxing", equipment: "none", version: "v1"),
-        .init(key: "boxing", family: "boxing", equipment: "none", version: "v1"),
-        .init(key: "mobility", family: "mobility", equipment: "none", version: "v1"),
-        .init(key: "pushups", family: "strength", equipment: "none", version: "v1"),
-        .init(key: "bench_press", family: "strength", equipment: "bench", version: "v1"),
+        .init(key: "jumping_jacks", family: "conditioning", equipment: "none", version: "v1", requiredView: "full_body", observablePhases: ["closed", "open", "closed"], targetUnit: "rep"),
+        .init(key: "burpees", family: "conditioning", equipment: "none", version: "v1", requiredView: "full_body_and_floor", observablePhases: ["standing", "floor", "standing"], targetUnit: "rep"),
+        .init(key: "box_jumps", family: "conditioning", equipment: "box", version: "v1", requiredView: "full_body_and_box", observablePhases: ["floor", "flight", "box_landing", "reset"], targetUnit: "rep"),
+        .init(key: "squat_jumps", family: "conditioning", equipment: "none", version: "v1", requiredView: "full_body_and_floor", observablePhases: ["squat", "flight", "landing"], targetUnit: "rep"),
+        .init(key: "squats", family: "strength", equipment: "none", version: "v1", requiredView: "hips_knees_ankles", observablePhases: ["standing", "lowering", "bottom", "standing"], targetUnit: "rep_candidate"),
+        .init(key: "lunges", family: "strength", equipment: "none", version: "v1", requiredView: "hips_knees_ankles", observablePhases: ["standing", "split_stance", "standing"], targetUnit: "rep_candidate"),
+        .init(key: "frontal_stance", family: "boxing", equipment: "none", version: "v1", requiredView: "full_body", observablePhases: ["stance", "movement", "stance"], targetUnit: "duration"),
+        .init(key: "shadowboxing", family: "boxing", equipment: "none", version: "v1", requiredView: "upper_body_and_hips", observablePhases: ["probe", "exchange", "reset"], targetUnit: "exchange_candidate"),
+        .init(key: "boxing", family: "boxing", equipment: "none", version: "v1", requiredView: "upper_body_and_hips", observablePhases: ["probe", "exchange", "reset"], targetUnit: "exchange_candidate"),
+        .init(key: "mobility", family: "mobility", equipment: "none", version: "v1", requiredView: "depends_on_selected_movement", observablePhases: [], targetUnit: "duration"),
+        .init(key: "pushups", family: "strength", equipment: "none", version: "v1", requiredView: "upper_body_and_floor", observablePhases: ["top", "bottom", "top"], targetUnit: "rep"),
+        .init(key: "bench_press", family: "strength", equipment: "bench", version: "v1", requiredView: "upper_body_and_equipment", observablePhases: ["extended", "lowered", "extended"], targetUnit: "rep"),
     ]
 
     static func forKey(_ key: String?) -> Self? { all.first { $0.key == key } }
@@ -475,7 +481,9 @@ struct WorkoutActivityInstance: Codable, Identifiable, Equatable {
         value["exercise_key"] = exerciseKey
         if let definition = WorkoutMovementDefinition.forKey(exerciseKey) {
             value["movement_definition"] = ["key": definition.key, "family": definition.family,
-                "equipment": definition.equipment, "version": definition.version]
+                "equipment": definition.equipment, "version": definition.version,
+                "required_view": definition.requiredView, "observable_phases": definition.observablePhases,
+                "target_unit": definition.targetUnit] as [String: Any]
         } else if exerciseKey == "custom" {
             value["movement_definition"] = ["key": "custom", "family": "user_defined",
                 "equipment": "unknown", "version": "v1"]
