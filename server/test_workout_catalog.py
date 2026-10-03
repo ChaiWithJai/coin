@@ -1,10 +1,73 @@
 """Checks the imported prescription contract, not model exercise accuracy."""
 import json
+import tempfile
 import unittest
 from pathlib import Path
-from workout_catalog import prescription, compile_page
+from workout_catalog import prescription, compile_page, split_items
 
 class PrescriptionTests(unittest.TestCase):
+    def test_two_source_sections_split_at_distinct_prescriptions(self):
+        cases = [
+            ('competitive-w1-d1', 'p5-s3', [
+                ('p5-b9', '10 PUSH-UPS; 6 360° JUMPS; 10 JUMP HALF SQUATS WITH PUNCHES'),
+                ('p5-b10', 'FIGHTING STNCE: HIP AND SHOULDER ROTATION FOCUSED DRILL: 1'),
+                ('p5-b11', 'ROUND OF 3 MINUTES'),
+            ], [['p5-b9'], ['p5-b10', 'p5-b11']], ['manual', 'timed']),
+            ('basic-w1-d5', 'p7-s6', [
+                ('p7-b19', '6 ROUNDS OF 3 MINUTES OF BAG WORK'),
+                ('p7-b20', 'Shadow ONLY boxing MOVEMENT with resistance bands. 6 rounds of 1 minute with 20'),
+                ('p7-b21', 'sec of rest'),
+                ('p7-b22', 'ONLY LONG RANGE ATTACKS'),
+                ('p7-b23', 'ONLY CLOSE RANGE ATTACKS'),
+                ('p7-b25', 'FREESTYLE'),
+                ('p7-b26', 'CHANGE THE STACE'),
+                ('p7-b28', 'CONDITIONING BAG WORK DRILL (1 ROUND)'),
+            ], [['p7-b19'], ['p7-b20', 'p7-b21'], ['p7-b22', 'p7-b23', 'p7-b25', 'p7-b26'], ['p7-b28']],
+             ['timed', 'timed', 'manual', 'manual']),
+        ]
+        for day, section, source, expected_ids, expected_completion in cases:
+            rows = [{'id': ident, 'text': text} for ident, text in source]
+            groups = split_items(rows, day, section)
+            self.assertEqual([[row['id'] for row in group] for group in groups], expected_ids)
+            self.assertEqual([prescription('\n'.join(row['text'] for row in group))['completion']
+                              for group in groups], expected_completion)
+            self.assertEqual([row for group in groups for row in group], rows)
+            self.assertEqual(len(split_items(rows, 'other-w1-d1', section)), 1)
+
+    def test_ambiguous_source_units_do_not_enable_exchange_routing(self):
+        cases = [
+            ('basic-w1-d5.html', 'p7-s6', [
+                ('p7-b19', '6 ROUNDS OF 3 MINUTES OF BAG WORK'),
+                ('p7-b20', 'Shadow ONLY boxing MOVEMENT with resistance bands. 6 rounds of 1 minute with 20'),
+                ('p7-b21', 'sec of rest'),
+                ('p7-b22', 'ONLY LONG RANGE ATTACKS'),
+                ('p7-b28', 'CONDITIONING BAG WORK DRILL (1 ROUND)'),
+            ], [('timed', 6, 180, 'boxing', 'free-boxing-v1'),
+                ('timed', 6, 60, 'exercise', None),
+                ('manual', None, None, 'exercise', None),
+                ('manual', None, None, 'exercise', None)]),
+            ('competitive-w1-d1.html', 'p5-s3', [
+                ('p5-b9', '10 PUSH-UPS; 6 360° JUMPS; 10 JUMP HALF SQUATS WITH PUNCHES'),
+                ('p5-b10', 'FIGHTING STNCE: HIP AND SHOULDER ROTATION FOCUSED DRILL: 1'),
+                ('p5-b11', 'ROUND OF 3 MINUTES'),
+            ], [('manual', None, None, 'exercise', None),
+                ('timed', 1, 180, 'exercise', None)]),
+        ]
+        for filename, section, rows, expected in cases:
+            markup = '<h1>Workout</h1><li class="workout-block" id="' + section + '">'
+            markup += ''.join(f'<div class="source-block" id="{ident}"><h3>{text}</h3></div>'
+                              for ident, text in rows)
+            markup += '</li>'
+            with tempfile.TemporaryDirectory() as directory:
+                path = Path(directory) / filename
+                path.write_text(markup)
+                day = compile_page(path)
+            actual = [(b['completion'], b['rounds'], b['durationSeconds'], b['kind'], b['drillID'])
+                      for b in day['blocks']]
+            self.assertEqual(actual, expected)
+            self.assertEqual([r['id'] for b in day['blocks'] for r in b['sourceItems']],
+                             [ident for ident, _ in rows])
+
     def test_explicit_rounds_and_rest(self):
         value = prescription('FRONTAL STANCE. 4 ROUNDS OF 2 MINUTES WITH 30 SECONDS OF REST IN BETWEEN.')
         self.assertEqual((value['rounds'],value['durationSeconds'],value['restSeconds']),(4,120,30))

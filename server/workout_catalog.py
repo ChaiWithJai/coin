@@ -53,24 +53,33 @@ TIMING = re.compile(r'\b(\d+)\s*ROUNDS?\s*OF\s*(\d+)\s*(MINUTES?|MINS?|SECONDS?|
 REST = re.compile(r'\b(\d+)\s*(SECONDS?|SECS?|MINUTES?|MINS?)\s+OF\s+REST\b', re.I)
 NEW_DRILL = re.compile(r'^(?:FR[O0]NTAL STANCE|FIGHTING ST[AN]*CE|BAG WORK|PARTNER WORK|VIRTUAL |LIGHT SPARRING|DRILLS WITH |CONDITIONING DRILL|MEDICINE BALL|MED BALL|STRETCHES|COOL[ -]DOWN|HAMMERS|PUNCHING UP|FREESTYLE (?:EXERCISES|SHADOW)|\d+\s+(?:KNUCKLE |JUMP |CLAP |MOUNTAIN )?(?:PUSH[ -]?UPS|SQUATS|BURPEES|CLIMBERS))', re.I)
 EXERCISE = re.compile(r'PUSH[ -]?UPS|SQUATS|BURPEES|CLIMBERS|MEDICINE BALL|MED BALL|PLYOMETRIC|PPLYOMETRIC|TUCKS|LEG RAISES|JUMPS', re.I)
+# These source sections put two distinct prescriptions in one HTML section. The
+# second starts at an existing source item, so no source wording is rewritten.
+# Scope each exception to its day and section; the p*-b* IDs repeat by page.
+SOURCE_PRESCRIPTION_STARTS = {
+    ('competitive-w1-d1', 'p5-s3'): {'p5-b10'},
+    ('basic-w1-d5', 'p7-s6'): {'p7-b20', 'p7-b22', 'p7-b28'},
+}
 
 
 def normalize(text):
     return ' '.join(text.split()).strip()
 
 
-def split_items(items):
+def split_items(items, source_day=None, source_section=None):
     """Split only explicit drill starts after an existing timed prescription.
 
     Detailed combinations following a bag-round heading stay with that heading.
     Complex circuits remain intact rather than guessing how they repeat.
     """
     groups, current = [], []
+    source_starts = SOURCE_PRESCRIPTION_STARTS.get((source_day, source_section), set())
     for item in items:
         text = item['text']
         prior = ' '.join(row['text'] for row in current)
         has_time = bool(TIMING.search(prior))
-        if current and NEW_DRILL.match(text) and (has_time or re.match(r'CONDITIONING|STRETCHES|COOL[ -]DOWN', text, re.I)):
+        if current and (item['id'] in source_starts or
+                        (NEW_DRILL.match(text) and (has_time or re.match(r'CONDITIONING|STRETCHES|COOL[ -]DOWN', text, re.I)))):
             groups.append(current)
             current = []
         current.append(item)
@@ -163,7 +172,9 @@ def compile_page(path):
         items=kept
         if not items:
             continue
-        for subindex, group in enumerate(split_items(items)):
+        source_day = f'{program}-w{week}-d{day}'
+        source_section = section.attrs.get('id')
+        for subindex, group in enumerate(split_items(items, source_day, source_section)):
             full = '\n'.join(row['text'] for row in group)
             upper = full.upper()
             kind = ('exercise' if re.search(r'\b(?:SETS?|CIRCUITS?)\b',upper) else
@@ -171,6 +182,14 @@ def compile_page(path):
                     'cooldown' if 'COOL-DOWN' in upper or 'COOL DOWN' in upper or full.upper().startswith('STRETCH') else
                     'recovery' if section.has_class('workout-block--recovery') else
                     'exercise' if EXERCISE.search(full) else 'boxing')
+            # The source gives the bag and resistance-band clocks separately,
+            # then a focus list whose allocation to either clock is unstated.
+            # Keep those later units as clock-only/manual instead of claiming
+            # exchange recognition or attaching a focus to the wrong drill.
+            if source_day == 'basic-w1-d5' and source_section == 'p7-s6' and group[0]['id'] in {'p7-b20', 'p7-b22', 'p7-b28'}:
+                kind = 'exercise'
+            if source_day == 'competitive-w1-d1' and source_section == 'p5-s3' and group[0]['id'] == 'p5-b10':
+                kind = 'exercise'
             block = {'id':f'{program}-w{week}-d{day}-{section.attrs.get("id",str(index))}-{subindex+1}',
                      'title':group[0]['text'], 'instructions':full, 'kind':kind,
                      'drillID':'free-boxing-v1' if kind=='boxing' else None,
