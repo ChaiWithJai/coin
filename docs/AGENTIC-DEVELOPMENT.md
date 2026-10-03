@@ -43,6 +43,20 @@ The revised candidate uses exact source activity names where available, then ask
 
 The first targeted comparison completed eight items, using four model calls and four source rules. Seven matched the analyst's development expectations; one solo stance instruction returned `unknown` instead of the expected shadowboxing label. The expected labels are explicitly not human gold labels. The result at `../../../outputs/batch-catalog-targeted/1790977965615835000/result.json` records all eight delivered telemetry items. The small set demonstrates corrections to known failures and a remaining abstention, not general recognition accuracy. Independent label review remains necessary before promoting any batch output. Retain the old database and create a separate candidate database; do not resume the paused baseline to accumulate more unreliable labels.
 
+Audit every bounded source-item worker slice from the complete-item count captured immediately before it started:
+
+```sh
+python3 server/source_item_slice_audit.py \
+  --db /path/to/batch.sqlite \
+  --job JOB_ID \
+  --baseline-complete 1094 \
+  --expected-size 201 \
+  --analyst-fixture evidence/workout-delivery-20261003/analyst-source-item-corrections-v22.json \
+  --output /path/to/read-only-slice-audit.json
+```
+
+The auditor opens SQLite in read-only mode. It selects the new slice from the latest successful attempt rowids, checks manifest identity, exact quotes, token accounting, cache semantics, runtime ineligibility, the analyst development fixtures, both spellings of virtual sparring, and explicit child modality precedence. Actual and estimated costs report null and numeric values separately. A null cost remains unknown. Pending items do not fail a bounded audit, but the completed delta must equal the requested slice size.
+
 A follow-up source spelling correction handles `PUCNHES` in the existing material. Replaying the eight saved responses then matched all eight development expectations without another model call; see `postprocessor-replay.json` beside the targeted result. A separate full-catalog candidate has completed all 531 items with no processing failures and has exported all 531 events with 531 finished runs read back from MLflow in `../../../outputs/batch-catalog-full/1790978065968604000/`. The earlier failed baseline remains separate. Processing completion does not establish label accuracy. The batch made 191 model calls and recorded 29,647 surfaced tokens; 147 classifications remain unknown. See the committed batch receipt in `../evidence/workout-delivery-20261002/`. Actual monetary cost is unknown. The MongoDB archive backup failed because its service was unavailable, so no verified archive restore is claimed. Review the labels before promoting anything. The paused failed baseline remains intact.
 
 ## Resume commands
