@@ -32,9 +32,14 @@ def load_source(path: Path):
         raise ValueError("Expected a nonempty, unpromoted activity review queue")
     seen = set()
     for item in source["items"]:
-        identity = (item.get("workout_id"), item.get("source_block_id"))
-        if (not all(isinstance(value, str) and value for value in identity)
-                or identity in seen or item.get("proposal_activity") != "unknown"
+        identity = (item.get("workout_id"), item.get("source_block_id"),
+                    item.get("source_item_id"))
+        required_identity = identity[:2]
+        if (not all(isinstance(value, str) and value for value in required_identity)
+                or (identity[2] is not None and not isinstance(identity[2], str))
+                or identity in seen
+                or not isinstance(item.get("proposal_activity"), str)
+                or not item.get("proposal_activity")
                 or not isinstance(item.get("source_text"), str)
                 or not isinstance(item.get("source_text_sha256"), str)):
             raise ValueError("Invalid or duplicate activity review item")
@@ -43,7 +48,10 @@ def load_source(path: Path):
 
 
 def item_key(item):
-    return item["workout_id"] + "::" + item["source_block_id"]
+    values = [item["workout_id"], item["source_block_id"]]
+    if item.get("source_item_id"):
+        values.append(item["source_item_id"])
+    return "::".join(values)
 
 
 def load_labels(path: Path, source):

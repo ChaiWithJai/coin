@@ -152,12 +152,12 @@ import XCTest
             }
         }
         XCTAssertEqual(lessons.count, 70)
-        XCTAssertEqual(workSegments, 1_184)
-        XCTAssertEqual(restSegments, 192)
-        XCTAssertEqual(timedWork, 688)
-        XCTAssertEqual(manualWork, 496)
+        XCTAssertEqual(workSegments, 1_204)
+        XCTAssertEqual(restSegments, 196)
+        XCTAssertEqual(timedWork, 714)
+        XCTAssertEqual(manualWork, 490)
         XCTAssertEqual(requiredChoices, 77)
-        XCTAssertEqual(timedSeconds, 93_255)
+        XCTAssertEqual(timedSeconds, 97_755)
     }
 
     func testReviewedEnduranceDaysExpandIntoExactThreeCircuitClock() throws {
@@ -421,8 +421,8 @@ import XCTest
                 }
             }
         }
-        XCTAssertEqual(expandedSections, 22)
-        XCTAssertEqual(expandedItems, 218)
+        XCTAssertEqual(expandedSections, 28)
+        XCTAssertEqual(expandedItems, 244)
         XCTAssertEqual(roundSections, 5)
         XCTAssertEqual(roundItems, 25)
         XCTAssertEqual(circuitSections, 2)
@@ -491,6 +491,66 @@ import XCTest
         }
     }
 
+    func testReviewedManualRoundSequencesUseExactClocksRestsAndLineage() throws {
+        let expected: [(lesson: String, block: String, seconds: [Int], rests: [Int], itemIDs: [String])] = [
+            ("competitive-w5-d1", "competitive-w5-d1-p37-s3-1",
+             [180, 180, 180], [60, 60, 0], ["p37-b8", "p37-b9", "p37-b10"]),
+            ("competitive-w5-d2", "competitive-w5-d2-p38-s5-1",
+             [60, 60, 60], [30, 30, 0], ["p38-b19", "p38-b20", "p38-b21"]),
+            ("basic-w2-d2", "basic-w2-d2-p11-s8-1",
+             Array(repeating: 180, count: 5), Array(repeating: 0, count: 5),
+             ["p11-b25", "p11-b27", "p11-b29", "p11-b30", "p11-b32"]),
+            ("basic-w3-d2", "basic-w3-d2-p18-s8-1",
+             Array(repeating: 180, count: 5), Array(repeating: 0, count: 5),
+             ["p18-b26", "p18-b27", "p18-b28", "p18-b30", "p18-b31"]),
+            ("basic-w4-d2", "basic-w4-d2-p25-s7-1",
+             Array(repeating: 180, count: 5), Array(repeating: 0, count: 5),
+             ["p25-b22", "p25-b24", "p25-b25", "p25-b27", "p25-b28"]),
+            ("basic-w5-d2", "basic-w5-d2-p32-s7-1",
+             Array(repeating: 180, count: 5), Array(repeating: 0, count: 5),
+             ["p32-b22", "p32-b23", "p32-b24", "p32-b25", "p32-b27"]),
+        ]
+        for value in expected {
+            let lesson = try XCTUnwrap(WorkoutCatalog.shared.lessons.first { $0.id == value.lesson })
+            let source = try XCTUnwrap(lesson.blocks.first { $0.id == value.block })
+            let steps = try XCTUnwrap(source.reviewedRoundSequence)
+            let rounds = lesson.template().blocks.filter { $0.sourceBlockID == value.block }
+            XCTAssertEqual(rounds.map(\.effectiveSeconds), value.seconds, value.block)
+            XCTAssertEqual(rounds.map(\.effectiveRestSeconds), value.rests, value.block)
+            XCTAssertEqual(rounds.map(\.sourceItemID), value.itemIDs.map(Optional.some), value.block)
+            XCTAssertEqual(rounds.map(\.sourceTitle), steps.map { Optional($0.focusText) }, value.block)
+            XCTAssertTrue(rounds.allSatisfy { !$0.isManual && $0.drillID == source.drillID })
+            for (round, step) in zip(rounds, steps) {
+                XCTAssertEqual(round.sourceInstructions, source.title + "\n" + step.focusText)
+                let expectedDemos = source.sourceItems?.filter { step.sourceItemIDs.contains($0.id) }
+                    .flatMap { $0.demoURLs ?? [] } ?? []
+                XCTAssertEqual(round.sourceDemoURLs, expectedDemos)
+            }
+        }
+    }
+
+    func testReviewedManualRoundSequencesFailClosedWhenSourceChanges() throws {
+        let ids = ["competitive-w5-d1-p37-s3-1", "competitive-w5-d2-p38-s5-1",
+                   "basic-w2-d2-p11-s8-1", "basic-w3-d2-p18-s8-1",
+                   "basic-w4-d2-p25-s7-1", "basic-w5-d2-p32-s7-1"]
+        for id in ids {
+            let lesson = try roundSequenceFixture(id) { block in
+                var items = block["sourceItems"] as! [[String: Any]]
+                items[items.count - 1]["text"] = "CHANGED SOURCE"
+                block["sourceItems"] = items
+                let text = items.map { $0["text"] as! String }.joined(separator: "\n")
+                block["instructions"] = text
+                block["sourceText"] = text
+            }
+            let source = try XCTUnwrap(lesson.blocks.first)
+            XCTAssertNil(source.reviewedRoundSequence, id)
+            let blocks = lesson.template().blocks
+            XCTAssertEqual(blocks.count, 1, id)
+            XCTAssertTrue(try XCTUnwrap(blocks.first).isManual, id)
+            XCTAssertNil(blocks.first?.sourceItemID, id)
+        }
+    }
+
     func testChangedOrUnreviewedPadSnapshotsStayWhole() throws {
         let changes: [(inout [String: Any]) -> Void] = [
             { $0["id"] = "unreviewed-pad-list" },
@@ -549,6 +609,20 @@ import XCTest
         let catalog = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
         var lesson = try XCTUnwrap((catalog["workouts"] as? [[String: Any]])?.first { $0["id"] as? String == "competitive-w1-d4" })
         var block = try XCTUnwrap((lesson["blocks"] as? [[String: Any]])?.first { $0["id"] as? String == "competitive-w1-d4-p8-s4-1" })
+        change(&block)
+        lesson["blocks"] = [block]
+        let data = try JSONSerialization.data(withJSONObject: ["schemaVersion": 1, "workouts": [lesson]])
+        return try XCTUnwrap(WorkoutCatalog.load(data).lessons.first)
+    }
+
+    private func roundSequenceFixture(_ blockID: String,
+                                      _ change: (inout [String: Any]) -> Void) throws -> WorkoutLesson {
+        let url = try XCTUnwrap(Bundle.main.url(forResource: "WorkoutCatalog", withExtension: "json"))
+        let catalog = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
+        var lesson = try XCTUnwrap((catalog["workouts"] as? [[String: Any]])?.first {
+            (($0["blocks"] as? [[String: Any]]) ?? []).contains { $0["id"] as? String == blockID }
+        })
+        var block = try XCTUnwrap((lesson["blocks"] as? [[String: Any]])?.first { $0["id"] as? String == blockID })
         change(&block)
         lesson["blocks"] = [block]
         let data = try JSONSerialization.data(withJSONObject: ["schemaVersion": 1, "workouts": [lesson]])

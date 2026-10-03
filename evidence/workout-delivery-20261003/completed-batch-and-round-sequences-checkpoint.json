@@ -1,0 +1,90 @@
+{
+  "checkpoint": "completed-batch-and-round-sequences",
+  "timestamp": "2026-10-03T00:55:00-04:00",
+  "atomic_batch": {
+    "job_id": "9585a62ea0cb702cc6e6c87ace6421ca717c0240ba460a656a84adf013bed39b",
+    "state": "complete",
+    "items": 1773,
+    "deterministic_results": 811,
+    "actual_model_calls": 470,
+    "cache_materializations": 492,
+    "known_proposals": 941,
+    "unknown_proposals": 832,
+    "prompt_tokens": 42509,
+    "completion_tokens": 470,
+    "total_tokens": 42979,
+    "actual_cost_usd": null,
+    "runtime_eligible_items": 0,
+    "audit_passed": true,
+    "audit_issues": 0,
+    "audit_path": "evidence/workout-delivery-20261003/source-item-audit-v22.json",
+    "audit_sha256": "dcce203c37846a0a3619dadda847a2575af23176d742e7a92a75373058a5f68e"
+  },
+  "semantic_review": {
+    "sample_size": 40,
+    "selection": "stable SHA-256 sample of source-quote-backed known proposals",
+    "evidence_status": "for human review, not labels",
+    "queue_path": "evidence/workout-delivery-20261003/source-item-review-v22.json",
+    "queue_sha256": "aef438b95978e16fe956daaefe4573e5906e2411867b088aa91340e3223accf6",
+    "local_url": "http://127.0.0.1:5401/",
+    "save_delete_workflow_verified": true,
+    "stored_user_labels": 0
+  },
+  "runtime_schedules": {
+    "limited_freestyle": {
+      "block": "competitive-w5-d1-p37-s3-1",
+      "segments": 3,
+      "work_seconds": 180,
+      "rests": [
+        60,
+        60,
+        0
+      ]
+    },
+    "vestibular_shadowboxing": {
+      "block": "competitive-w5-d2-p38-s5-1",
+      "segments": 3,
+      "work_seconds": 60,
+      "rests": [
+        30,
+        30,
+        0
+      ]
+    },
+    "typo_virtual_pad_blocks": [
+      "basic-w2-d2-p11-s8-1",
+      "basic-w3-d2-p18-s8-1",
+      "basic-w4-d2-p25-s7-1",
+      "basic-w5-d2-p32-s7-1"
+    ],
+    "guard": "exact ordered ID/text snapshots; mismatch returns original manual block"
+  },
+  "validation": {
+    "coin_unit_tests": "105/105",
+    "server_package_tests": "89/89",
+    "server_root_tests": "15/15",
+    "activity_review_tests": "10/10",
+    "signed_build": "succeeded",
+    "signed_binary_sha256": "e93bd496c4f819e890d44455fceda7070c855827164ae8814236dfbfc6cec9e6"
+  },
+  "phone": {
+    "device": "Lakshmi",
+    "state": "unavailable/offline",
+    "installed": false,
+    "physical_validation": false
+  },
+  "usage": {
+    "mlflow_experiment": 39,
+    "run_id": "fb1344c7d20940ee8a2bff2a17b0d0d4",
+    "response_count": 3787,
+    "total_tokens": 517098510,
+    "actual_billed_usd": null,
+    "coverage": "Observed per-response development usage only; no hidden reasoning capture."
+  },
+  "limits": [
+    "Semantic sample remains unreviewed.",
+    "Batch classifications are source proposals, not movement observations or boxer labels.",
+    "Latest signed build is not installed because the phone is unavailable.",
+    "Several complex mixed source schedules remain under-modeled and require exact reviewed splits."
+  ]
+}

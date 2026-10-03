@@ -41,10 +41,21 @@ class ActivityReviewTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "exact review queue"):
             load_labels(labels_path, source)
 
-    def test_duplicate_and_non_unknown_items_rejected(self):
+    def test_known_proposals_and_atomic_items_are_reviewable(self):
         bad = dict(self.source)
-        bad["items"] = [dict(self.item, proposal_activity="boxing")]
-        bad["count"] = 1
+        bad["items"] = [dict(self.item, proposal_activity="boxing", source_item_id="one"),
+                        dict(self.item, proposal_activity="footwork", source_item_id="two")]
+        bad["count"] = 2
+        self.path.write_text(json.dumps(bad))
+        loaded = load_source(self.path)
+        self.assertEqual([item_key(item) for item in loaded["items"]],
+                         ["basic-w1-d1::block::one", "basic-w1-d1::block::two"])
+
+    def test_duplicate_atomic_identity_is_rejected(self):
+        bad = dict(self.source)
+        bad["items"] = [dict(self.item, source_item_id="one"),
+                        dict(self.item, source_item_id="one")]
+        bad["count"] = 2
         self.path.write_text(json.dumps(bad))
         with self.assertRaisesRegex(ValueError, "Invalid"):
             load_source(self.path)

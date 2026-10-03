@@ -65,6 +65,20 @@ struct WorkoutLesson: Decodable, Identifiable {
     func sourceTemplate() -> TrainingTemplate {
         var roundNumber = 0
         var sessionBlocks = blocks.flatMap { source -> [SessionBlock] in
+            if let sequence = source.reviewedRoundSequence {
+                return sequence.map { step in
+                    if source.kind == .boxing { roundNumber += 1 }
+                    return SessionBlock(kind: source.kind ?? .exercise, minutes: step.durationSeconds / 60,
+                                 roundNumber: source.kind == .boxing ? roundNumber : nil,
+                                 drillID: source.drillID, restAfterMinutes: step.restSeconds / 60,
+                                 durationSeconds: step.durationSeconds, restAfterSeconds: step.restSeconds,
+                                 sourceTitle: step.focusText, sourceInstructions: source.title + "\n" + step.focusText,
+                                 sourceURL: source.sourceURL ?? sourceURL,
+                                 sourceDemoURLs: source.roundSequenceDemoURLs(for: step.sourceItemIDs),
+                                 sourceBlockID: source.id, sourceItemID: step.sourceItemIDs.first,
+                                 completionMode: .timed)
+                }
+            }
             if let steps = source.reviewedEnduranceCircuitSteps {
                 return steps.map { step in
                     SessionBlock(kind: .exercise, minutes: 1, roundNumber: nil, drillID: nil,
@@ -165,6 +179,126 @@ struct WorkoutSourceItem: Decodable {
 }
 
 extension WorkoutSourceBlock {
+    struct ReviewedRoundStep {
+        let sourceItemIDs: [String]
+        let focusText: String
+        let durationSeconds: Int
+        let restSeconds: Int
+    }
+
+    /// Exact source-pinned schedules that the conservative importer leaves
+    /// manual because their timing is spread across several source items or a
+    /// source typo says "RUNDS". Changed snapshots fall back to one untouched
+    /// manual block rather than receiving an inferred clock.
+    var reviewedRoundSequence: [ReviewedRoundStep]? {
+        struct Snapshot {
+            let items: [(String, String)]
+            let focuses: [([String], String)]
+            let durationSeconds: Int
+            let restSeconds: Int
+        }
+        let snapshots: [String: Snapshot] = [
+            "competitive-w5-d1-p37-s3-1": Snapshot(items: [
+                ("p37-b5", "SHADOW BOXING"),
+                ("p37-b6", "GO FOR 3 ROUNDS OF 3 MINUTES WITH 1 MINUTE OF REST IN BETWEEN OF"),
+                ("p37-b7", "LIMITED FREESTYLE SHADOW BOXING:"),
+                ("p37-b8", "USE ONLY THE LEAD HAND. 1ROUND OF 3MINUTES"),
+                ("p37-b9", "USE ONLY THE REAR HAND. 1ROUND OF 3MINUTES"),
+                ("p37-b10", "FREESTYLE WORK WITH FOCUS ON COMBOS. 1ROUND OF 3MINUTES"),
+            ], focuses: [
+                (["p37-b8"], "USE ONLY THE LEAD HAND. 1ROUND OF 3MINUTES"),
+                (["p37-b9"], "USE ONLY THE REAR HAND. 1ROUND OF 3MINUTES"),
+                (["p37-b10"], "FREESTYLE WORK WITH FOCUS ON COMBOS. 1ROUND OF 3MINUTES"),
+            ], durationSeconds: 180, restSeconds: 60),
+            "competitive-w5-d2-p38-s5-1": Snapshot(items: [
+                ("p38-b18", "VESTIBULAR APPARATUS TRAINING"),
+                ("p38-b19", "spin left + shadow box. 1 round of 1 minute with 30 seconds of rest"),
+                ("p38-b20", "spin right + shadow box. 1 round of 1 minute with 30 seconds of rest"),
+                ("p38-b21", "roll + shadow box. 1 round of 1 minute with 30 seconds of rest"),
+            ], focuses: [
+                (["p38-b19"], "spin left + shadow box. 1 round of 1 minute with 30 seconds of rest"),
+                (["p38-b20"], "spin right + shadow box. 1 round of 1 minute with 30 seconds of rest"),
+                (["p38-b21"], "roll + shadow box. 1 round of 1 minute with 30 seconds of rest"),
+            ], durationSeconds: 60, restSeconds: 30),
+            "basic-w2-d2-p11-s8-1": Snapshot(items: [
+                ("p11-b24", "VIRTUAL PAD WORK. 5 RUNDS OF 3 MINUTES"),
+                ("p11-b25", "SINGLE SIMULTANIOUS COUNTERS IN FRONTAL STANCE"),
+                ("p11-b27", "DEFENSIVE MOVE + 2 PUNCHES IN FONTAL STANCE"),
+                ("p11-b29", "SINGLE SIMULTANIOUS COUNTERS IN FIGHTING STANCE"),
+                ("p11-b30", "DEFENSIVE MOVE + 2 PUNCHES IN FIGHTING STANCE"),
+                ("p11-b32", "SINGLE PUNCHES IN FIGHTING STANCE WITH STEPS BACK"),
+            ], focuses: [
+                (["p11-b25"], "SINGLE SIMULTANIOUS COUNTERS IN FRONTAL STANCE"),
+                (["p11-b27"], "DEFENSIVE MOVE + 2 PUNCHES IN FONTAL STANCE"),
+                (["p11-b29"], "SINGLE SIMULTANIOUS COUNTERS IN FIGHTING STANCE"),
+                (["p11-b30"], "DEFENSIVE MOVE + 2 PUNCHES IN FIGHTING STANCE"),
+                (["p11-b32"], "SINGLE PUNCHES IN FIGHTING STANCE WITH STEPS BACK"),
+            ], durationSeconds: 180, restSeconds: 0),
+            "basic-w3-d2-p18-s8-1": Snapshot(items: [
+                ("p18-b25", "VIRTUAL PAD WORK. 5 RUNDS OF 3 MINUTES"),
+                ("p18-b26", "SLIP + PIVOT + 1 PUNCH"),
+                ("p18-b27", "DEFENSIVE MOVE + PIVOT + 1 PUNCH IN FIGHTING STANCE"),
+                ("p18-b28", "DEFENSIVE MOVE + PIVOT + 2 PUNCHES IN FIGHTING STANCE"),
+                ("p18-b30", "JAB + ANY DEFENCE + 2 PUNCHES"),
+                ("p18-b31", "JAB + ANY DEFENCE + PIVOT + 2 PUNCHES"),
+            ], focuses: [
+                (["p18-b26"], "SLIP + PIVOT + 1 PUNCH"),
+                (["p18-b27"], "DEFENSIVE MOVE + PIVOT + 1 PUNCH IN FIGHTING STANCE"),
+                (["p18-b28"], "DEFENSIVE MOVE + PIVOT + 2 PUNCHES IN FIGHTING STANCE"),
+                (["p18-b30"], "JAB + ANY DEFENCE + 2 PUNCHES"),
+                (["p18-b31"], "JAB + ANY DEFENCE + PIVOT + 2 PUNCHES"),
+            ], durationSeconds: 180, restSeconds: 0),
+            "basic-w4-d2-p25-s7-1": Snapshot(items: [
+                ("p25-b21", "VIRTUAL PAD WORK. 5 RUNDS OF 3 MINUTES"),
+                ("p25-b22", "PUNCH-SLIP OUTSIDE-PUNCH-SLIP INSIDE IN FRONTAL"),
+                ("p25-b23", "STANCE"),
+                ("p25-b24", "SLIP + SHIFT + 1 PUNCH IN FONTAL STANCE"),
+                ("p25-b25", "PUNCH-SLIP OUTSIDE-PUNCH-SLIP INSIDE IN FRONTAL"),
+                ("p25-b26", "STANCE"),
+                ("p25-b27", "SLIP + SHIFT + 1 OR 2 PUNCHES STANCE"),
+                ("p25-b28", "JAB + ANY DEFENCE + 2 PUNCHES"),
+            ], focuses: [
+                (["p25-b22", "p25-b23"], "PUNCH-SLIP OUTSIDE-PUNCH-SLIP INSIDE IN FRONTAL\nSTANCE"),
+                (["p25-b24"], "SLIP + SHIFT + 1 PUNCH IN FONTAL STANCE"),
+                (["p25-b25", "p25-b26"], "PUNCH-SLIP OUTSIDE-PUNCH-SLIP INSIDE IN FRONTAL\nSTANCE"),
+                (["p25-b27"], "SLIP + SHIFT + 1 OR 2 PUNCHES STANCE"),
+                (["p25-b28"], "JAB + ANY DEFENCE + 2 PUNCHES"),
+            ], durationSeconds: 180, restSeconds: 0),
+            "basic-w5-d2-p32-s7-1": Snapshot(items: [
+                ("p32-b21", "VIRTUAL PAD WORK. 5 RUNDS OF 3 MINUTES"),
+                ("p32-b22", "ALL SINGLE PUNCHES WITH STEPS BACK IN FRONTAL STANCE"),
+                ("p32-b23", "SIDESTEP COUNTERS IN FONTAL STANCE"),
+                ("p32-b24", "PUNCHES WITH STEPS BACK IN THE FIGHTING STANCE"),
+                ("p32-b25", "ANY DEFENCE + 2 PUNCHES"),
+                ("p32-b27", "JAB + ANY DEFENCE + 2 PUNCHES"),
+            ], focuses: [
+                (["p32-b22"], "ALL SINGLE PUNCHES WITH STEPS BACK IN FRONTAL STANCE"),
+                (["p32-b23"], "SIDESTEP COUNTERS IN FONTAL STANCE"),
+                (["p32-b24"], "PUNCHES WITH STEPS BACK IN THE FIGHTING STANCE"),
+                (["p32-b25"], "ANY DEFENCE + 2 PUNCHES"),
+                (["p32-b27"], "JAB + ANY DEFENCE + 2 PUNCHES"),
+            ], durationSeconds: 180, restSeconds: 0),
+        ]
+        guard let snapshot = snapshots[id], completion == .manual, kind == .boxing,
+              rounds == nil, durationSeconds == nil, restSeconds == nil,
+              let items = sourceItems,
+              items.map({ ($0.id, $0.text) }).elementsEqual(snapshot.items, by: { $0.0 == $1.0 && $0.1 == $1.1 }),
+              items.map(\.text).joined(separator: "\n") == instructions,
+              sourceText == instructions else { return nil }
+        let final = snapshot.focuses.count - 1
+        return snapshot.focuses.enumerated().map { index, focus in
+            ReviewedRoundStep(sourceItemIDs: focus.0, focusText: focus.1,
+                              durationSeconds: snapshot.durationSeconds,
+                              restSeconds: index == final ? 0 : snapshot.restSeconds)
+        }
+    }
+
+    func roundSequenceDemoURLs(for itemIDs: [String]) -> [String] {
+        var seen = Set<String>()
+        let selected = (sourceItems ?? []).filter { itemIDs.contains($0.id) }
+        return selected.flatMap { $0.demoURLs ?? [] }.filter { seen.insert($0).inserted }
+    }
+
     struct EnduranceCircuitStep {
         let item: WorkoutSourceItem
         let circuit: Int

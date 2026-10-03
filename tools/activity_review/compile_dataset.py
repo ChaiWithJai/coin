@@ -93,6 +93,8 @@ def compile_review(source: dict, labels: dict, eval_workouts: set[str]) -> tuple
             "source_text_sha256": item["source_text_sha256"],
             "proposal_activity": item["proposal_activity"],
         }
+        if item.get("source_item_id"):
+            observation["source_item_id"] = item["source_item_id"]
         sessions.setdefault(session_id, []).append(observation)
         review = {
             "review_id": review_id,
