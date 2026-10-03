@@ -1,4 +1,5 @@
 import XCTest
+import CryptoKit
 @testable import Coin
 
 @MainActor final class RuntimeDrillProposalTests: XCTestCase {
@@ -125,5 +126,95 @@ import XCTest
             from: JSONSerialization.data(withJSONObject: raw))
         XCTAssertEqual(RuntimeDrillCompiler.promote(proposal, catalog: WorkoutCatalog.shared,
             catalogSHA256: catalogHash), .abstained(.targetNotAtomic))
+    }
+
+    func testCompleteReviewedOverlayChangesOnlyMovementMetadata() throws {
+        let fixture = try overlayFixture(blockCount: 1)
+        let overlay = try XCTUnwrap(ReviewedRuntimeDrillOverlay.compile(
+            overlayData: fixture.overlayData, catalogData: fixture.catalogData,
+            catalog: fixture.catalog, expectedLessonID: "overlay-test"))
+        let lesson = try XCTUnwrap(fixture.catalog.lessons.first)
+        let original = lesson.sourceTemplate().blocks
+        let applied = try XCTUnwrap(overlay.applying(to: lesson, blocks: original))
+
+        XCTAssertEqual(applied.first?.sourceActivityKey, "frontal_stance")
+        var expected = original[0]
+        expected.sourceActivityKey = "frontal_stance"
+        XCTAssertEqual(applied[0], expected)
+        XCTAssertEqual(applied[0].durationSeconds, 47)
+        XCTAssertEqual(applied[0].restAfterSeconds, original[0].restAfterSeconds)
+        XCTAssertEqual(applied[0].sourceTitle, "Original title")
+        XCTAssertEqual(applied[0].sourceInstructions, "Original instructions")
+    }
+
+    func testOverlayRejectsIncompleteCoverageAndCatalogMismatch() throws {
+        let incomplete = try overlayFixture(blockCount: 2, proposalCount: 1)
+        let decoded = try XCTUnwrap(ReviewedRuntimeDrillOverlay.compile(
+            overlayData: incomplete.overlayData, catalogData: incomplete.catalogData,
+            catalog: incomplete.catalog, expectedLessonID: "overlay-test"))
+        let lesson = try XCTUnwrap(incomplete.catalog.lessons.first)
+        XCTAssertNil(decoded.applying(to: lesson, blocks: lesson.sourceTemplate().blocks))
+
+        var changedCatalog = incomplete.catalogData
+        changedCatalog.append(0x20)
+        XCTAssertNil(ReviewedRuntimeDrillOverlay.compile(overlayData: incomplete.overlayData,
+            catalogData: changedCatalog, catalog: incomplete.catalog, expectedLessonID: "overlay-test"))
+    }
+
+    func testOverlayRejectsAnyUnapprovedOrDuplicateTarget() throws {
+        let fixture = try overlayFixture(blockCount: 1, approved: false)
+        let overlay = try XCTUnwrap(ReviewedRuntimeDrillOverlay.compile(
+            overlayData: fixture.overlayData, catalogData: fixture.catalogData,
+            catalog: fixture.catalog, expectedLessonID: "overlay-test"))
+        let lesson = try XCTUnwrap(fixture.catalog.lessons.first)
+        XCTAssertNil(overlay.applying(to: lesson, blocks: lesson.sourceTemplate().blocks))
+
+        let duplicate = try overlayFixture(blockCount: 2, proposalCount: 2, duplicateTarget: true)
+        let duplicateOverlay = try XCTUnwrap(ReviewedRuntimeDrillOverlay.compile(
+            overlayData: duplicate.overlayData, catalogData: duplicate.catalogData,
+            catalog: duplicate.catalog, expectedLessonID: "overlay-test"))
+        let duplicateLesson = try XCTUnwrap(duplicate.catalog.lessons.first)
+        XCTAssertNil(duplicateOverlay.applying(to: duplicateLesson,
+            blocks: duplicateLesson.sourceTemplate().blocks))
+    }
+
+    private func overlayFixture(blockCount: Int, proposalCount: Int? = nil,
+                                approved: Bool = true, duplicateTarget: Bool = false) throws
+        -> (catalogData: Data, catalog: WorkoutCatalog, overlayData: Data) {
+        let blocks = (0..<blockCount).map { index in
+            """
+            {"id":"block-\(index)","title":"Original title\(index == 0 ? "" : " \(index)")","instructions":"Original instructions\(index == 0 ? "" : " \(index)")","kind":"boxing","rounds":1,"durationSeconds":47,"restSeconds":13,"completion":"timed"}
+            """
+        }.joined(separator: ",")
+        let catalogData = Data("""
+        {"schemaVersion":1,"workouts":[{"id":"overlay-test","program":"basic","week":1,"day":1,"title":"Overlay test","sourceURL":"https://example.test/workout","sourceSHA256":"\(String(repeating: "a", count: 64))","blocks":[\(blocks)]}]}
+        """.utf8)
+        let catalog = try WorkoutCatalog.load(catalogData)
+        let hash = SHA256.hash(data: catalogData).map { String(format: "%02x", $0) }.joined()
+        let review = RuntimeDrillProposal.Review(state: approved ? .approved : .unreviewed,
+            reviewer: approved ? "reviewer@example.test" : nil,
+            reviewedAt: approved ? Date(timeIntervalSince1970: 1_800_000_000) : nil)
+        let count = proposalCount ?? blockCount
+        let proposals = (0..<count).map { index -> RuntimeDrillProposal in
+            let targetIndex = duplicateTarget ? 0 : index
+            return RuntimeDrillProposal(schemaVersion: 1, proposalID: "overlay-\(index)",
+                catalogSHA256: hash, sourceSHA256: String(repeating: "a", count: 64),
+                target: .init(kind: .runtimeSegment, lessonID: "overlay-test",
+                    sourceBlockID: "block-\(targetIndex)", sourceItemID: nil,
+                    runtimeSegmentIndex: targetIndex),
+                sourceTitle: targetIndex == 0 ? "Original title" : "Original title \(targetIndex)",
+                sourceInstructions: targetIndex == 0 ? "Original instructions" : "Original instructions \(targetIndex)",
+                sourceItemText: nil,
+                runtimeTitle: targetIndex == 0 ? "Original title" : "Original title \(targetIndex)",
+                runtimeInstructions: targetIndex == 0 ? "Original instructions" : "Original instructions \(targetIndex)",
+                movementKey: "frontal_stance", movementVersion: "v1",
+                measurementRecipe: .forExercise("frontal_stance"), review: review,
+                measurementReview: review)
+        }
+        let overlay = ReviewedRuntimeDrillOverlay(schemaVersion: 1, catalogSHA256: hash,
+            lessonID: "overlay-test", proposals: proposals)
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        return (catalogData, catalog, try encoder.encode(overlay))
     }
 }

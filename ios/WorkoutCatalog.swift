@@ -60,7 +60,9 @@ struct WorkoutLesson: Decodable, Identifiable {
     let blocks: [WorkoutSourceBlock]
     var programID: String { program }
 
-    func template() -> TrainingTemplate {
+    /// Builds the immutable source-derived plan. Runtime overlay validation uses
+    /// this path too, avoiding recursion through the bundled overlay bridge.
+    func sourceTemplate() -> TrainingTemplate {
         var roundNumber = 0
         var sessionBlocks = blocks.flatMap { source -> [SessionBlock] in
             if let steps = source.manualSteps {
@@ -112,6 +114,15 @@ struct WorkoutLesson: Decodable, Identifiable {
                                 blocks: sessionBlocks, sourceTitle: title,
                                 localizedSourceTitleFR: localizedTitleFR,
                                 sourceURL: sourceURL, sourceVersion: sourceSHA256)
+    }
+
+    func template() -> TrainingTemplate {
+        let source = sourceTemplate()
+        guard let overlay = ReviewedRuntimeDrillOverlay.bundled(for: id, catalog: .shared),
+              let blocks = overlay.applying(to: self, blocks: source.blocks) else { return source }
+        return TrainingTemplate(id: source.id, durationMinutes: source.durationMinutes, blocks: blocks,
+            sourceTitle: source.sourceTitle, localizedSourceTitleFR: source.localizedSourceTitleFR,
+            sourceURL: source.sourceURL, sourceVersion: source.sourceVersion)
     }
 }
 

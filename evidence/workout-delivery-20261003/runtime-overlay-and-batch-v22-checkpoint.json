@@ -1,0 +1,54 @@
+{
+  "checkpoint": "runtime-overlay-and-batch-v22",
+  "timestamp": "2026-10-03T00:30:00-04:00",
+  "outcome": {
+    "runtime_contract": "Reviewed, catalog-pinned overlays may bind one concrete movement and measurement recipe to every generated lesson step; incomplete or stale overlays fail closed.",
+    "review_ui": "Local 43-item timed-unknown review interface verified for pass/fail/defer, notes, persistence, and exact queue-hash binding. It has no promotion endpoint.",
+    "agentic_release_verifier": "Added record-review-correct-dataset-evaluate-deploy receipt verifier with source hashes, accepted-only labels, session split isolation, held-out equality, and exact evaluated/deployed artifact identity.",
+    "batch_v2_failure": "Paused job 1de524c77fca935e0cff5054e26df8e9a4bbb4b65faea1cd9e664545a816c5f7 after finding 84/441 incorrect deterministic routes, 139/139 cache identity leaks, and 16 source-supported model errors. Nothing was promoted.",
+    "batch_v22_job": "9585a62ea0cb702cc6e6c87ace6421ca717c0240ba460a656a84adf013bed39b"
+  },
+  "batch_v22_audit": {
+    "catalog_source_items": 1773,
+    "deterministic_items": 811,
+    "model_fallback_items": 962,
+    "known_rule_regressions_checked": 6,
+    "bounded_sample": {
+      "processed": 201,
+      "actual_model_calls": 135,
+      "cache_materializations": 66,
+      "source_identity_mismatches": 0,
+      "failures": 0,
+      "prompt_tokens": 11993,
+      "completion_tokens": 135,
+      "total_tokens": 12128,
+      "source_supported_classifications_reviewed": 40,
+      "unsupported_answers_kept_unknown": 161
+    },
+    "continuation": "Remaining 761 items started as four server-enforced chunks of at most 201."
+  },
+  "validation": {
+    "focused_batch_and_verifier_tests": "39/39",
+    "activity_review_tests": "3/3",
+    "server_package_tests": "84/84",
+    "server_root_tests": "14/14",
+    "coin_unit_tests": "101/101",
+    "signed_device_build": "succeeded",
+    "signed_binary_sha256": "d3ad94716429f47664c2796d6f01b6c2afb997e09a7e608781a065ce6e485573"
+  },
+  "usage": {
+    "mlflow_experiment": 39,
+    "run_id": "23f840bb74a74dfdb598fe9012de5ea4",
+    "observed_responses": 3646,
+    "total_tokens": 499956432,
+    "actual_billed_usd": null,
+    "api_equivalent_usd": null,
+    "coverage": "Exposed per-response task usage only; no hidden reasoning capture."
+  },
+  "limits": [
+    "No activity proposal is promoted or runtime eligible.",
+    "The physical iPhone workout and pose accuracy remain unverified.",
+    "The 201-item audit is source-level semantic review, not boxer ground truth.",
+    "Actual billed cost is unknown."
+  ]
+}

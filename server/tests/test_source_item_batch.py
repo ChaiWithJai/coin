@@ -8,7 +8,8 @@ from pathlib import Path
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from batch_jobs import Store, catalog_source_item_manifest, digest, normalize_day_six_items
+from batch_jobs import (Store, catalog_source_item_manifest, digest, explicit_activity,
+                        materialize_cached_output, normalize_day_six_items)
 
 
 class SourceItemBatchTests(unittest.TestCase):
@@ -93,6 +94,38 @@ class SourceItemBatchTests(unittest.TestCase):
         self.assertTrue(all(p['catalog_sha256'] == manifest['catalog_sha256'] for p in proposals))
         self.assertTrue(all(p['runtime_eligible'] is False for p in proposals))
         self.assertEqual(catalog_source_item_manifest(self.catalog), (manifest, proposals))
+
+    def test_item_rules_do_not_inherit_recovery_and_virtual_sparring_is_solo(self):
+        self.assertIsNone(explicit_activity("7 ROUNDS OF 1 MINUTE", "recovery", allow_kind_fallback=False))
+        self.assertEqual(explicit_activity("VIRUAL SPARRING", "boxing", allow_kind_fallback=False)[0],
+                         "shadowboxing")
+        self.assertEqual(explicit_activity("THREE PUNCH COMBOS", "recovery", allow_kind_fallback=False)[0],
+                         "shadowboxing")
+        self.assertEqual(explicit_activity("Dumbbell Snatch", "exercise", allow_kind_fallback=False)[0],
+                         "strength")
+        self.assertEqual(explicit_activity(
+            "10 PUSH-UPS; 6 360° JUMPS; 10 JUMP HALF SQUATS WITH PUNCHES",
+            "exercise", allow_kind_fallback=False)[0], "strength")
+        self.assertEqual(explicit_activity(
+            "FRONTAL STANCE: SQUAT AND ATTACK. 4 ROUNDS OF 1 MINUTE WITH",
+            "boxing", allow_kind_fallback=False)[0], "shadowboxing")
+
+    def test_cached_decision_is_rebound_to_current_source_identity(self):
+        donor = {"result": {"proposal_id": "donor", "source_block_id": "old",
+                            "activity": "footwork", "evidence_quote": "step",
+                            "annotation_origin": "model_choice_with_source_support",
+                            "review_state": "model_proposal_not_promoted"},
+                 "raw_response": {"id": "original-model-call"}}
+        current = {"proposal_id": "current", "source_block_id": "new",
+                   "source_item_id": "item", "source_text": "step left",
+                   "runtime_eligible": False}
+        output = materialize_cached_output("source_item", donor, current)
+        self.assertEqual(output["result"]["proposal_id"], "current")
+        self.assertEqual(output["result"]["source_block_id"], "new")
+        self.assertEqual(output["result"]["activity"], "footwork")
+        self.assertEqual(output["raw_response"]["id"], "original-model-call")
+        self.assertEqual(output["cache_materialization"],
+                         "model_decision_only_current_source_identity")
 
     def test_separate_idempotent_job_is_atomic_and_queues_only_fallbacks(self):
         with tempfile.TemporaryDirectory() as folder:

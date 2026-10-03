@@ -19,7 +19,7 @@ from contextlib import contextmanager
 
 VERSION = 'completed-round-batch-v2.1'
 CURRICULUM_VERSION = 'source-annotation-atomic-v2.1'
-SOURCE_ITEM_VERSION = 'source-item-normalization-v2'
+SOURCE_ITEM_VERSION = 'source-item-normalization-v2.2'
 MAX_EXCHANGES = 200
 MAX_INPUT_BYTES = 2_000_000
 
@@ -82,6 +82,22 @@ def source_item_export_stages(output, job_id, item_id, model_versions):
         'outputs': {'decision': 'not_promoted', 'reason': 'human_review_not_performed'},
     }])
     return stages
+
+
+def materialize_cached_output(kind, cached_output, current_input):
+    """Reuse model evidence without copying another item's source identity."""
+    output = dict(cached_output)
+    if kind != 'source_item':
+        return output
+    donor = output.get('result') if isinstance(output.get('result'), dict) else {}
+    result = dict(current_input)
+    for key in ('activity', 'evidence_quote', 'annotation_origin', 'review_state'):
+        if key in donor:
+            result[key] = donor[key]
+    result['runtime_eligible'] = False
+    output['result'] = result
+    output['cache_materialization'] = 'model_decision_only_current_source_identity'
+    return output
 
 
 def normalize_day_six_items(catalog):
@@ -192,7 +208,7 @@ def catalog_source_item_manifest(catalog):
                     raise ValueError('Duplicate source item identity')
                 identities.add(identity)
                 source_text_sha = digest(text)
-                activity = explicit_activity(text, block.get('kind'))
+                activity = explicit_activity(text, block.get('kind'), allow_kind_fallback=False)
                 proposal_id = digest({'catalog_sha256': catalog_sha, 'source_sha256': source_sha.lower(),
                                       'workout_id': workout_id, 'source_block_id': block_id,
                                       'source_item_id': item_id, 'source_text_sha256': source_text_sha,
@@ -563,7 +579,8 @@ class Store:
             key = digest({'version': prompt_version, 'kind': row['kind'], 'input': cache_input, 'model': model})
             with self.db() as db:
                 cached = db.execute('SELECT output FROM cache WHERE key=?', (key,)).fetchone()
-            output = json.loads(cached['output']) if cached else client.run(row['kind'], data)
+            output = (materialize_cached_output(row['kind'], json.loads(cached['output']), data)
+                      if cached else client.run(row['kind'], data))
             output = dict(output, cache_hit=bool(cached),
                           inference_performed=(not bool(cached) and output.get('inference_performed', True)),
                           model_identity=model, prompt_version=prompt_version)
@@ -697,22 +714,34 @@ def report_wording(data):
     return observation, focus, [value + incomplete for value in limitations]
 
 
-def explicit_activity(text, kind):
+def explicit_activity(text, kind, allow_kind_fallback=True):
     """Classify explicit source names only; the model handles unresolved context."""
+    # A calisthenic circuit can mention punches as one loaded movement without
+    # becoming a boxing round. Conversely, stance + attack is boxing even when
+    # the stance drill asks the athlete to squat. Resolve those mixed phrases
+    # before the single-keyword rules below.
+    if (re.search(r'\bpush[ -]?ups?\b', text, re.I)
+            and re.search(r'\b(?:jumps?|squats?)\b', text, re.I)):
+        match = re.search(r'\bpush[ -]?ups?\b', text, re.I)
+        return 'strength', match.group(0)
+    if re.search(r'\b(?:frontal|fighting) stance\b', text, re.I) and re.search(r'\battack\b', text, re.I):
+        match = re.search(r'\battack\b', text, re.I)
+        return 'shadowboxing', match.group(0)
     patterns = [
         ('recovery', r'\b(?:rest day|active recovery|recovery day)\b'),
-        ('conditioning', r'\bconditioning\b'),
+        ('conditioning', r'\b(?:conditioning|running|sprints?|jump rope)\b'),
+        ('shadowboxing', r'\b(?:virtual|virual) sparring\b'),
         ('partner_work', r'\b(?:partner work|sparring|partner drill)\b'),
         ('bag_work', r'\bbag work\b'),
-        ('shadowboxing', r'\b(?:shadowboxing|shadow boxing|virtual pad work)\b'),
-        ('strength', r'\b(?:squats?|push[ -]?ups?|burpees?|mountain climbers?|leg raises?|tucks?|medicine ball|med ball)\b'),
+        ('shadowboxing', r'\b(?:shadowboxing|shadow boxing|virtual pad work|punch(?:es)?|jab|hooks?|uppercuts?|combos?|combinations?|defen[cs]e|slips?|rolls?)\b'),
+        ('strength', r'\b(?:squats?|push[ -]?ups?|pull[ -]?ups?|burpees?|mountain climbers?|leg raises?|tucks?|medicine ball|med ball|dumbbell|kettlebell|deadlift|bench press|snatch|inverted row)\b'),
         ('mobility', r'\b(?:stretches|stretching|stretch|mobility)\b'),
     ]
     for activity, pattern in patterns:
         match = re.search(pattern, text, re.I)
         if match:
             return activity, match.group(0)
-    if kind == 'recovery':
+    if allow_kind_fallback and kind == 'recovery':
         return 'recovery', text.splitlines()[0][:200]
     return None
 

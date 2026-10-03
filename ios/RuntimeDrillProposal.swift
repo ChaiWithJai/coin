@@ -1,4 +1,5 @@
 import Foundation
+import CryptoKit
 
 /// A review artifact may propose runtime metadata, but it never edits source copy.
 /// Promotion is deliberately a pure operation over a pinned catalog snapshot.
@@ -125,10 +126,10 @@ enum RuntimeDrillCompiler {
             guard item.text == proposal.sourceItemText else { return abstain(.sourceWordingMismatch) }
         case .runtimeSegment:
             guard proposal.sourceItemText == nil, let index = proposal.target.runtimeSegmentIndex,
-                  lesson.template().blocks.indices.contains(index) else {
+                  lesson.sourceTemplate().blocks.indices.contains(index) else {
                 return abstain(.targetNotAtomic)
             }
-            let segment = lesson.template().blocks[index]
+            let segment = lesson.sourceTemplate().blocks[index]
             guard segment.sourceBlockID == source.id,
                   segment.sourceItemID == proposal.target.sourceItemID else {
                 return abstain(.runtimeLineageMismatch)
@@ -159,5 +160,72 @@ enum RuntimeDrillCompiler {
     private static func complete(_ review: RuntimeDrillProposal.Review) -> Bool {
         guard let reviewer = review.reviewer?.trimmingCharacters(in: .whitespacesAndNewlines) else { return false }
         return !reviewer.isEmpty && review.reviewedAt != nil
+    }
+}
+
+/// A generated overlay is accepted only as one complete, catalog-pinned lesson.
+/// There is intentionally no directory scan or fallback to candidate artifacts.
+struct ReviewedRuntimeDrillOverlay: Codable, Equatable {
+    static let currentSchemaVersion = 1
+    let schemaVersion: Int
+    let catalogSHA256: String
+    let lessonID: String
+    let proposals: [RuntimeDrillProposal]
+
+    static func bundled(for lessonID: String, catalog: WorkoutCatalog) -> Self? {
+        guard !lessonID.isEmpty,
+              lessonID.range(of: "^[a-z0-9-]+$", options: .regularExpression) != nil,
+              let overlayURL = Bundle.main.url(forResource: "ReviewedRuntimeDrills-\(lessonID)",
+                                                withExtension: "json"),
+              let catalogURL = Bundle.main.url(forResource: "WorkoutCatalog", withExtension: "json"),
+              let overlayData = try? Data(contentsOf: overlayURL),
+              let catalogData = try? Data(contentsOf: catalogURL) else { return nil }
+        return compile(overlayData: overlayData, catalogData: catalogData, catalog: catalog,
+                       expectedLessonID: lessonID)
+    }
+
+    static func compile(overlayData: Data, catalogData: Data, catalog: WorkoutCatalog,
+                        expectedLessonID: String) -> Self? {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        guard let overlay = try? decoder.decode(Self.self, from: overlayData),
+              overlay.schemaVersion == currentSchemaVersion,
+              overlay.lessonID == expectedLessonID,
+              catalog.lessons.contains(where: { $0.id == expectedLessonID }) else { return nil }
+        let actualHash = SHA256.hash(data: catalogData).map { String(format: "%02x", $0) }.joined()
+        guard overlay.catalogSHA256 == actualHash,
+              !overlay.proposals.isEmpty,
+              Set(overlay.proposals.map(\.proposalID)).count == overlay.proposals.count,
+              overlay.proposals.allSatisfy({ $0.catalogSHA256 == overlay.catalogSHA256 &&
+                  $0.target.lessonID == overlay.lessonID }) else { return nil }
+        return overlay
+    }
+
+    /// Every generated segment must be covered exactly once. Any failed proposal,
+    /// duplicate target, missing segment, or ambiguous source-item match rejects
+    /// the whole overlay. Only movement metadata is copied onto the source plan.
+    func applying(to lesson: WorkoutLesson, blocks: [SessionBlock]) -> [SessionBlock]? {
+        guard lesson.id == lessonID, blocks.count == proposals.count else { return nil }
+        var movementByIndex: [Int: String] = [:]
+        for proposal in proposals {
+            guard case .promoted(let drill) = RuntimeDrillCompiler.promote(
+                proposal, catalog: WorkoutCatalog(schemaVersion: 1, workouts: [lesson]),
+                catalogSHA256: catalogSHA256) else { return nil }
+            let indices: [Int]
+            if let index = drill.runtimeSegmentIndex {
+                indices = blocks.indices.contains(index) ? [index] : []
+            } else {
+                indices = blocks.indices.filter { blocks[$0].sourceBlockID == drill.sourceBlockID &&
+                    blocks[$0].sourceItemID == drill.sourceItemID }
+            }
+            guard indices.count == 1, movementByIndex[indices[0]] == nil else { return nil }
+            movementByIndex[indices[0]] = drill.movementKey
+        }
+        guard Set(movementByIndex.keys) == Set(blocks.indices) else { return nil }
+        return blocks.enumerated().map { index, original in
+            var block = original
+            block.sourceActivityKey = movementByIndex[index]
+            return block
+        }
     }
 }
