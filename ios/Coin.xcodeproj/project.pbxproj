@@ -9,12 +9,14 @@
 /* Begin PBXBuildFile section */
 		01A429B1D5DB015B21915D74 /* en_free_mid_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 9A86E4068D498EF3A4C0D28E /* en_free_mid_cue.mp3 */; };
 		02E41CF8C4F5C918BF568934 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B6E6C07A3DD5FCFEB9DE4935 /* PrivacyInfo.xcprivacy */; };
+		02FDAC6C496276C9F7E40A71 /* SourceWorkoutLocalizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 732B8B846ABBFD44857DC94F /* SourceWorkoutLocalizationTests.swift */; };
 		0321A361EEABDD5D9273E6B2 /* en_squats_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = EAAD6AD111D4DAB730355015 /* en_squats_cue.mp3 */; };
 		0360296025155AB60C041A67 /* GuardFlowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 963A427486EDF99D2A80E2ED /* GuardFlowTests.swift */; };
 		03730A6CDC06F8A429A5F7EF /* WorkoutActivityInstanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1904B174D87C8668ADF30B52 /* WorkoutActivityInstanceTests.swift */; };
 		0EED624B951048C4C4FD9C71 /* fr_shadowboxing_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 760BD32B3B99EC8C233B41EC /* fr_shadowboxing_cue.mp3 */; };
 		1BF3D0D11E87EC39C41EEDC2 /* TrainingModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C62A92AA909C28AED6B0792B /* TrainingModelTests.swift */; };
 		2335D21491DE5C29B84675FC /* LocalConfig.json in Resources */ = {isa = PBXBuildFile; fileRef = A4CF5CB5BE3CF7EBF0A5BFB4 /* LocalConfig.json */; };
+		2E6B7FDEE04BFE7712F6ECB5 /* Pods_Coin.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BE77FC5643D1356C6CBCCB60 /* Pods_Coin.framework */; };
 		316AA1C4597338A9662AE13D /* WorkoutActivityIntervalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D072279C0ED54FE89EBAA272 /* WorkoutActivityIntervalTests.swift */; };
 		3217F6D07757B48E150E66FA /* CoachingClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B94EF50BCAC352618C6BDAF4 /* CoachingClient.swift */; };
 		32EDD1E5759FECE983A3F519 /* fr_mobility_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = F126B44FADF979DB60876D00 /* fr_mobility_cue.mp3 */; };
@@ -52,12 +54,13 @@
 		AA24DC3975150783D5EE96BF /* EvidenceCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9595BEC51BC87CA098E53F /* EvidenceCapture.swift */; };
 		B0F815C8484988C5FD322BE5 /* fr_guard_round_speech.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 70E879C52825C0C30781D2D3 /* fr_guard_round_speech.mp3 */; };
 		B2DFA140C3EB57A2A31AF1C0 /* PoseAnalysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCBF209919D815548051C13 /* PoseAnalysis.swift */; };
-		B7A5A3BC72301A5FBE6FE23A /* Pods_Coin.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BEAE924AB77EF1914DBE83A0 /* Pods_Coin.framework */; };
+		B7DA015E432E786212BAD30F /* SourceWorkoutLocalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB7CFA81B427116CCB78FEB4 /* SourceWorkoutLocalization.swift */; };
 		BC62D48B37D04547CB431641 /* fr_opening.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 3C725A1B8DC5BB37500EEA59 /* fr_opening.mp3 */; };
 		CD94D1C5E4F593A83760072A /* en_cooldown_speech.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 32BA66EDF9A0064EDF569BD0 /* en_cooldown_speech.mp3 */; };
 		D7CE29D9F4C8D3533741C601 /* fr_squats_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 2BC7DCE6683F7B03F40FEB4C /* fr_squats_cue.mp3 */; };
 		DD8607104B7053E9DC10CB2A /* fr_probe_mid_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 6B010D2F3B2E7A2EC5F03697 /* fr_probe_mid_cue.mp3 */; };
 		DEC847A3C5FDCB9F9FD34EFD /* ExchangeTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDC99EF8D21DF8D2E4369F8B /* ExchangeTracker.swift */; };
+		E078ACC6FC8DD419F9CD1412 /* BasicW1D1French.json in Resources */ = {isa = PBXBuildFile; fileRef = 9B400A3A47801602E6AFA98C /* BasicW1D1French.json */; };
 		E1BC8E7057EC08A27BD83228 /* fr_free_late_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = C76C22526372AA63A65A45E8 /* fr_free_late_cue.mp3 */; };
 		E3D6D2BDB7AF59E05D999883 /* fr_free_mid_cue.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 585FD2FBAEB06A164E1BAF34 /* fr_free_mid_cue.mp3 */; };
 		E761E2F22868C4CCC8C53FBA /* fr_rest_speech.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 18D787B920456C6E65F28A8A /* fr_rest_speech.mp3 */; };
@@ -99,7 +102,7 @@
 		3212BAF5CA1878325357EFBA /* Coin.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Coin.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		32BA66EDF9A0064EDF569BD0 /* en_cooldown_speech.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_cooldown_speech.mp3; sourceTree = "<group>"; };
 		363F1D99A7A5A90CB65A3335 /* GuardReview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuardReview.swift; sourceTree = "<group>"; };
-		37F6426967CDBB46D886C896 /* Pods-Coin.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Coin.release.xcconfig"; path = "Target Support Files/Pods-Coin/Pods-Coin.release.xcconfig"; sourceTree = "<group>"; };
+		38610613A3425191DE6CEC60 /* Pods-Coin.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Coin.debug.xcconfig"; path = "Target Support Files/Pods-Coin/Pods-Coin.debug.xcconfig"; sourceTree = "<group>"; };
 		39E9FEA6739F1429EB23204F /* fr_free_round_speech.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = fr_free_round_speech.mp3; sourceTree = "<group>"; };
 		3C725A1B8DC5BB37500EEA59 /* fr_opening.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = fr_opening.mp3; sourceTree = "<group>"; };
 		4C6356760D584DA6D57EAC3E /* WorkoutCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutCatalog.swift; sourceTree = "<group>"; };
@@ -110,6 +113,7 @@
 		694152EA177F711CF5BBC929 /* en_free_round_speech.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_free_round_speech.mp3; sourceTree = "<group>"; };
 		6B010D2F3B2E7A2EC5F03697 /* fr_probe_mid_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = fr_probe_mid_cue.mp3; sourceTree = "<group>"; };
 		70E879C52825C0C30781D2D3 /* fr_guard_round_speech.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = fr_guard_round_speech.mp3; sourceTree = "<group>"; };
+		732B8B846ABBFD44857DC94F /* SourceWorkoutLocalizationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceWorkoutLocalizationTests.swift; sourceTree = "<group>"; };
 		739344F947F29F891BEB9B98 /* en_probe_mid_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_probe_mid_cue.mp3; sourceTree = "<group>"; };
 		760BD32B3B99EC8C233B41EC /* fr_shadowboxing_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = fr_shadowboxing_cue.mp3; sourceTree = "<group>"; };
 		78BA8330E77C72A23BB50801 /* fr_guard_late_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = fr_guard_late_cue.mp3; sourceTree = "<group>"; };
@@ -119,7 +123,7 @@
 		91109AAD09019EEE3B0317B0 /* fr.lproj */ = {isa = PBXFileReference; path = fr.lproj; sourceTree = "<group>"; };
 		963A427486EDF99D2A80E2ED /* GuardFlowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuardFlowTests.swift; sourceTree = "<group>"; };
 		9A86E4068D498EF3A4C0D28E /* en_free_mid_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_free_mid_cue.mp3; sourceTree = "<group>"; };
-		9C815322D6FF8740AE32F314 /* Pods-Coin.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Coin.debug.xcconfig"; path = "Target Support Files/Pods-Coin/Pods-Coin.debug.xcconfig"; sourceTree = "<group>"; };
+		9B400A3A47801602E6AFA98C /* BasicW1D1French.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = BasicW1D1French.json; sourceTree = "<group>"; };
 		A000F457AE5913FBE19B7695 /* CoinUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = CoinUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A042C8437AAA41B3E602A4B0 /* ExchangeTrackerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeTrackerTests.swift; sourceTree = "<group>"; };
 		A0E0AEF89485FE5A96B94B5A /* ReviewRequestStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewRequestStore.swift; sourceTree = "<group>"; };
@@ -132,7 +136,7 @@
 		B86C0DEE49D9C8EE03A85161 /* en_probe_late_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_probe_late_cue.mp3; sourceTree = "<group>"; };
 		B94EF50BCAC352618C6BDAF4 /* CoachingClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoachingClient.swift; sourceTree = "<group>"; };
 		BACDD627F4BD3BC61620EC60 /* en_guard_round_speech.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_guard_round_speech.mp3; sourceTree = "<group>"; };
-		BEAE924AB77EF1914DBE83A0 /* Pods_Coin.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Coin.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		BE77FC5643D1356C6CBCCB60 /* Pods_Coin.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Coin.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C33E9193EFE38EE1F4D8EC54 /* TrainingViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingViews.swift; sourceTree = "<group>"; };
 		C4D99C2870BE73388DFB6554 /* RoundReport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundReport.swift; sourceTree = "<group>"; };
 		C62A92AA909C28AED6B0792B /* TrainingModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingModelTests.swift; sourceTree = "<group>"; };
@@ -147,21 +151,23 @@
 		E0CD0D15FCB90CCE599A82F6 /* fr_probe_late_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = fr_probe_late_cue.mp3; sourceTree = "<group>"; };
 		E82AAB99EEEF87D8C7228B81 /* en_shadowboxing_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_shadowboxing_cue.mp3; sourceTree = "<group>"; };
 		EAAD6AD111D4DAB730355015 /* en_squats_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_squats_cue.mp3; sourceTree = "<group>"; };
+		EB7CFA81B427116CCB78FEB4 /* SourceWorkoutLocalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceWorkoutLocalization.swift; sourceTree = "<group>"; };
 		EFB516E2BBE5ADF1979915F8 /* en_rest_speech.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_rest_speech.mp3; sourceTree = "<group>"; };
 		F10F4D2585E436427628683C /* en_lunges_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_lunges_cue.mp3; sourceTree = "<group>"; };
 		F126B44FADF979DB60876D00 /* fr_mobility_cue.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = fr_mobility_cue.mp3; sourceTree = "<group>"; };
 		F42194BDBA060BCDE5C58843 /* en_round_speech.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = en_round_speech.mp3; sourceTree = "<group>"; };
 		F6132389663416B1600D0290 /* WorkoutCompletionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutCompletionTests.swift; sourceTree = "<group>"; };
 		FADE405EFDBDC088E797ADFA /* EvidenceCaptureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvidenceCaptureTests.swift; sourceTree = "<group>"; };
+		FD11E1F3969E5E6D884D6FB2 /* Pods-Coin.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Coin.release.xcconfig"; path = "Target Support Files/Pods-Coin/Pods-Coin.release.xcconfig"; sourceTree = "<group>"; };
 		FDC99EF8D21DF8D2E4369F8B /* ExchangeTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeTracker.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		AD78621943237D4CD2DAECCD /* Frameworks */ = {
+		EBE3F647C83B59695754CB1A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B7A5A3BC72301A5FBE6FE23A /* Pods_Coin.framework in Frameworks */,
+				2E6B7FDEE04BFE7712F6ECB5 /* Pods_Coin.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -172,6 +178,7 @@
 			isa = PBXGroup;
 			children = (
 				10DA177B4E61D928C2B3804A /* Assets.xcassets */,
+				9B400A3A47801602E6AFA98C /* BasicW1D1French.json */,
 				B94EF50BCAC352618C6BDAF4 /* CoachingClient.swift */,
 				67FF365A4ECD7E5586A2944E /* CoachingCopy.swift */,
 				D7C4DF8505FB0059289BD01C /* CoinApp.swift */,
@@ -187,6 +194,7 @@
 				B6E6C07A3DD5FCFEB9DE4935 /* PrivacyInfo.xcprivacy */,
 				A0E0AEF89485FE5A96B94B5A /* ReviewRequestStore.swift */,
 				C4D99C2870BE73388DFB6554 /* RoundReport.swift */,
+				EB7CFA81B427116CCB78FEB4 /* SourceWorkoutLocalization.swift */,
 				DCF7032611512B2B3E4F1B73 /* TrainingModel.swift */,
 				C33E9193EFE38EE1F4D8EC54 /* TrainingViews.swift */,
 				A9B778AB2802C9CE7131FA4A /* WorkoutCatalog.json */,
@@ -195,27 +203,9 @@
 				BB712941342F6C8DF4EA7006 /* unittests */,
 				EB1379859BECF1D9BCFE3760 /* VoiceCues */,
 				66AD28573D5EBD30EBE49ED9 /* Products */,
-				242539811B2229CD466AFE87 /* Pods */,
-				5B77CB54D47490FDCE5F5F56 /* Frameworks */,
+				7BDCA04FE6C73C42DCD0727D /* Pods */,
+				F1FD62DF807E368CB9EC0CBC /* Frameworks */,
 			);
-			sourceTree = "<group>";
-		};
-		242539811B2229CD466AFE87 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				9C815322D6FF8740AE32F314 /* Pods-Coin.debug.xcconfig */,
-				37F6426967CDBB46D886C896 /* Pods-Coin.release.xcconfig */,
-			);
-			name = Pods;
-			path = Pods;
-			sourceTree = "<group>";
-		};
-		5B77CB54D47490FDCE5F5F56 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				BEAE924AB77EF1914DBE83A0 /* Pods_Coin.framework */,
-			);
-			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		66AD28573D5EBD30EBE49ED9 /* Products */ = {
@@ -226,6 +216,16 @@
 				A000F457AE5913FBE19B7695 /* CoinUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		7BDCA04FE6C73C42DCD0727D /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				38610613A3425191DE6CEC60 /* Pods-Coin.debug.xcconfig */,
+				FD11E1F3969E5E6D884D6FB2 /* Pods-Coin.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
 			sourceTree = "<group>";
 		};
 		8FD123CD5FD93E620B7ACE9F /* uitests */ = {
@@ -242,6 +242,7 @@
 			children = (
 				FADE405EFDBDC088E797ADFA /* EvidenceCaptureTests.swift */,
 				A042C8437AAA41B3E602A4B0 /* ExchangeTrackerTests.swift */,
+				732B8B846ABBFD44857DC94F /* SourceWorkoutLocalizationTests.swift */,
 				C62A92AA909C28AED6B0792B /* TrainingModelTests.swift */,
 				1904B174D87C8668ADF30B52 /* WorkoutActivityInstanceTests.swift */,
 				D072279C0ED54FE89EBAA272 /* WorkoutActivityIntervalTests.swift */,
@@ -290,6 +291,14 @@
 			path = VoiceCues;
 			sourceTree = "<group>";
 		};
+		F1FD62DF807E368CB9EC0CBC /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				BE77FC5643D1356C6CBCCB60 /* Pods_Coin.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -297,10 +306,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = FB651B2EC57D7A5F256B72E1 /* Build configuration list for PBXNativeTarget "Coin" */;
 			buildPhases = (
-				9A86FF46AA87E838928E7E7F /* [CP] Check Pods Manifest.lock */,
+				9A2606E68A124305B48B6902 /* [CP] Check Pods Manifest.lock */,
 				F786D31A65984F7637FC4EA7 /* Sources */,
 				2ED6E481E0B96BA1277282C0 /* Resources */,
-				AD78621943237D4CD2DAECCD /* Frameworks */,
+				EBE3F647C83B59695754CB1A /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -394,6 +403,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4C99702E58F44CBEBFC92F9E /* Assets.xcassets in Resources */,
+				E078ACC6FC8DD419F9CD1412 /* BasicW1D1French.json in Resources */,
 				2335D21491DE5C29B84675FC /* LocalConfig.json in Resources */,
 				02E41CF8C4F5C918BF568934 /* PrivacyInfo.xcprivacy in Resources */,
 				9203C4F1A30C5D2CF99A1FEA /* WorkoutCatalog.json in Resources */,
@@ -436,7 +446,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		9A86FF46AA87E838928E7E7F /* [CP] Check Pods Manifest.lock */ = {
+		9A2606E68A124305B48B6902 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -467,6 +477,7 @@
 			files = (
 				5664EEE6733AA0550DE00190 /* EvidenceCaptureTests.swift in Sources */,
 				877EE9E9E3E830BF085085F4 /* ExchangeTrackerTests.swift in Sources */,
+				02FDAC6C496276C9F7E40A71 /* SourceWorkoutLocalizationTests.swift in Sources */,
 				1BF3D0D11E87EC39C41EEDC2 /* TrainingModelTests.swift in Sources */,
 				03730A6CDC06F8A429A5F7EF /* WorkoutActivityInstanceTests.swift in Sources */,
 				316AA1C4597338A9662AE13D /* WorkoutActivityIntervalTests.swift in Sources */,
@@ -498,6 +509,7 @@
 				B2DFA140C3EB57A2A31AF1C0 /* PoseAnalysis.swift in Sources */,
 				6D5BAC01C91E873545C10A51 /* ReviewRequestStore.swift in Sources */,
 				5915E0A19FAF3E66E403CA9C /* RoundReport.swift in Sources */,
+				B7DA015E432E786212BAD30F /* SourceWorkoutLocalization.swift in Sources */,
 				8C71556DC0743146F3B4A925 /* TrainingModel.swift in Sources */,
 				7385C83E6DB58C4C3C3B3455 /* TrainingViews.swift in Sources */,
 				F4A4E982425D8870987E43B2 /* WorkoutCatalog.swift in Sources */,
@@ -522,7 +534,7 @@
 /* Begin XCBuildConfiguration section */
 		10262B971B41D3B28B8F3DC0 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 37F6426967CDBB46D886C896 /* Pods-Coin.release.xcconfig */;
+			baseConfigurationReference = FD11E1F3969E5E6D884D6FB2 /* Pods-Coin.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -590,7 +602,7 @@
 		};
 		5E7E35426812D7498524CF70 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9C815322D6FF8740AE32F314 /* Pods-Coin.debug.xcconfig */;
+			baseConfigurationReference = 38610613A3425191DE6CEC60 /* Pods-Coin.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";

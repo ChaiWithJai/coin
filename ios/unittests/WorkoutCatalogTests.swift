@@ -130,6 +130,24 @@ import XCTest
         XCTAssertNil(changedBlock.sourceActivityKey)
     }
 
+    func testExactDayOneFrontalStanceDoesNotClaimPunchExchanges() throws {
+        let lesson = try XCTUnwrap(WorkoutCatalog.shared.lessons.first { $0.id == "basic-w1-d1" })
+        let ids: Set<String> = ["basic-w1-d1-p3-s3-1", "basic-w1-d1-p3-s5-1", "basic-w1-d1-p3-s7-1"]
+        let stance = lesson.template().blocks.filter { ids.contains($0.sourceBlockID ?? "") }
+        XCTAssertEqual(stance.count, 6)
+        for block in stance {
+            XCTAssertEqual(block.sourceActivityKey, "frontal_stance")
+            let instance = try XCTUnwrap(WorkoutActivityInstance.initial(for: block, at: Date()).first)
+            XCTAssertEqual(instance.selectionProvenance, .sourceSpecified)
+            XCTAssertEqual(instance.measurement.capability, .elapsedOnly)
+            XCTAssertFalse(WorkoutActivityRouting.allowsExchange(instance))
+        }
+        let punching = try XCTUnwrap(lesson.template().blocks.first {
+            $0.sourceBlockID == "basic-w1-d1-p3-s4-1" })
+        XCTAssertTrue(WorkoutActivityRouting.allowsExchange(
+            WorkoutActivityInstance.initial(for: punching, at: Date()).first))
+    }
+
     func testExplicitStrengthItemsKeepTheirOwnPrescriptionAndProvenance() throws {
         let lesson = try XCTUnwrap(WorkoutCatalog.shared.lessons.first { $0.id == "basic-w1-d6" })
         let source = try XCTUnwrap(lesson.blocks.first)

@@ -1,0 +1,9 @@
+# Source workout language
+
+Coin preserves the English workout from boxing.dharmicdata.org as the prescription. French copy is a separate display layer. It cannot change the source timing, repetitions, manual completion, links, item IDs, or text used as context for round analysis.
+
+Basic week 1 day 1 has a provisional French layer. It covers all 13 source sections and 30 included source items. The app checks the lesson ID and source SHA, every section and item ID, exact English text, and every numeric token before using any of it. If a check fails, the entire day displays and speaks English. The older three-line proposal in `server/proposals` is never loaded. Other source days still use their original English instructions. Freestyle uses the selected app language.
+
+During the French day-one workout, the camera shows a short French heading and the instruction sheet shows French text with the English original available below it. The voice speaks the heading in French; it does not speak the long or ambiguous technique instructions. Seven source phrases remain flagged in `ios/BasicW1D1French.json`, including “SWING LIKE A TREE,” directional wording, slip/roll order, and “balanced tucks.” The app preserves those words and marks the uncertainty instead of creating a coaching interpretation. This copy is a prototype translation, not a boxer-approved technique label.
+
+Source cue telemetry records the actual spoken language. Stored sessions retain the English source fields alongside the French display fields, and older sessions without the new fields still decode. To expand coverage, create a complete overlay for a whole source day, compare it against the pinned catalog, review ambiguous boxing language and quantitative prescriptions, then run the full-day simulator flow and a physical workout. Never promote individual translated lines into a partly bilingual day.

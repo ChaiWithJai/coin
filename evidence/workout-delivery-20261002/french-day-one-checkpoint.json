@@ -1,0 +1,44 @@
+{
+  "checkpoint": "full-day-provisional-french",
+  "lesson_id": "basic-w1-d1",
+  "source_sha256": "25b017c54422132ce7308dfa9abf66e660d2f699f68d7afcc6a660c4e4e066cb",
+  "overlay_sha256": "d6127d7d25dbaa789735df0e315e0ed12e6ecf424320d68fd2897d8a11b88f0f",
+  "coverage": {
+    "source_blocks": 13,
+    "source_items": 30,
+    "review_flags": 7
+  },
+  "runtime": {
+    "fallback": "entire day English on any source ID, text, version, coverage or numeric mismatch",
+    "canonical_source": "English fields remain stored and sent to round analysis",
+    "voice": "short French heading only; ambiguous technique instructions are not voiced",
+    "frontal_stance_sections_elapsed_only": [
+      "basic-w1-d1-p3-s3-1",
+      "basic-w1-d1-p3-s5-1",
+      "basic-w1-d1-p3-s7-1"
+    ]
+  },
+  "validation": {
+    "full_coin_simulator_passed": 92,
+    "full_coin_simulator_failed": 0,
+    "xcresult": "/tmp/coin-workout-derived/Logs/Test/Test-Coin-2026.10.02_21-49-02--0400.xcresult",
+    "signed_coin_binary_sha256": "17042b88597db2fa7d251096da8c3c4b63cbef0039ef59ded26ea656b3b302ab",
+    "simulator_screenshot": "design-review/french-day-one-20261002/camera-stance.png",
+    "phone_install": "not attempted; Lakshmi unavailable to CoreDevice"
+  },
+  "mlflow": {
+    "latest_inspected_product_traces": [
+      "tr-9bdeac974123dd4e547cdd6c1f5ba168",
+      "tr-082bb7646e93d8fd3fbf46a96f50a0cc"
+    ],
+    "new_product_inference_calls": 0,
+    "development_usage_run_id": "ee4bbad75cfa49c9a1aef4d2f5086ed9",
+    "actual_billed_usd": null
+  },
+  "limits": [
+    "Translation is provisional and not boxer-approved.",
+    "Only Basic week 1 day 1 has French source copy; other source days use English.",
+    "Simulator has no physical camera; no new workout or audio playback validation.",
+    "No public push."
+  ]
+}

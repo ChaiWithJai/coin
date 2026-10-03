@@ -797,7 +797,7 @@ struct LiveWorkoutView: View {
                             .font(.system(size: 28, weight: .light, design: .monospaced))
                             .monospacedDigit().accessibilityIdentifier("workout-clock")
                     }
-                    if !current.isRest, let title = current.block.sourceTitle {
+                    if !current.isRest, let title = current.block.displaySourceTitle(language: language) {
                         Text(title).font(.system(size: 16, weight: .medium, design: .serif)).lineLimit(2).accessibilityIdentifier("workout-source-title")
                         if let prescription = current.block.repetitionText {
                             Text(prescription).font(.caption.monospaced()).foregroundStyle(Noir.gold).lineLimit(2)
@@ -1035,8 +1035,13 @@ struct LiveWorkoutView: View {
                 ScrollView {
                     if let block = current?.block {
                         VStack(alignment: .leading, spacing: 16) {
-                            Text(block.sourceTitle ?? "").font(.title2)
-                            Text(block.sourceInstructions ?? "").textSelection(.enabled)
+                            Text(block.displaySourceTitle(language: language) ?? "").font(.title2)
+                            Text(block.displaySourceInstructions(language: language) ?? "").textSelection(.enabled)
+                            if language == "fr", block.localizedSourceInstructionsFR != nil {
+                                DisclosureGroup("Texte source") {
+                                    Text(block.sourceInstructions ?? "").textSelection(.enabled)
+                                }.font(.caption).tint(Noir.gold)
+                            }
                             if let address = block.sourceURL, let url = URL(string: address) {
                                 Link(language == "fr" ? "Voir la séance source" : "View source workout", destination: url)
                             }
@@ -1120,7 +1125,7 @@ struct LiveWorkoutView: View {
         let line: String
         let key: String
         if current.isRest { key = "rest_speech"; line = TrainingCopy.text(key, language) }
-        else if let title = current.block.sourceTitle {
+        else if let title = current.block.displaySourceTitle(language: language) {
             if let instance = activityInstance(for: current), instance.selectionProvenance == .userSelected {
                 let movement = instance.customName ?? activityLabel(instance.exerciseKey ?? "custom")
                 speak(language == "fr" ? "Commence : \(movement)." : "Begin: \(movement).",
@@ -1128,10 +1133,12 @@ struct LiveWorkoutView: View {
                 return
             }
             let instruction = [title, current.block.repetitionText].compactMap { $0 }.joined(separator: ". ")
-            // Original program copy is English. Keep its voice locale explicit.
+            let sourceLanguage = current.block.sourceSpeechLanguage(displayLanguage: language)
             guard !muted else { return }
-            voice.speak(instruction, locale: "en-US", cueKey: "source_instruction", language: "en")
-            training.recordCueRequest(sessionID: sessionID, blockID: current.block.id, cueKey: "source_instruction", language: "en", trigger: "stage_start")
+            voice.speak(instruction, locale: sourceLanguage == "fr" ? "fr-FR" : "en-US",
+                        cueKey: "source_instruction", language: sourceLanguage)
+            training.recordCueRequest(sessionID: sessionID, blockID: current.block.id,
+                                      cueKey: "source_instruction", language: sourceLanguage, trigger: "stage_start")
             return
         }
         else if activityKey(for: current) == "shadowboxing" {

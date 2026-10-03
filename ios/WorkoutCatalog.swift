@@ -62,7 +62,7 @@ struct WorkoutLesson: Decodable, Identifiable {
 
     func template() -> TrainingTemplate {
         var roundNumber = 0
-        let sessionBlocks = blocks.flatMap { source -> [SessionBlock] in
+        var sessionBlocks = blocks.flatMap { source -> [SessionBlock] in
             if let steps = source.manualSteps {
                 return steps.map { step in
                     SessionBlock(kind: .exercise, minutes: 0, roundNumber: nil, drillID: source.drillID, restAfterMinutes: 0,
@@ -101,9 +101,29 @@ struct WorkoutLesson: Decodable, Identifiable {
                                     activityChoiceFamily: source.reviewedChoiceFamily)
             }
         }
+        var localizedTitleFR: String?
+        if let overlay = SourceWorkoutFrenchOverlay.bundled,
+           let copyByID = overlay.validated(for: self),
+           sessionBlocks.allSatisfy({ block in
+               guard let sourceID = block.sourceBlockID,
+                     let sourceCopy = copyByID[sourceID] else { return false }
+               return block.sourceTitle == sourceCopy.sourceTitle &&
+                   block.sourceInstructions == sourceCopy.sourceInstructions
+           }) {
+            localizedTitleFR = overlay.sourceTitleFR
+            sessionBlocks = sessionBlocks.map { block in
+                var localized = block
+                if let sourceID = block.sourceBlockID, let sourceCopy = copyByID[sourceID] {
+                    localized.localizedSourceTitleFR = sourceCopy.titleFR
+                    localized.localizedSourceInstructionsFR = sourceCopy.instructionsFR
+                }
+                return localized
+            }
+        }
         let seconds = sessionBlocks.reduce(0) { $0 + $1.effectiveSeconds + $1.effectiveRestSeconds }
         return TrainingTemplate(id: id, durationMinutes: Int(ceil(Double(seconds) / 60)),
                                 blocks: sessionBlocks, sourceTitle: title,
+                                localizedSourceTitleFR: localizedTitleFR,
                                 sourceURL: sourceURL, sourceVersion: sourceSHA256)
     }
 }
@@ -144,6 +164,17 @@ private extension WorkoutSourceBlock {
     /// mixed conditioning sections must remain unassigned.
     var reviewedWholeBlockActivityKey: String? {
         if let activityKey { return activityKey }
+        let stanceOnly: [String: (title: String, instructions: String)] = [
+            "basic-w1-d1-p3-s3-1": ("FR0NTAL STANCE DRILL",
+                "FR0NTAL STANCE DRILL\n4 ROUNDS OF 2 MINUTES WITH 30 SECONDS OF REST IN BETWEEN."),
+            "basic-w1-d1-p3-s5-1": ("FRONTAL STANCE MOVEMENT DRILL",
+                "FRONTAL STANCE MOVEMENT DRILL\n(JUST GO IN ALL DIERECTIONS). 1 ROUND OF 2 MINUTES"),
+            "basic-w1-d1-p3-s7-1": ("FRONTAL STANCE DEFENSIVE DRILL",
+                "FRONTAL STANCE DEFENSIVE DRILL\n(SLIP, SLIP MOVE, ROLL ROLL). 1 ROUND OF 2 MINUTES"),
+        ]
+        if let match = stanceOnly[id], kind == .boxing, completion == .timed,
+           title == match.title, instructions == match.instructions,
+           sourceText == match.instructions { return "frontal_stance" }
         let exact: [String: (item: String, text: String)] = [
             "basic-w1-d1-p3-s6-2": ("p3-b18", "12 JUMP SQUATS"),
             "basic-w2-d1-p10-s5-2": ("p10-b15", "12 JUMP SQUATS"),

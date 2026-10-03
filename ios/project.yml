@@ -34,6 +34,8 @@ targets:
       - TrainingModel.swift
       - WorkoutCatalog.swift
       - WorkoutCatalog.json
+      - SourceWorkoutLocalization.swift
+      - BasicW1D1French.json
       - TrainingViews.swift
       - LiveWorkout.swift
       - ExchangeTracker.swift

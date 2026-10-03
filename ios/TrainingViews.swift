@@ -20,7 +20,7 @@ private enum SessionCopy {
                                    session.plannedMinutes, session.timedRoundCount)
     }
     static func blockTitle(_ block: SessionBlock, language: String) -> String {
-        if let title = block.sourceTitle { return title }
+        if let title = block.displaySourceTitle(language: language) { return title }
         if block.kind == .boxing {
             return TrainingCopy.format("round_drill", language, block.roundNumber ?? 0,
                                        DrillLibrary.name(block.drillID ?? "", language: language))
@@ -180,7 +180,8 @@ struct TrainingHomeView: View {
                         HStack {
                             Image(systemName: "camera.fill")
                             Text(activeSession.map { session in
-                                session.sourceTitle.map { (language == "fr" ? "Reprendre : " : "Resume: ") + $0 }
+                                session.sourceTitle.map { (language == "fr" ? "Reprendre : " : "Resume: ") +
+                                    (language == "fr" ? session.localizedSourceTitleFR ?? $0 : $0) }
                                     ?? TrainingCopy.format("resume_session", language, session.plannedMinutes)
                             }
                                  ?? TrainingCopy.text("home_enter", language)).tracking(1)
@@ -195,7 +196,11 @@ struct TrainingHomeView: View {
                         .font(.system(size: 10, weight: .bold, design: .monospaced)).tracking(2.5).foregroundStyle(Noir.gold)
                         .padding(.top, 22)
                     HStack(alignment: .firstTextBaseline) {
-                        Text(activeSession?.sourceTitle ?? selectedLesson?.title ?? DrillLibrary.name(shownDrillID, language: language))
+                        Text((language == "fr" ? activeSession?.localizedSourceTitleFR : nil)
+                             ?? activeSession?.sourceTitle
+                             ?? (language == "fr" ? selectedLesson?.template().localizedSourceTitleFR : nil)
+                             ?? selectedLesson?.title
+                             ?? DrillLibrary.name(shownDrillID, language: language))
                             .font(.system(size: 20, weight: .medium, design: .serif)).foregroundStyle(Noir.ink)
                         Spacer()
                         Text(TrainingCopy.format("round_count", language, shownRoundCount))
@@ -402,6 +407,9 @@ struct TrainingSessionView: View {
                     Text(SessionCopy.plannedTime(block, language: language)).font(.caption).foregroundStyle(Noir.muted)
                 }
                 if let instructions = block.sourceInstructions {
+                    if language == "fr", let localized = block.localizedSourceInstructionsFR {
+                        Text(localized).font(.caption).foregroundStyle(Noir.ink).textSelection(.enabled)
+                    }
                     DisclosureGroup(language == "fr" ? "Consigne originale" : "Original instructions") {
                         Text(instructions).font(.caption).textSelection(.enabled)
                         if let address = block.sourceURL, let url = URL(string: address) {

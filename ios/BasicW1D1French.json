@@ -1,0 +1,291 @@
+{
+  "schemaVersion": 1,
+  "lessonID": "basic-w1-d1",
+  "sourceSHA256": "25b017c54422132ce7308dfa9abf66e660d2f699f68d7afcc6a660c4e4e066cb",
+  "sourceTitleFR": "Séance n° 1",
+  "status": "provisional",
+  "reviewFlags": {
+    "p3-b8": "The source metaphor SWING LIKE A TREE needs a boxer-approved physical interpretation.",
+    "p3-b9": "Source wording and direction are unclear; do not voice or measure as technique before review.",
+    "p3-b21": "The source punctuation differs from the next defensive block; exact sequence needs boxer review.",
+    "p3-b25": "Translation of slip/roll is provisional; confirm sequence against source demo with boxer.",
+    "p3-b39": "Which defense corresponds to the same punch is unspecified; do not infer a defense rule.",
+    "p3-b42": "Whether the medicine-ball directions are four distinct exercises needs boxer review.",
+    "p3-b46": "Balanced tucks is not sufficiently specified; retain English term pending demo review."
+  },
+  "reviewNotes": [
+    "Full source-day coverage is checked before display. English source text and prescription remain authoritative.",
+    "French copy is provisional. Seven source phrases are ambiguous; their original wording and uncertainty are retained in French instructions.",
+    "Live speech uses the French heading only. Ambiguous technique instructions are not voiced or scored.",
+    "The source gives six bag rounds without allocating focus prompts, and no rest for several timed sections. No timing or allocation is invented."
+  ],
+  "blocks": [
+    {
+      "blockID": "basic-w1-d1-p3-s2-1",
+      "sourceTitle": "DYNAMIC WARM-UP:",
+      "sourceInstructions": "DYNAMIC WARM-UP:",
+      "titleFR": "Échauffement dynamique :",
+      "instructionsFR": "Échauffement dynamique :",
+      "sourceItems": [
+        {
+          "itemID": "p3-b2",
+          "sourceText": "DYNAMIC WARM-UP:",
+          "textFR": "Échauffement dynamique :"
+        }
+      ]
+    },
+    {
+      "blockID": "basic-w1-d1-p3-s3-1",
+      "sourceTitle": "FR0NTAL STANCE DRILL",
+      "sourceInstructions": "FR0NTAL STANCE DRILL\n4 ROUNDS OF 2 MINUTES WITH 30 SECONDS OF REST IN BETWEEN.",
+      "titleFR": "Exercice en garde frontale",
+      "instructionsFR": "Exercice en garde frontale\n4 rounds de 2 minutes, avec 30 secondes de repos entre les rounds.",
+      "sourceItems": [
+        {
+          "itemID": "p3-b4",
+          "sourceText": "FR0NTAL STANCE DRILL",
+          "textFR": "Exercice en garde frontale"
+        },
+        {
+          "itemID": "p3-b5",
+          "sourceText": "4 ROUNDS OF 2 MINUTES WITH 30 SECONDS OF REST IN BETWEEN.",
+          "textFR": "4 rounds de 2 minutes, avec 30 secondes de repos entre les rounds."
+        }
+      ]
+    },
+    {
+      "blockID": "basic-w1-d1-p3-s4-1",
+      "sourceTitle": "FIGHTING STANCE DRILL: 4 ROUNDS OF 2 MINUTES",
+      "sourceInstructions": "FIGHTING STANCE DRILL: 4 ROUNDS OF 2 MINUTES\nSWING LIKE A TREE, ROTATE SAHOULDERS AND START THROWING\nPUNCHES (REAR HAND FROWARD, LEAD - BACKWARD)",
+      "titleFR": "Exercice en garde de combat : 4 rounds de 2 minutes",
+      "instructionsFR": "Exercice en garde de combat : 4 rounds de 2 minutes\n« SWING LIKE A TREE » [sens à confirmer] ; tourne les épaules et commence à lancer des coups de poing\nCoups de poing (« REAR HAND FROWARD, LEAD - BACKWARD » [sens à confirmer])",
+      "sourceItems": [
+        {
+          "itemID": "p3-b7",
+          "sourceText": "FIGHTING STANCE DRILL: 4 ROUNDS OF 2 MINUTES",
+          "textFR": "Exercice en garde de combat : 4 rounds de 2 minutes"
+        },
+        {
+          "itemID": "p3-b8",
+          "sourceText": "SWING LIKE A TREE, ROTATE SAHOULDERS AND START THROWING",
+          "textFR": "« SWING LIKE A TREE » [sens à confirmer] ; tourne les épaules et commence à lancer des coups de poing"
+        },
+        {
+          "itemID": "p3-b9",
+          "sourceText": "PUNCHES (REAR HAND FROWARD, LEAD - BACKWARD)",
+          "textFR": "Coups de poing (« REAR HAND FROWARD, LEAD - BACKWARD » [sens à confirmer])"
+        }
+      ]
+    },
+    {
+      "blockID": "basic-w1-d1-p3-s4-2",
+      "sourceTitle": "20 KNUCKLE PUSH-UPS",
+      "sourceInstructions": "20 KNUCKLE PUSH-UPS\n20 MOUNTAIN CLIMBERS",
+      "titleFR": "20 pompes sur les poings",
+      "instructionsFR": "20 pompes sur les poings\n20 mountain climbers",
+      "sourceItems": [
+        {
+          "itemID": "p3-b10",
+          "sourceText": "20 KNUCKLE PUSH-UPS",
+          "textFR": "20 pompes sur les poings"
+        },
+        {
+          "itemID": "p3-b11",
+          "sourceText": "20 MOUNTAIN CLIMBERS",
+          "textFR": "20 mountain climbers"
+        }
+      ]
+    },
+    {
+      "blockID": "basic-w1-d1-p3-s5-1",
+      "sourceTitle": "FRONTAL STANCE MOVEMENT DRILL",
+      "sourceInstructions": "FRONTAL STANCE MOVEMENT DRILL\n(JUST GO IN ALL DIERECTIONS). 1 ROUND OF 2 MINUTES",
+      "titleFR": "Exercice de déplacement en garde frontale",
+      "instructionsFR": "Exercice de déplacement en garde frontale\nDéplace-toi dans toutes les directions. 1 round de 2 minutes.",
+      "sourceItems": [
+        {
+          "itemID": "p3-b13",
+          "sourceText": "FRONTAL STANCE MOVEMENT DRILL",
+          "textFR": "Exercice de déplacement en garde frontale"
+        },
+        {
+          "itemID": "p3-b14",
+          "sourceText": "(JUST GO IN ALL DIERECTIONS). 1 ROUND OF 2 MINUTES",
+          "textFR": "Déplace-toi dans toutes les directions. 1 round de 2 minutes."
+        }
+      ]
+    },
+    {
+      "blockID": "basic-w1-d1-p3-s6-1",
+      "sourceTitle": "FIGHTING STANCE MOVEMENT DRILL",
+      "sourceInstructions": "FIGHTING STANCE MOVEMENT DRILL\n(JUST GO IN ALL DIERECTIONS, USE Z AND L STEPS). 1 ROUND OF 2 MINUTES",
+      "titleFR": "Exercice de déplacement en garde de combat",
+      "instructionsFR": "Exercice de déplacement en garde de combat\nDéplace-toi dans toutes les directions, avec des pas en Z et en L. 1 round de 2 minutes.",
+      "sourceItems": [
+        {
+          "itemID": "p3-b16",
+          "sourceText": "FIGHTING STANCE MOVEMENT DRILL",
+          "textFR": "Exercice de déplacement en garde de combat"
+        },
+        {
+          "itemID": "p3-b17",
+          "sourceText": "(JUST GO IN ALL DIERECTIONS, USE Z AND L STEPS). 1 ROUND OF 2 MINUTES",
+          "textFR": "Déplace-toi dans toutes les directions, avec des pas en Z et en L. 1 round de 2 minutes."
+        }
+      ]
+    },
+    {
+      "blockID": "basic-w1-d1-p3-s6-2",
+      "sourceTitle": "12 JUMP SQUATS",
+      "sourceInstructions": "12 JUMP SQUATS",
+      "titleFR": "12 squats sautés",
+      "instructionsFR": "12 squats sautés",
+      "sourceItems": [
+        {
+          "itemID": "p3-b18",
+          "sourceText": "12 JUMP SQUATS",
+          "textFR": "12 squats sautés"
+        }
+      ]
+    },
+    {
+      "blockID": "basic-w1-d1-p3-s7-1",
+      "sourceTitle": "FRONTAL STANCE DEFENSIVE DRILL",
+      "sourceInstructions": "FRONTAL STANCE DEFENSIVE DRILL\n(SLIP, SLIP MOVE, ROLL ROLL). 1 ROUND OF 2 MINUTES",
+      "titleFR": "Exercice de défense en garde frontale",
+      "instructionsFR": "Exercice de défense en garde frontale\n« SLIP, SLIP MOVE, ROLL ROLL » [séquence à confirmer]. 1 round de 2 minutes.",
+      "sourceItems": [
+        {
+          "itemID": "p3-b20",
+          "sourceText": "FRONTAL STANCE DEFENSIVE DRILL",
+          "textFR": "Exercice de défense en garde frontale"
+        },
+        {
+          "itemID": "p3-b21",
+          "sourceText": "(SLIP, SLIP MOVE, ROLL ROLL). 1 ROUND OF 2 MINUTES",
+          "textFR": "« SLIP, SLIP MOVE, ROLL ROLL » [séquence à confirmer]. 1 round de 2 minutes."
+        }
+      ]
+    },
+    {
+      "blockID": "basic-w1-d1-p3-s8-1",
+      "sourceTitle": "FIGHTING STANCE DEFENSIVE DRILL",
+      "sourceInstructions": "FIGHTING STANCE DEFENSIVE DRILL\n(SLIP, SLIP, MOVE, ROLL ROLL). 1 ROUND OF 2 MINUTES",
+      "titleFR": "Exercice de défense en garde de combat",
+      "instructionsFR": "Exercice de défense en garde de combat\n« SLIP, SLIP, MOVE, ROLL ROLL » [séquence à confirmer]. 1 round de 2 minutes.",
+      "sourceItems": [
+        {
+          "itemID": "p3-b23",
+          "sourceText": "FIGHTING STANCE DEFENSIVE DRILL",
+          "textFR": "Exercice de défense en garde de combat"
+        },
+        {
+          "itemID": "p3-b25",
+          "sourceText": "(SLIP, SLIP, MOVE, ROLL ROLL). 1 ROUND OF 2 MINUTES",
+          "textFR": "« SLIP, SLIP, MOVE, ROLL ROLL » [séquence à confirmer]. 1 round de 2 minutes."
+        }
+      ]
+    },
+    {
+      "blockID": "basic-w1-d1-p3-s8-2",
+      "sourceTitle": "10 BURPEES",
+      "sourceInstructions": "10 BURPEES",
+      "titleFR": "10 burpees",
+      "instructionsFR": "10 burpees",
+      "sourceItems": [
+        {
+          "itemID": "p3-b27",
+          "sourceText": "10 BURPEES",
+          "textFR": "10 burpees"
+        }
+      ]
+    },
+    {
+      "blockID": "basic-w1-d1-p3-s9-1",
+      "sourceTitle": "BAG WORK. 6 ROUNDS OF 3 MINUTES",
+      "sourceInstructions": "BAG WORK. 6 ROUNDS OF 3 MINUTES\nMOVEMENT DRILL WITH A BAG\nAPPROACH - THROW ANY SINGLE PUNCH - EXIT\nAPPROACH - THROW ANY 2 PUNCHES - EXIT\nDEFENSIVE DRILL\nANY PUNCH - DEFEND THE SAME PUNCH",
+      "titleFR": "Travail au sac : 6 rounds de 3 minutes",
+      "instructionsFR": "Travail au sac : 6 rounds de 3 minutes\nExercice de déplacement avec un sac\nApproche, lance un coup de poing au choix, puis sors.\nApproche, lance 2 coups de poing au choix, puis sors.\nExercice de défense\nLance un coup de poing au choix, puis défends-toi contre ce même coup.",
+      "sourceItems": [
+        {
+          "itemID": "p3-b29",
+          "sourceText": "BAG WORK. 6 ROUNDS OF 3 MINUTES",
+          "textFR": "Travail au sac : 6 rounds de 3 minutes"
+        },
+        {
+          "itemID": "p3-b31",
+          "sourceText": "MOVEMENT DRILL WITH A BAG",
+          "textFR": "Exercice de déplacement avec un sac"
+        },
+        {
+          "itemID": "p3-b33",
+          "sourceText": "APPROACH - THROW ANY SINGLE PUNCH - EXIT",
+          "textFR": "Approche, lance un coup de poing au choix, puis sors."
+        },
+        {
+          "itemID": "p3-b35",
+          "sourceText": "APPROACH - THROW ANY 2 PUNCHES - EXIT",
+          "textFR": "Approche, lance 2 coups de poing au choix, puis sors."
+        },
+        {
+          "itemID": "p3-b37",
+          "sourceText": "DEFENSIVE DRILL",
+          "textFR": "Exercice de défense"
+        },
+        {
+          "itemID": "p3-b39",
+          "sourceText": "ANY PUNCH - DEFEND THE SAME PUNCH",
+          "textFR": "Lance un coup de poing au choix, puis défends-toi contre ce même coup."
+        }
+      ]
+    },
+    {
+      "blockID": "basic-w1-d1-p3-s9-2",
+      "sourceTitle": "CONDITIONING DRILL",
+      "sourceInstructions": "CONDITIONING DRILL\nMedicine ball throws (straight punches, to the sides, down and up) 6-8 reps for\neach exercise.\nKnuckle push-ups, squats, balanced tucks (30 sec each w/o rest) 1 minute of rest\nPplyometric push-ups (8-12), jump squats (8-12), hanging leg raises (max)",
+      "titleFR": "Exercice de conditionnement",
+      "instructionsFR": "Exercice de conditionnement\nLancers de médecine-ball (coups de poing directs, sur les côtés, vers le bas et vers le haut) : 6 à 8 répétitions pour\nchaque exercice.\nPompes sur les poings, squats et « balanced tucks » [mouvement à confirmer] : 30 secondes chacun, sans repos entre eux ; puis 1 minute de repos.\nPompes pliométriques (8 à 12), squats sautés (8 à 12), relevés de jambes suspendus (maximum).",
+      "sourceItems": [
+        {
+          "itemID": "p3-b40",
+          "sourceText": "CONDITIONING DRILL",
+          "textFR": "Exercice de conditionnement"
+        },
+        {
+          "itemID": "p3-b42",
+          "sourceText": "Medicine ball throws (straight punches, to the sides, down and up) 6-8 reps for",
+          "textFR": "Lancers de médecine-ball (coups de poing directs, sur les côtés, vers le bas et vers le haut) : 6 à 8 répétitions pour"
+        },
+        {
+          "itemID": "p3-b43",
+          "sourceText": "each exercise.",
+          "textFR": "chaque exercice."
+        },
+        {
+          "itemID": "p3-b46",
+          "sourceText": "Knuckle push-ups, squats, balanced tucks (30 sec each w/o rest) 1 minute of rest",
+          "textFR": "Pompes sur les poings, squats et « balanced tucks » [mouvement à confirmer] : 30 secondes chacun, sans repos entre eux ; puis 1 minute de repos."
+        },
+        {
+          "itemID": "p3-b48",
+          "sourceText": "Pplyometric push-ups (8-12), jump squats (8-12), hanging leg raises (max)",
+          "textFR": "Pompes pliométriques (8 à 12), squats sautés (8 à 12), relevés de jambes suspendus (maximum)."
+        }
+      ]
+    },
+    {
+      "blockID": "basic-w1-d1-p3-s9-3",
+      "sourceTitle": "STRETCHES",
+      "sourceInstructions": "STRETCHES",
+      "titleFR": "Étirements",
+      "instructionsFR": "Étirements",
+      "sourceItems": [
+        {
+          "itemID": "p3-b50",
+          "sourceText": "STRETCHES",
+          "textFR": "Étirements"
+        }
+      ]
+    }
+  ]
+}

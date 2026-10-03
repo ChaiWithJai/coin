@@ -551,6 +551,8 @@ struct SessionBlock: Codable, Identifiable, Hashable {
     var restAfterSeconds: Int? = nil
     var sourceTitle: String? = nil
     var sourceInstructions: String? = nil
+    var localizedSourceTitleFR: String? = nil
+    var localizedSourceInstructionsFR: String? = nil
     var sourceURL: String? = nil
     var sourceDemoURLs: [String]? = nil
     var sourceActivityKey: String? = nil
@@ -570,6 +572,7 @@ struct TrainingTemplate: Codable, Identifiable, Hashable {
     let durationMinutes: Int
     let blocks: [SessionBlock]
     var sourceTitle: String? = nil
+    var localizedSourceTitleFR: String? = nil
     var sourceURL: String? = nil
     var sourceVersion: String? = nil
     var plannedSeconds: Int { blocks.reduce(0) { $0 + $1.effectiveSeconds + $1.effectiveRestSeconds } }
@@ -781,6 +784,7 @@ struct TrainingSession: Codable, Identifiable {
     var runtimeElapsedSeconds: Int? = nil
     var timerElapsedSeconds: Int? = nil
     var sourceTitle: String? = nil
+    var localizedSourceTitleFR: String? = nil
     var sourceURL: String? = nil
     var sourceVersion: String? = nil
     var runtimeOrigin: WorkoutRuntimeOrigin? = nil
@@ -883,6 +887,7 @@ struct TrainingData: Codable {
         }
         var session = TrainingSession(templateID: template.id, plannedMinutes: template.durationMinutes, createdAt: date, state: .active, blocks: template.blocks)
         session.sourceTitle = template.sourceTitle
+        session.localizedSourceTitleFR = template.localizedSourceTitleFR
         session.sourceURL = template.sourceURL
         session.sourceVersion = template.sourceVersion
         session.startedAt = date
@@ -1106,7 +1111,8 @@ struct TrainingData: Codable {
               ["fr", "en"].contains(language),
               ["stage_start", "timer_pacing", "framing"].contains(trigger) else { return }
         let sourcedInstruction = cueKey == "source_instruction" && block.sourceTitle != nil
-            && trigger == "stage_start" && language == "en"
+            && trigger == "stage_start" && (language == "en" ||
+                (language == "fr" && block.localizedSourceTitleFR != nil))
         guard sourcedInstruction || TrainingCopy.table[cueKey] != nil || TrainingCopy.base[cueKey] != nil else { return }
         if data.sessions[index].cueRequests == nil { data.sessions[index].cueRequests = [] }
         data.sessions[index].cueRequests?.append(CoachCueRecord(blockID: blockID, requestedAt: date,

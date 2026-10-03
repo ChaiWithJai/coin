@@ -80,6 +80,30 @@ final class WorkoutFlowTests: XCTestCase {
         attach("source-round-resumed", app: app)
     }
 
+    func testFrenchDayOneShowsWholeDayCopyAndKeepsOriginalAvailable() throws {
+        let directory = UUID().uuidString
+        let app = application(language: "fr", directory: directory)
+        app.buttons["choose-program"].tap()
+        app.buttons["lesson-basic-w1-d1"].tap()
+        app.buttons["start-workout"].tap()
+        XCTAssertTrue(app.staticTexts["workout-source-title"].waitForExistence(timeout: 5))
+        XCTAssertEqual(app.staticTexts["workout-source-title"].label, "Échauffement dynamique :")
+        app.buttons["workout-source"].tap()
+        XCTAssertTrue(app.staticTexts["Échauffement dynamique :"].waitForExistence(timeout: 3))
+        app.buttons["Texte source"].tap()
+        XCTAssertTrue(app.staticTexts["DYNAMIC WARM-UP:"].waitForExistence(timeout: 3))
+        app.buttons["Fermer"].tap()
+        app.buttons["complete-manual-step"].tap()
+        XCTAssertEqual(app.staticTexts["workout-source-title"].label, "Exercice en garde frontale")
+        XCTAssertEqual(app.staticTexts["workout-clock"].label, "02:00")
+        XCTAssertFalse(app.staticTexts["ÉCHANGES"].exists)
+        attach("french-source-day-one", app: app)
+        app.terminate()
+        app.launch()
+        app.buttons["start-workout"].tap()
+        XCTAssertEqual(app.staticTexts["workout-source-title"].label, "Exercice en garde frontale")
+    }
+
     func testVirtualPadRoundChangesSourceFocusWithoutChangingClock() throws {
         let app = application(language: "en")
         app.buttons["choose-program"].tap()
