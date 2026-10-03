@@ -1,0 +1,71 @@
+{
+  "recorded_at": "2026-10-02T23:55:36-04:00",
+  "checkpoint": "runtime-promotion-gate-and-stance-routing",
+  "runtime_promotion": {
+    "schema_version": 1,
+    "targets": ["source_item", "runtime_segment"],
+    "requires_catalog_sha256": true,
+    "requires_source_sha256": true,
+    "requires_exact_source_wording": true,
+    "requires_proposal_review": true,
+    "requires_measurement_review": true,
+    "requires_registered_movement_and_exact_recipe": true,
+    "failure_behavior": "typed_abstention",
+    "runtime_overlay_generated": false,
+    "approved_proposals": 0
+  },
+  "stance_routing": {
+    "saved_setting_values": ["orthodox", "southpaw"],
+    "on_device_tracker_uses_saved_stance": true,
+    "round_report_uses_saved_stance": true,
+    "southpaw_right_wrist_lead_probe_test": "passed"
+  },
+  "acceptance": {
+    "coin_unit_tests": "98/98 passed",
+    "representative_ui_journeys": "7/7 passed across clean replay",
+    "combined_ui_attempt": "4 passed and 3 simulator-termination/time-out failures",
+    "failed_combined_cases_replayed_individually": "3/3 passed",
+    "signed_device_build": "succeeded",
+    "bundle_id": "com.coinboxing.prototype",
+    "team_id": "TNK67SNT56",
+    "executable_sha256": "ee2610af29a26839bb03b5282f303940f935dda232fc80d554aa43db399d00f7"
+  },
+  "batch_audit": {
+    "job_id": "350987a377fb33498544d2ff4e5d47fc946262b989236b9129a6f32ed40c6bcb",
+    "complete": 535,
+    "failed": 0,
+    "unknown": 149,
+    "timed_unknown": 43,
+    "timed_unknown_prescribed_seconds": 8805,
+    "manual_unknown": 106,
+    "atomic_source_items_normalized": 10,
+    "catalog_source_items": 1773,
+    "atomic_timed_source_items_normalized": 0,
+    "distinct_batch_items_read_back_in_mlflow_at_audit": 140,
+    "distinct_batch_items_not_yet_read_back_at_audit": 395,
+    "separate_normalization_inference_gate_review_promotion_traces": false,
+    "review_state": "proposals_not_promoted"
+  },
+  "mlflow": {
+    "experiment_id": 40,
+    "service_outbox_at_final_probe": {"delivered": 234, "pending": 355},
+    "outbox_includes_non_batch_events": true,
+    "development_usage_run_id": "e0ed15653cdc48b4b1e5371e12f63b5c",
+    "development_usage_total_tokens": 483177837,
+    "development_usage_actual_billed_usd": null,
+    "development_usage_scope": "Observed per-response records only; no hidden reasoning or full inference payload capture."
+  },
+  "device": {
+    "name": "Lakshmi",
+    "state": "unavailable",
+    "installed": false,
+    "physical_camera_verified": false
+  },
+  "limits": [
+    "The promotion gate is implemented and tested, but no reviewed proposal has been promoted into a runtime overlay.",
+    "Atomic source-item normalization covers 10 of 1773 items and none of the timed source items.",
+    "The 43 timed unknowns remain the first human-review queue.",
+    "MLflow export is still draining, and service outbox totals are not equivalent to distinct batch-item coverage.",
+    "No physical iPhone workout was verified for this build."
+  ]
+}

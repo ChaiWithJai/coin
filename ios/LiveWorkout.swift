@@ -151,6 +151,7 @@ final class WorkoutCamera: NSObject, ObservableObject, AVCaptureVideoDataOutputS
     @Published var latestExchange: LabeledExchange?
     @Published var latestEvidence: [EvidenceCard] = []
     private var tracker = ExchangeTracker()
+    private var configuredStance = "orthodox"
     let evidence = EvidenceRing()
     private let ciContext = CIContext()
     private var lastSnapshot = 0
@@ -257,10 +258,21 @@ final class WorkoutCamera: NSObject, ObservableObject, AVCaptureVideoDataOutputS
         _ = tracker.finish(atMs: Int(ProcessInfo.processInfo.systemUptime * 1000))
         let result = tracker.exchanges
         tracker = ExchangeTracker()
+        tracker.stance = configuredStance
         return result
     }
     func resetExchanges() {
-        motionLock.lock(); tracker = ExchangeTracker(); motionLock.unlock()
+        motionLock.lock()
+        tracker = ExchangeTracker()
+        tracker.stance = configuredStance
+        motionLock.unlock()
+    }
+    func setStance(_ value: String) {
+        let normalized = value == "southpaw" ? "southpaw" : "orthodox"
+        motionLock.lock()
+        configuredStance = normalized
+        tracker.stance = normalized
+        motionLock.unlock()
     }
     func stop() {
         queue.async {
@@ -628,6 +640,7 @@ struct LiveWorkoutView: View {
     @EnvironmentObject private var training: TrainingStore
     @AppStorage("language") private var language = "fr"
     @AppStorage("poseTelemetryEnabled") private var poseTelemetryEnabled = false
+    @AppStorage("stance") private var stance = "orthodox"
     @StateObject private var camera = WorkoutCamera()
     @StateObject private var voice = WorkoutSpeechController()
     @StateObject private var poseSender = PoseWindowSender()
@@ -923,6 +936,7 @@ struct LiveWorkoutView: View {
         .toolbar(.hidden, for: .tabBar)
         .onAppear {
             training.ensureActivityInstances(sessionID: sessionID)
+            camera.setStance(stance)
             originalIdleTimerDisabled = UIApplication.shared.isIdleTimerDisabled
             if workout?.state == .active { camera.start() }
             if poseTelemetryEnabled { poseSender.sendPending(from: training) }
@@ -956,6 +970,7 @@ struct LiveWorkoutView: View {
             if enabled { poseSender.sendPending(from: training) }
             else { poseSender.cancel() }
         }
+        .onChange(of: stance) { camera.setStance($0) }
         .onChange(of: camera.position) { _ in motionWindowMax = nil; squatTracker.resetPosture() }
         .onReceive(timer) { now in
             if running, current?.isManual == true {
@@ -1296,7 +1311,7 @@ struct LiveWorkoutView: View {
         // mean quiet work, poor framing, or a detector miss; the server's
         // bounded report states that uncertainty instead of claiming inactivity.
         guard includeEmpty || !exchanges.isEmpty else { return }
-        roundReports.submit(RoundSummary(requestID: UUID().uuidString, language: language, stance: "orthodox",
+        roundReports.submit(RoundSummary(requestID: UUID().uuidString, language: language, stance: stance,
                                          drillID: segment.block.drillID, round: segment.block.roundNumber ?? 0,
                                          durationS: instanceID.map { workout?.activityElapsedSeconds(instanceID: $0) ?? 0 } ?? 0,
                                          exchanges: exchanges,

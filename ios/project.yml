@@ -33,6 +33,7 @@ targets:
       - GuardReview.swift
       - TrainingModel.swift
       - WorkoutCatalog.swift
+      - RuntimeDrillProposal.swift
       - WorkoutCatalog.json
       - SourceWorkoutLocalization.swift
       - BasicW1D1French.json

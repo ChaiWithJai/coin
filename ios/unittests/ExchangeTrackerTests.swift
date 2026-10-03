@@ -53,6 +53,17 @@ final class ExchangeTrackerTests: XCTestCase {
         XCTAssertEqual(e.faults, [])
     }
 
+    func testSouthpawTreatsRightHandAsLeadProbe() {
+        tracker.stance = "southpaw"
+        var body = Body()
+        step(body, frames: 5)
+        cross(&body) // Body.rear is MediaPipe right wrist (index 16).
+        step(body, frames: 25)
+        XCTAssertEqual(exchanges.count, 1)
+        XCTAssertEqual(exchanges[0].punches.map(\.hand), ["lead"])
+        XCTAssertEqual(exchanges[0].opener, "probe")
+    }
+
     func testJabWithRearHandDroppedIsFlagged() {
         var body = Body()
         step(body, frames: 5)
