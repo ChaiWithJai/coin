@@ -690,6 +690,9 @@ struct LiveWorkoutView: View {
         guard let current, !current.isRest else { return false }
         return current.block.activityChoiceFamily == "conditioning" || current.activityKey == "mobility"
     }
+    private func tracksExchanges(_ segment: Segment) -> Bool {
+        !segment.isRest && WorkoutActivityRouting.allowsExchange(activityInstance(for: segment))
+    }
     private func chooseActivity(_ key: String?) {
         captureElapsedFromDeadline()
         let previous = current.flatMap { activityInstance(for: $0) }
@@ -800,7 +803,7 @@ struct LiveWorkoutView: View {
                                 .font(.caption).foregroundStyle(Noir.gold)
                         }.accessibilityIdentifier("workout-activity-choice")
                     }
-                    if current.block.kind == .boxing && !current.isRest {
+                    if tracksExchanges(current) {
                         if let boxingFocus {
                             Text(boxingFocus)
                                 .font(.system(size: 15, weight: .medium, design: .serif))
@@ -959,9 +962,8 @@ struct LiveWorkoutView: View {
             }
         }
         .onReceive(camera.$latestExchange) { exchange in
-            guard let exchange, running, let current, !current.isRest else { return }
+            guard let exchange, running, let current, tracksExchanges(current) else { return }
             if activityKey(for: current) == "shadowboxing" { roundExchanges.append(exchange); voice.exchangeSound(fault: current.block.sourceTitle == nil && !exchange.faults.isEmpty); return }
-            guard current.block.kind == .boxing else { return }
             var labeled = exchange
             if current.block.drillID == "probe-combine-angle-v1",
                let key = cuePolicy.cue(for: exchange, nowMs: Int(ProcessInfo.processInfo.systemUptime * 1000)),
@@ -973,7 +975,7 @@ struct LiveWorkoutView: View {
             roundExchanges.append(labeled)
         }
         .onReceive(camera.$latestEvidence) { cards in
-            guard let current, current.block.kind == .boxing, !current.isRest,
+            guard let current, tracksExchanges(current),
                   current.block.drillID == "probe-combine-angle-v1" else { return }
             roundEvidence += cards
         }
@@ -1160,7 +1162,7 @@ struct LiveWorkoutView: View {
                                exitReason: current.isManual ? (completed ? "manual_completed" : "skipped") : (remaining == 0 ? "timer_elapsed" : "skipped"))
         voice.stop()
         flushPoseWindows()
-        if current.block.kind == .boxing && !current.isRest { submitRound(current) }
+        if tracksExchanges(current) { submitRound(current) }
         if (current.isManual && completed) || (!current.isManual && remaining <= 0) {
             if current.isRest { training.recordRestElapsed(sessionID: sessionID, blockID: current.block.id) }
             else if !segments.indices.contains(segmentIndex + 1) || segments[segmentIndex + 1].block.id != current.block.id || segments[segmentIndex + 1].isRest {
@@ -1170,7 +1172,7 @@ struct LiveWorkoutView: View {
         segmentIndex += 1
         squatTracker = SquatTracker()
         shadowTheme = -1
-        if let next = self.current, !next.isRest, next.block.kind == .boxing || next.activityKey == "shadowboxing" {
+        if let next = self.current, tracksExchanges(next) {
             camera.resetExchanges(); roundExchanges = []; cuePolicy = ExchangeCuePolicy()
         }
         remaining = self.current?.seconds ?? 0
@@ -1214,6 +1216,7 @@ struct LiveWorkoutView: View {
     }
     /// Sends the finished round's exchanges to the harness; never blocks the workout.
     private func submitRound(_ segment: Segment) {
+        guard tracksExchanges(segment) else { return }
         var byID = Dictionary(uniqueKeysWithValues: roundExchanges.map { ($0.id, $0) })
         for exchange in camera.takeRoundExchanges() where byID[exchange.id] == nil { byID[exchange.id] = exchange }
         let exchanges = byID.values.sorted { $0.id < $1.id }
@@ -1233,7 +1236,7 @@ struct LiveWorkoutView: View {
         guard workout?.state == .active else { return }
         captureElapsedFromDeadline()
         if let current { recordActivityInterval(for: current, reason: .sessionFinished) }
-        if let current, current.block.kind == .boxing, !current.isRest { submitRound(current) }
+        if let current, tracksExchanges(current) { submitRound(current) }
         flushTimedSeconds()
         if let current {
             let alreadyLogged = workout?.segmentLogs?.last.map {

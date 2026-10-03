@@ -89,6 +89,21 @@ import XCTest
         XCTAssertEqual(WorkoutActivityCopy.name("squat_jumps", language: "fr"), "Squats sautés")
         XCTAssertEqual(WorkoutActivityCopy.name("lunges", language: "en"), "Lunges")
         XCTAssertEqual(WorkoutActivityCopy.name("frontal_stance", language: "fr"), "Garde de face")
+        XCTAssertFalse(WorkoutActivityRouting.allowsExchange(initial))
+    }
+    func testExchangeRoutingUsesResolvedMovementInsteadOfBroadBlockKind() throws {
+        let (store, folder) = makeStore()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let lesson = try XCTUnwrap(WorkoutCatalog.shared.lessons.first { $0.id == "basic-w2-d1" })
+        let block = try XCTUnwrap(lesson.template().blocks.first { $0.activityChoiceFamily == "conditioning" })
+        let id = store.start(TrainingTemplate(id: "routing", durationMinutes: 0, blocks: [block]))
+        XCTAssertFalse(WorkoutActivityRouting.allowsExchange(store.data.sessions[0].activityInstance(blockID: block.id)))
+        XCTAssertTrue(store.selectActivity(sessionID: id, blockID: block.id, exerciseKey: "burpees"))
+        XCTAssertFalse(WorkoutActivityRouting.allowsExchange(store.data.sessions[0].activityInstance(blockID: block.id)))
+        XCTAssertTrue(store.selectActivity(sessionID: id, blockID: block.id, exerciseKey: "shadowboxing"))
+        XCTAssertTrue(WorkoutActivityRouting.allowsExchange(store.data.sessions[0].activityInstance(blockID: block.id)))
+        XCTAssertTrue(store.selectActivity(sessionID: id, blockID: block.id, exerciseKey: "frontal_stance"))
+        XCTAssertFalse(WorkoutActivityRouting.allowsExchange(store.data.sessions[0].activityInstance(blockID: block.id)))
     }
     func testSourceSpecifiedAndUserSelectionAreDistinctEvenForSameExercise() throws {
         let (store, folder) = makeStore()

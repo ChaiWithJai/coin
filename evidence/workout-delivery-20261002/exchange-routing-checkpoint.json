@@ -1,0 +1,20 @@
+{
+  "checkpoint": "resolved-activity-exchange-routing",
+  "date": "2026-10-02",
+  "failure": "A generic conditioning source block can have broad boxing kind while its runtime activity is unchosen or burpees; block-kind routing could display an exchange counter and submit boxing inference for conditioning movement.",
+  "fix": "Live exchange display, cue intake, evidence accumulation, tracker reset and round submission require the current activity instance's exchange_candidate measurement capability.",
+  "routing_examples": {
+    "unchosen_conditioning": false,
+    "burpees": false,
+    "frontal_stance": false,
+    "shadowboxing": true
+  },
+  "verification": {
+    "full_simulator_result": "Passed, 86 of 86 tests",
+    "signed_generic_device_build": "Passed",
+    "signed_phone_binary_sha256": "e1bb5ff2bba4dba2542d3ca2a6a160659f9e01d52c56f95e752c8cf5a8c27136",
+    "physical_install": "Not done; Lakshmi unavailable to CoreDevice",
+    "latest_mlflow_inference_observation": "No newer phone-origin completion than the synthetic interval receipt among ten latest traces"
+  },
+  "remaining": ["A switch away from shadowboxing mid-segment discards its unsubmitted candidate exchange buffer", "Physical normal-placement workout and cue validation remain open"]
+}

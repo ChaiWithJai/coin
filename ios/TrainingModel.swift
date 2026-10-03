@@ -456,6 +456,12 @@ struct WorkoutActivityInstance: Codable, Identifiable, Equatable {
     }
 }
 
+enum WorkoutActivityRouting {
+    static func allowsExchange(_ instance: WorkoutActivityInstance?) -> Bool {
+        instance?.measurement.capability == .exchangeCandidate
+    }
+}
+
 struct PreparationActivity: Codable, Hashable {
     let key: String
     let minutes: Int
