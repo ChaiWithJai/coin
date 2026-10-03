@@ -2,11 +2,15 @@
 
 Continue toward the full goal: let Jai perform the workouts from [boxing.dharmicdata.org](https://boxing.dharmicdata.org) or freestyle in Coin, with small models assigned narrow jobs, useful batch analysis, and an observable improvement loop. Keep the noir camera experience as the main interface. The goal remains active; passing a build or finishing the import does not establish that the whole experience works at the gym.
 
-## The recovered workflow
+## The recovered workflow and formula
 
 The source is section 5, "How it gets built: development as an agent trajectory," in [Jai's master plan](https://gist.github.com/ChaiWithJai/74b46c72aefdba34bc1e4dbcb00b3387). The local copy is `/Users/jaibhagat/code/bonsai-gen/gists/5-boxing/BOXING-MASTER-PLAN.md`, beginning at line 145. Sections 6 and 7 define runtime measurements and the division of work between models.
 
-The working sequence below paraphrases that source. No separate named mathematical formula was found, so do not attribute one to Jai. If Jai provides the intended formula, update this file while preserving the full product goal.
+The accepted development formula is preserved verbatim in `../../ARCHITECTURE-DIRECTION.md`:
+
+**record → review → correct → train → evaluate → deploy**
+
+The architecture around that statement has since been superseded, but the formula remains the governing evidence loop in `../../ADR-001-GUIDED-DRILL-WORKOUTS.md` and `../../TDD-GUIDED-DRILL-WORKOUTS.md`. The working sequence below applies it to the operational trajectory in the master plan.
 
 1. Read the current code, source material, labels, and traces before choosing the next change. Recover the intended workout and drill instead of substituting generic boxing advice.
 2. Give agents independent pieces of the workload, with explicit file ownership and acceptance evidence. Integrate their results into one app and one experiment history.
