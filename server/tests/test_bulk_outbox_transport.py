@@ -119,6 +119,38 @@ class MacDrainTests(unittest.TestCase):
         self.assertEqual([result["success"] for result in finished], [True, False, True])
         self.assertEqual(finished[1]["error"], "TimeoutError")
 
+    def test_drain_uses_event_level_bulk_sink_results(self):
+        from backend import pull_telemetry
+        events = self.events()
+        finished = []
+
+        def fake_remote(action, payload=None):
+            if action == "claim-many": return events
+            if action == "finish-many":
+                finished.extend(payload["results"])
+                return [{"event_id": result["event"]["event_id"], "finished": True, "success": result["success"]} for result in payload["results"]]
+            if action == "counts": return {"delivered": 2, "pending": 1}
+            raise AssertionError(action)
+
+        class Sink:
+            def deliver_many(self, claimed):
+                self.claimed = claimed
+                return [
+                    {"event_id": "event-0", "success": True},
+                    {"event_id": "event-1", "success": False, "error": "TraceReadbackError"},
+                    {"event_id": "event-2", "success": True},
+                ]
+
+        sink = Sink()
+        sink_module = types.ModuleType("mlflow_sink")
+        sink_module.MLflowSink = lambda: sink
+        with patch.dict(sys.modules, {"mlflow_sink": sink_module}), patch.object(pull_telemetry, "remote", fake_remote):
+            with redirect_stdout(io.StringIO()), self.assertRaisesRegex(RuntimeError, "1 telemetry event"):
+                pull_telemetry.drain(limit=3)
+        self.assertIs(sink.claimed, events)
+        self.assertEqual([result["success"] for result in finished], [True, False, True])
+        self.assertEqual(finished[1]["error"], "TraceReadbackError")
+
 
 if __name__ == "__main__":
     unittest.main()

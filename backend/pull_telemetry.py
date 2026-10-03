@@ -15,18 +15,31 @@ def drain(limit=20):
  lease_seconds=min(MAX_LEASE_SECONDS,max(120,limit*SECONDS_PER_EVENT))
  events=remote('claim-many',{'limit':limit,'lease_seconds':lease_seconds})
  sink=None;delivered=0;results=[];failures=[]
- for event in events:
-  try:
-   if sink is None:
-    from mlflow_sink import MLflowSink
-    sink=MLflowSink()
-   sink(event['event_id'],event['payload'])
-  except Exception as exc:
-   error=type(exc).__name__
-   results.append({'event':event,'success':False,'error':error})
-   failures.append((event['event_id'],error))
+ if events:
+  from mlflow_sink import MLflowSink
+  sink=MLflowSink()
+  if callable(deliver_many:=getattr(sink,'deliver_many',None)):
+   try:
+    sink_results=deliver_many(events)
+    if len(sink_results)!=len(events):raise RuntimeError('Bulk sink response did not cover the claimed batch')
+    if [result.get('event_id') for result in sink_results]!=[event['event_id'] for event in events]:raise RuntimeError('Bulk sink response order or IDs did not match the claimed batch')
+   except Exception as exc:
+    error=type(exc).__name__
+    sink_results=[{'event_id':event['event_id'],'success':False,'error':error} for event in events]
+   for event,sink_result in zip(events,sink_results):
+    if sink_result.get('success'):
+     results.append({'event':event,'success':True});delivered+=1
+    else:
+     error=sink_result.get('error') or 'MLflowDeliveryFailed'
+     results.append({'event':event,'success':False,'error':error});failures.append((event['event_id'],error))
   else:
-   results.append({'event':event,'success':True});delivered+=1
+   for event in events:
+    try:sink(event['event_id'],event['payload'])
+    except Exception as exc:
+     error=type(exc).__name__
+     results.append({'event':event,'success':False,'error':error});failures.append((event['event_id'],error))
+    else:
+     results.append({'event':event,'success':True});delivered+=1
  if results:
   outcomes=remote('finish-many',{'results':results})
   expected=[result['event']['event_id'] for result in results]
