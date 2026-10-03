@@ -673,23 +673,33 @@ struct LiveWorkoutView: View {
     let sessionID: UUID
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
-    private struct Segment {
-        let block: SessionBlock
-        let isRest: Bool
-        let activity: PreparationActivity?
-        let preparationIndex: Int?
-        var seconds: Int { activity.map { $0.minutes * 60 } ?? (isRest ? block.effectiveRestSeconds : block.effectiveSeconds) }
-        var isManual: Bool { !isRest && activity == nil && block.isManual }
-        var activityKey: String? { activity?.key ?? block.sourceActivityKey }
-    }
+    private typealias Segment = WorkoutRuntimePlan.Segment
     private var workout: TrainingSession? { training.data.sessions.first { $0.id == sessionID } }
-    private var segments: [Segment] {
-        workout?.blocks.flatMap { block in
-            let work: [Segment] = (block.activities?.isEmpty == false)
-                ? (block.activities ?? []).enumerated().map { Segment(block: block, isRest: false, activity: $0.element, preparationIndex: $0.offset) }
-                : [Segment(block: block, isRest: false, activity: nil, preparationIndex: nil)]
-            return work + (block.effectiveRestSeconds > 0 ? [Segment(block: block, isRest: true, activity: nil, preparationIndex: nil)] : [])
-        } ?? []
+    private var runtimePlan: WorkoutRuntimePlan? {
+        guard let workout else { return nil }
+        return try? WorkoutRuntimePlan(template: TrainingTemplate(id: workout.templateID,
+            durationMinutes: workout.plannedMinutes, blocks: workout.blocks,
+            sourceTitle: workout.sourceTitle, localizedSourceTitleFR: workout.localizedSourceTitleFR,
+            sourceURL: workout.sourceURL, sourceVersion: workout.sourceVersion))
+    }
+    private var segments: [Segment] { runtimePlan?.segments ?? [] }
+    private var runtimeActivityResolutions: [WorkoutRuntimePlan.Slot: WorkoutRuntimePlan.Resolution] {
+        var latest: [WorkoutRuntimePlan.Slot: WorkoutRuntimePlan.Resolution] = [:]
+        for instance in workout?.activityInstances ?? [] {
+            let slot = WorkoutRuntimePlan.Slot(blockID: instance.blockID,
+                preparationIndex: instance.preparationIndex)
+            guard let key = instance.exerciseKey else {
+                latest.removeValue(forKey: slot)
+                continue
+            }
+            latest[slot] = WorkoutRuntimePlan.Resolution(activityInstanceID: instance.id,
+                exerciseKey: key,
+                movementVersion: WorkoutMovementDefinition.forKey(key)?.version ?? "v1",
+                measurementID: instance.measurement.id,
+                measurementVersion: instance.measurement.version,
+                measurementCapability: instance.measurement.capability.rawValue)
+        }
+        return latest
     }
     private var current: Segment? { segments.indices.contains(segmentIndex) ? segments[segmentIndex] : nil }
     private func activityInstance(for segment: Segment) -> WorkoutActivityInstance? {
@@ -942,10 +952,12 @@ struct LiveWorkoutView: View {
             if poseTelemetryEnabled { poseSender.sendPending(from: training) }
             completionSender.sendPending(from: training)
             roundReports.flush()
-            if let workout {
-                segmentIndex = workout.runtimeSegmentIndex ?? 0
-                remaining = workout.runtimeRemainingSeconds ?? (current?.seconds ?? 0)
-                manualElapsed = workout.runtimeElapsedSeconds ?? 0
+            if let workout, let plan = runtimePlan,
+               let cursor = try? plan.restoredCursor(index: workout.runtimeSegmentIndex,
+                    remaining: workout.runtimeRemainingSeconds, manualElapsed: workout.runtimeElapsedSeconds) {
+                segmentIndex = cursor.segmentIndex
+                remaining = cursor.remainingSeconds
+                manualElapsed = cursor.manualElapsedSeconds
                 if let current, let key = activityKey(for: current), key == "squats" || key == "lunges" {
                     squatTracker = SquatTracker()
                     squatTracker.restoreCount((workout.exerciseReps ?? []).filter {
@@ -1228,8 +1240,20 @@ struct LiveWorkoutView: View {
         }
     }
     private func advance(completed: Bool = false) {
-        guard let current else { return }
+        guard let current, let plan = runtimePlan else { return }
         captureElapsedFromDeadline()
+        let exit: WorkoutRuntimePlan.Exit = current.isManual
+            ? (completed ? .manualCompleted : .skipped)
+            : (remaining == 0 ? .timerElapsed : .skipped)
+        let cursor = WorkoutRuntimePlan.Cursor(segmentIndex: segmentIndex,
+            remainingSeconds: remaining, manualElapsedSeconds: manualElapsed)
+        guard let progression = try? plan.advance(cursor, exit: exit,
+            resolutions: runtimeActivityResolutions) else {
+            // Invalid lineage, cursor, gate, or exit fails closed. Never skip
+            // ahead and manufacture completion evidence.
+            pause()
+            return
+        }
         recordActivityInterval(for: current, reason: .segmentEnded)
         flushTimedSeconds()
         training.recordSegment(sessionID: sessionID, blockID: current.block.id,
@@ -1241,26 +1265,31 @@ struct LiveWorkoutView: View {
         voice.stop()
         flushPoseWindows()
         if tracksExchanges(current) { submitRound(current, includeEmpty: !current.isManual && remaining == 0) }
-        if (current.isManual && completed) || (!current.isManual && remaining <= 0) {
+        if progression.completedBlockID != nil {
             if current.isRest { training.recordRestElapsed(sessionID: sessionID, blockID: current.block.id) }
-            else if !segments.indices.contains(segmentIndex + 1) || segments[segmentIndex + 1].block.id != current.block.id || segments[segmentIndex + 1].isRest {
+            else {
                 training.completeBlock(sessionID: sessionID, blockID: current.block.id, source: current.isManual ? "manual_completed" : "timer_elapsed")
             }
         }
-        segmentIndex += 1
+        // Rest evidence is independent from block completion, which occurs at
+        // the successful end of the block's last work segment.
+        if current.isRest, exit == .timerElapsed {
+            training.recordRestElapsed(sessionID: sessionID, blockID: current.block.id)
+        }
+        segmentIndex = progression.cursor.segmentIndex
         squatTracker = SquatTracker()
         shadowTheme = -1
         if let next = self.current, tracksExchanges(next) {
             camera.resetExchanges(); roundExchanges = []; cuePolicy = ExchangeCuePolicy()
         }
-        remaining = self.current?.seconds ?? 0
-        manualElapsed = 0
+        remaining = progression.cursor.remainingSeconds
+        manualElapsed = progression.cursor.manualElapsedSeconds
         manualAnchor = running && self.current?.isManual == true ? Date() : nil
         deadline = running && self.current?.isManual != true ? Date().addingTimeInterval(TimeInterval(remaining)) : nil
         training.saveRuntime(sessionID: sessionID, segmentIndex: segmentIndex, remainingSeconds: remaining, elapsedSeconds: 0)
-        if self.current == nil {
+        if progression.shouldFinalizeReceipt {
             finishWorkout()
-        } else if running, let next = self.current, requiresRuntimeSelection(next) {
+        } else if running, progression.requiresChoice {
             running = false
             deadline = nil
             manualAnchor = nil
@@ -1375,8 +1404,11 @@ struct LiveWorkoutView: View {
         training.saveRuntime(sessionID: sessionID, segmentIndex: segmentIndex, remainingSeconds: remaining, elapsedSeconds: manualElapsed)
     }
     private func begin() {
-        guard !running, let current, remaining > 0 || current.isManual else { return }
-        if requiresRuntimeSelection(current) {
+        guard !running, let current, let plan = runtimePlan,
+              remaining > 0 || current.isManual else { return }
+        let cursor = WorkoutRuntimePlan.Cursor(segmentIndex: segmentIndex,
+            remainingSeconds: remaining, manualElapsedSeconds: manualElapsed)
+        if plan.requiresChoice(at: cursor, resolutions: runtimeActivityResolutions) {
             selectionRequiredToStart = true
             showActivityChoice = true
             return

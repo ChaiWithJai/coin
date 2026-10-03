@@ -756,6 +756,74 @@ import XCTest
         return try XCTUnwrap(WorkoutCatalog.load(data).lessons.first)
     }
 
+    func testRuntimeEngineTraversesEveryCatalogLessonAndFreestyleToReceipt() throws {
+        var templates = WorkoutCatalog.shared.lessons.map { $0.template() }
+        templates.append(try XCTUnwrap(SessionTemplates.freestyle(rounds: 6,
+            roundSeconds: 180, restSeconds: 60)))
+        XCTAssertEqual(templates.count, 71, "Expected all 70 source lessons plus freestyle")
+
+        for template in templates {
+            let plan = try WorkoutRuntimePlan(template: template)
+            var cursor = try plan.restoredCursor(index: nil, remaining: nil, manualElapsed: nil)
+            let resolutions = Dictionary(plan.segments.filter { !$0.isRest }.map { segment in
+                (segment.slot, WorkoutRuntimePlan.Resolution(activityInstanceID: UUID(),
+                    exerciseKey: segment.requiresChoice ? "custom" : (segment.activityKey ?? "custom")))
+            }, uniquingKeysWith: { _, latest in latest })
+            var completed = Set<UUID>()
+            var progression: WorkoutRuntimePlan.Progression?
+            while let segment = plan.segment(at: cursor) {
+                if segment.isManual {
+                    cursor.manualElapsedSeconds = 7
+                    progression = try plan.advance(cursor, exit: .manualCompleted, resolutions: resolutions)
+                } else {
+                    cursor.remainingSeconds = 0
+                    progression = try plan.advance(cursor, exit: .timerElapsed, resolutions: resolutions)
+                }
+                if !segment.isRest {
+                    XCTAssertEqual(progression?.activityResolution,
+                        resolutions[segment.slot], "\(template.id) segment \(cursor.segmentIndex)")
+                }
+                if let id = progression?.completedBlockID { completed.insert(id) }
+                cursor = try XCTUnwrap(progression).cursor
+            }
+            XCTAssertTrue(try XCTUnwrap(progression).shouldFinalizeReceipt, template.id)
+            XCTAssertEqual(completed, Set(template.blocks.map(\.id)), template.id)
+            XCTAssertEqual(cursor.segmentIndex, plan.segments.count, template.id)
+        }
+    }
+
+    func testRuntimeEngineFailsClosedAtChoiceExitAndSourceBoundaries() throws {
+        let choice = SessionBlock(kind: .exercise, minutes: 1, roundNumber: nil,
+            drillID: nil, restAfterMinutes: 0, durationSeconds: 60,
+            sourceActivityKey: nil, completionMode: .timed, activityChoiceFamily: "conditioning")
+        let template = TrainingTemplate(id: "choice", durationMinutes: 1, blocks: [choice])
+        let plan = try WorkoutRuntimePlan(template: template)
+        var cursor = try plan.restoredCursor(index: nil, remaining: nil, manualElapsed: nil)
+        cursor.remainingSeconds = 0
+        XCTAssertThrowsError(try plan.advance(cursor, exit: .timerElapsed, resolutions: [:])) {
+            XCTAssertEqual($0 as? WorkoutRuntimePlan.ValidationError, .choiceRequired)
+        }
+        let skipped = try plan.advance(
+            WorkoutRuntimePlan.Cursor(segmentIndex: 0, remainingSeconds: 60, manualElapsedSeconds: 0),
+            exit: .skipped, resolutions: [:])
+        XCTAssertTrue(skipped.shouldFinalizeReceipt)
+        XCTAssertNil(skipped.completedBlockID)
+        XCTAssertThrowsError(try plan.advance(
+            WorkoutRuntimePlan.Cursor(segmentIndex: 0, remainingSeconds: 10, manualElapsedSeconds: 0),
+            exit: .timerElapsed, resolutions: [plan.segments[0].slot:
+                WorkoutRuntimePlan.Resolution(activityInstanceID: UUID(), exerciseKey: "squats")])) {
+            XCTAssertEqual($0 as? WorkoutRuntimePlan.ValidationError, .wrongExit)
+        }
+        XCTAssertThrowsError(try plan.restoredCursor(index: 8, remaining: 0, manualElapsed: 0))
+
+        let brokenSource = TrainingTemplate(id: "broken", durationMinutes: 1, blocks: [choice],
+            sourceTitle: "Source", sourceURL: "https://boxing.dharmicdata.org/broken",
+            sourceVersion: "hash")
+        XCTAssertThrowsError(try WorkoutRuntimePlan(template: brokenSource)) {
+            XCTAssertEqual($0 as? WorkoutRuntimePlan.ValidationError, .invalidSourceLineage(choice.id))
+        }
+    }
+
     private var fixture: String { """
     {"schemaVersion":1,"workouts":[{"id":"source-test","program":"boxing","week":1,"day":1,"title":"Source workout","sourceURL":"https://boxing.dharmicdata.org/test","sourceSHA256":"source-hash","blocks":[{"id":"a","title":"Shadowboxing","instructions":"Two rounds, 45 seconds each. Rest 15 seconds between rounds.","kind":"boxing","drillID":"free-boxing-v1","rounds":2,"durationSeconds":45,"restSeconds":15,"completion":"timed"},{"id":"b","title":"Push-ups","instructions":"3 sets of 10 push-ups. Rest as needed.","kind":"exercise","activityKey":"pushups","reps":"10 reps","sets":3,"completion":"manual","demoURLs":["https://example.org/demo"]}]}]}
     """ }

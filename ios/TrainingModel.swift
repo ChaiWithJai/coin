@@ -722,6 +722,198 @@ enum SessionTemplates {
     }
 }
 
+/// Pure workout traversal used by the camera UI and by catalog-wide tests. It
+/// owns no clocks, storage, camera, or speech state: callers feed it explicit
+/// exits and persist the returned cursor/evidence.
+struct WorkoutRuntimePlan {
+    struct Slot: Hashable {
+        let blockID: UUID
+        let preparationIndex: Int?
+    }
+
+    /// Binds an immutable plan slot to the exact runtime activity instance
+    /// that owns pose samples, intervals, and review evidence.
+    struct Resolution: Hashable {
+        let activityInstanceID: UUID
+        let exerciseKey: String
+        let movementVersion: String
+        let measurementID: String
+        let measurementVersion: String
+        let measurementCapability: String
+
+        init(activityInstanceID: UUID, exerciseKey: String,
+             movementVersion: String = "v1", measurementID: String = "session-clock",
+             measurementVersion: String = "v1", measurementCapability: String = "elapsed_only") {
+            self.activityInstanceID = activityInstanceID
+            self.exerciseKey = exerciseKey
+            self.movementVersion = movementVersion
+            self.measurementID = measurementID
+            self.measurementVersion = measurementVersion
+            self.measurementCapability = measurementCapability
+        }
+    }
+
+    struct Segment: Hashable {
+        let block: SessionBlock
+        let isRest: Bool
+        let activity: PreparationActivity?
+        let preparationIndex: Int?
+
+        var seconds: Int {
+            activity.map { $0.minutes * 60 }
+                ?? (isRest ? block.effectiveRestSeconds : block.effectiveSeconds)
+        }
+        var isManual: Bool { !isRest && activity == nil && block.isManual }
+        var activityKey: String? { activity?.key ?? block.sourceActivityKey }
+        var slot: Slot { Slot(blockID: block.id, preparationIndex: preparationIndex) }
+        var requiresChoice: Bool {
+            !isRest && (block.activityChoiceFamily != nil || activityKey == "mobility")
+        }
+    }
+
+    struct Cursor: Equatable {
+        var segmentIndex: Int
+        var remainingSeconds: Int
+        var manualElapsedSeconds: Int
+    }
+
+    enum Exit: Equatable {
+        case timerElapsed
+        case manualCompleted
+        case skipped
+    }
+
+    struct Progression {
+        let exited: Segment
+        let exit: Exit
+        let elapsedSeconds: Int
+        let cursor: Cursor
+        let completedBlockID: UUID?
+        let activityResolution: Resolution?
+        let requiresChoice: Bool
+        let shouldFinalizeReceipt: Bool
+    }
+
+    enum ValidationError: Error, Equatable, CustomStringConvertible {
+        case noSegments
+        case duplicateBlockID(UUID)
+        case invalidDuration(UUID)
+        case invalidSourceLineage(UUID)
+        case invalidCursor
+        case wrongExit
+        case choiceRequired
+        case alreadyFinished
+
+        var description: String {
+            switch self {
+            case .noSegments: return "Workout has no runtime segments."
+            case .duplicateBlockID(let id): return "Duplicate block identifier: \(id)."
+            case .invalidDuration(let id): return "Invalid duration for block: \(id)."
+            case .invalidSourceLineage(let id): return "Incomplete source lineage for block: \(id)."
+            case .invalidCursor: return "Runtime cursor is outside the workout plan."
+            case .wrongExit: return "Exit does not match the current segment."
+            case .choiceRequired: return "A runtime movement choice is required."
+            case .alreadyFinished: return "Workout is already finished."
+            }
+        }
+    }
+
+    let segments: [Segment]
+
+    init(template: TrainingTemplate) throws {
+        let blocks = template.blocks
+        guard !blocks.isEmpty else { throw ValidationError.noSegments }
+        var seen = Set<UUID>()
+        for block in blocks {
+            guard seen.insert(block.id).inserted else { throw ValidationError.duplicateBlockID(block.id) }
+            guard block.effectiveSeconds >= 0, block.effectiveRestSeconds >= 0,
+                  block.isManual || block.effectiveSeconds > 0 else {
+                throw ValidationError.invalidDuration(block.id)
+            }
+            if template.sourceURL != nil {
+                guard template.sourceVersion?.isEmpty == false,
+                      block.sourceURL?.isEmpty == false,
+                      block.sourceBlockID?.isEmpty == false,
+                      block.sourceTitle?.isEmpty == false,
+                      block.sourceInstructions?.isEmpty == false else {
+                    throw ValidationError.invalidSourceLineage(block.id)
+                }
+            }
+        }
+        segments = blocks.flatMap { block in
+            let work: [Segment] = (block.activities?.isEmpty == false)
+                ? (block.activities ?? []).enumerated().map {
+                    Segment(block: block, isRest: false, activity: $0.element, preparationIndex: $0.offset)
+                }
+                : [Segment(block: block, isRest: false, activity: nil, preparationIndex: nil)]
+            return work + (block.effectiveRestSeconds > 0
+                ? [Segment(block: block, isRest: true, activity: nil, preparationIndex: nil)] : [])
+        }
+        guard !segments.isEmpty else { throw ValidationError.noSegments }
+    }
+
+    func restoredCursor(index: Int?, remaining: Int?, manualElapsed: Int?) throws -> Cursor {
+        let index = index ?? 0
+        if index == segments.count {
+            guard (remaining ?? 0) == 0 else { throw ValidationError.invalidCursor }
+            return Cursor(segmentIndex: index, remainingSeconds: 0, manualElapsedSeconds: 0)
+        }
+        guard segments.indices.contains(index) else { throw ValidationError.invalidCursor }
+        let segment = segments[index]
+        let remaining = remaining ?? segment.seconds
+        let elapsed = manualElapsed ?? 0
+        guard remaining >= 0, remaining <= segment.seconds, elapsed >= 0,
+              (segment.isManual || elapsed == 0) else { throw ValidationError.invalidCursor }
+        return Cursor(segmentIndex: index, remainingSeconds: remaining,
+                      manualElapsedSeconds: segment.isManual ? elapsed : 0)
+    }
+
+    func segment(at cursor: Cursor) -> Segment? {
+        segments.indices.contains(cursor.segmentIndex) ? segments[cursor.segmentIndex] : nil
+    }
+
+    func requiresChoice(at cursor: Cursor, resolutions: [Slot: Resolution]) -> Bool {
+        guard let segment = segment(at: cursor) else { return false }
+        guard segment.requiresChoice else { return false }
+        guard let resolution = resolutions[segment.slot] else { return true }
+        return resolution.exerciseKey == "mobility"
+    }
+
+    func advance(_ cursor: Cursor, exit: Exit,
+                 resolutions: [Slot: Resolution]) throws -> Progression {
+        guard let current = segment(at: cursor) else { throw ValidationError.alreadyFinished }
+        // A boxer may always skip an unsuitable segment. A choice is required
+        // before claiming timed or manual completion, never to leave the gate.
+        guard exit == .skipped || !requiresChoice(at: cursor, resolutions: resolutions) else {
+            throw ValidationError.choiceRequired
+        }
+        switch (current.isManual, exit) {
+        case (true, .timerElapsed), (false, .manualCompleted): throw ValidationError.wrongExit
+        default: break
+        }
+        if exit == .timerElapsed && cursor.remainingSeconds != 0 { throw ValidationError.wrongExit }
+
+        let elapsed = current.isManual ? cursor.manualElapsedSeconds
+            : max(0, current.seconds - cursor.remainingSeconds)
+        let successful = exit == .timerElapsed || exit == .manualCompleted
+        let nextIndex = cursor.segmentIndex + 1
+        let next = segments.indices.contains(nextIndex) ? segments[nextIndex] : nil
+        let completesBlock = successful && !current.isRest
+            && (next == nil || next?.block.id != current.block.id || next?.isRest == true)
+        let nextCursor = Cursor(segmentIndex: nextIndex,
+            remainingSeconds: next?.seconds ?? 0, manualElapsedSeconds: 0)
+        return Progression(exited: current, exit: exit, elapsedSeconds: elapsed,
+            cursor: nextCursor, completedBlockID: completesBlock ? current.block.id : nil,
+            activityResolution: current.isRest ? nil : resolutions[current.slot],
+            requiresChoice: next.map {
+                guard $0.requiresChoice else { return false }
+                guard let resolution = resolutions[$0.slot] else { return true }
+                return resolution.exerciseKey == "mobility"
+            } ?? false,
+            shouldFinalizeReceipt: next == nil)
+    }
+}
+
 enum SessionState: String, Codable { case planned, active, completed, interrupted }
 
 struct BlockLog: Codable, Identifiable {
