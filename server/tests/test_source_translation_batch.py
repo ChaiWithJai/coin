@@ -17,6 +17,10 @@ class TranslationBatchTests(unittest.TestCase):
                     if i["sourceText"] == "12 JUMP SQUATS")
         proposed = validate_proposal(jump, {"proposedFrench": "12 sauts de genou", "ambiguityFlags": []})
         self.assertIn("jump_squat_term_missing", proposed["qualityWarnings"])
+        fragment = next(i for i in source_items(CATALOG, "basic-w2-d1")
+                        if i["sourceItemID"] == "p10-b48")
+        self.assertEqual(fragment["sourceText"], "RAISES (MAX)")
+        self.assertIn("HANGING LEG\nRAISES (MAX)", fragment["sectionContext"])
 
     def test_durable_coverage_attempt_and_cost(self):
         with tempfile.TemporaryDirectory() as root:
@@ -36,7 +40,8 @@ class TranslationBatchTests(unittest.TestCase):
             self.assertEqual(retry["number"], 2)
             store.finish(job, retry, {"proposedFrench": retry["item"]["sourceText"], "ambiguityFlags": ["Review"]}, usage={"prompt_tokens": 21})
             self.assertEqual(Store(store.path).status(job)["counts"]["done"], 1)
-            self.assertNotEqual(job, store.submit_day(CATALOG, "basic-w1-d1", "model-v1", "new"))
+            self.assertNotEqual(job, store.submit_day(CATALOG, "basic-w1-d1", "model-v1",
+                                                       "source-fr-proposal-v4-section-context"))
 
     def test_process_one(self):
         class Fake:
@@ -62,6 +67,18 @@ class TranslationBatchTests(unittest.TestCase):
                 row = db.execute("SELECT response,completion_tokens FROM attempts").fetchone()
             self.assertEqual(json.loads(row["response"])["choices"][0]["message"]["content"], "")
             self.assertEqual(row["completion_tokens"], 512)
+
+    def test_resume_rejects_changed_prompt_client(self):
+        class WrongPrompt:
+            prompt_version = "source-fr-proposal-v4-section-context"
+            def propose(self, item):
+                raise AssertionError("Must reject before inference")
+        with tempfile.TemporaryDirectory() as root:
+            store = Store(Path(root) / "batch.sqlite")
+            job = store.submit_day(CATALOG, "basic-w1-d1", "fake")
+            with self.assertRaisesRegex(ValueError, "prompt version"):
+                process_one(store, job, WrongPrompt())
+            self.assertEqual(store.status(job)["attempts"], 0)
 
 if __name__ == "__main__":
     unittest.main()

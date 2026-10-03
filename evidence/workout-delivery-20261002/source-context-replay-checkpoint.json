@@ -1,0 +1,36 @@
+{
+  "lessonID": "basic-w2-d1",
+  "candidate": "source-fr-proposal-v4-section-context",
+  "jobID": "5332034569099039a381521addae0186047e181de9ae40dcc31b23cc3f7b1532",
+  "database": "../../../batch-source-french/1790993497546356000/batch.sqlite",
+  "comparisonScope": "The same first four included source items as v3, not a full-day or held-out evaluation.",
+  "completedItems": 4,
+  "pendingItems": 26,
+  "finishedMLflowTranslationTraces": 4,
+  "surfacedPromptTokens": 848,
+  "surfacedCompletionTokens": 158,
+  "observations": [
+    {
+      "sourceItemID": "p10-b4",
+      "v3": "DRILL DE GARDE FRONTALE",
+      "v4": "EXERCICE DE GARDE FRONTALE",
+      "assessment": "Clearer wording in v4."
+    },
+    {
+      "sourceItemID": "p10-b5",
+      "v3": "4 REPRISES DE 2 MINUTES. ESQUIVEZ DU BUSTE, JETEZ 2 COUPS DE POING AVEC DES PAS",
+      "v4": "4 reprises de 2 minutes. Faites des esquives du buste et lancesz 2 coups de poing avec des pas",
+      "assessment": "v4 introduced the misspelled word lancesz; technique remains ambiguous."
+    },
+    {
+      "sourceItemID": "p10-b6",
+      "v3": "AVANT/ARRIÈRE",
+      "v4": "AVANT/ARRIÈRE",
+      "assessment": "v4 flagged this as a source fragment, which is useful for review."
+    }
+  ],
+  "decision": "Keep v3 as the default proposal prompt. Retain v4 as an explicit replayable experiment; do not promote either batch to runtime.",
+  "actualBilledUSD": null,
+  "estimatedUSD": null,
+  "runtimeEligible": false
+}

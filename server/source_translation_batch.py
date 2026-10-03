@@ -19,7 +19,7 @@ from pathlib import Path
 
 SCHEMA_VERSION = 1
 PROMPT_VERSION = "source-fr-proposal-v3-boxing-glossary"
-PROMPT = (
+PROMPT_V3 = (
     "Translate only sourceText into concise, natural French for a boxer. "
     "Use boxing terms: round = reprise; punches = coups de poing; "
     "stance = garde; slip = esquive du buste. "
@@ -29,6 +29,20 @@ PROMPT = (
     "Return only JSON with keys proposedFrench (string) and ambiguityFlags "
     "(array of short strings). Empty flags are allowed."
 )
+PROMPT_V4 = (
+    "Translate only sourceText into concise, natural French for a boxer. "
+    "Use sectionContext only to disambiguate the target; do not translate its other lines. "
+    "A target may be a sentence fragment: preserve its fragment boundary and flag 'fragment'. "
+    "Use boxing terms: round = reprise; punches = coups de poing; "
+    "stance = garde; slip = esquive du buste. "
+    "Keep an unclear compound technique in English and flag it; do not guess. "
+    "Preserve every number, exercise prescription, and named exercise. "
+    "Do not invent coaching advice or infer a performed movement. "
+    "Return only JSON with keys proposedFrench (string) and ambiguityFlags "
+    "(array of short strings). Empty flags are allowed."
+)
+PROMPTS = {PROMPT_VERSION: PROMPT_V3,
+           "source-fr-proposal-v4-section-context": PROMPT_V4}
 NUMBERS = re.compile(r"(?<![\w])\d+(?:[.,]\d+)?(?![\w])")
 EXERCISE_ANCHORS = (
     (re.compile(r"\bJUMP SQUATS?\b", re.I), re.compile(r"\bsquats?\b", re.I), "jump_squat_term_missing"),
@@ -62,6 +76,9 @@ def source_items(catalog, lesson_id):
         block_id = block.get("id")
         if not isinstance(block_id, str) or not block_id:
             raise ValueError("Missing block ID")
+        section_context = block.get("sourceText")
+        if not isinstance(section_context, str) or not section_context.strip() or len(section_context) > 4000:
+            raise ValueError("Invalid source section context")
         for item in block.get("sourceItems", []):
             item_id, text = item.get("id"), item.get("text")
             key = item_id
@@ -76,6 +93,7 @@ def source_items(catalog, lesson_id):
                 "lessonID": lesson_id, "sourceSHA256": source_sha,
                 "blockID": block_id, "sourceItemID": item_id,
                 "sourceText": text, "sourceTextSHA256": sha(text),
+                "sectionContext": section_context,
                 "sourceDemoURLs": demos, "sourceURL": block.get("sourceURL", day.get("sourceURL")),
                 "prescription": {key: block.get(key) for key in
                                  ("completion", "rounds", "durationSeconds", "restSeconds", "sets", "reps")},
@@ -146,6 +164,8 @@ class Store:
     def submit_day(self, catalog, lesson_id, model_identity, prompt_version=PROMPT_VERSION):
         if not isinstance(model_identity, str) or not model_identity.strip():
             raise ValueError("Pinned model identity required")
+        if prompt_version not in PROMPTS:
+            raise ValueError("Unknown prompt version")
         manifest = source_items(catalog, lesson_id)
         envelope = {"manifest": manifest, "model": model_identity, "prompt": prompt_version}
         job_id = sha(canonical(envelope))
@@ -252,8 +272,17 @@ class Store:
                     "counts": {row["state"]: row["n"] for row in rows}, "attempts": attempts,
                     "actualCostUSD": None, "estimatedCostUSD": None}
 
+    def prompt_version(self, job_id):
+        with self.db() as db:
+            row = db.execute("SELECT prompt_version FROM jobs WHERE id=?", (job_id,)).fetchone()
+        if row is None:
+            raise ValueError("Unknown job")
+        return row["prompt_version"]
+
 
 def process_one(store, job_id, model_client, *, lease_seconds=180):
+    if getattr(model_client, "prompt_version", None) not in (None, store.prompt_version(job_id)):
+        raise ValueError("Model client prompt version differs from saved job")
     claim = store.claim(job_id, lease_seconds=lease_seconds)
     if claim is None:
         return None
@@ -279,14 +308,21 @@ class ProposalResponseError(ValueError):
 class ModelClient:
     """Minimal local OpenAI-compatible chat client; caller controls GPU scheduling."""
 
-    def __init__(self, endpoint, model, timeout=60):
+    def __init__(self, endpoint, model, timeout=60, prompt_version=PROMPT_VERSION):
+        if prompt_version not in PROMPTS:
+            raise ValueError("Unknown prompt version")
         self.endpoint, self.model, self.timeout = endpoint, model, timeout
+        self.prompt_version = prompt_version
 
     def propose(self, item):
+        user = {key: value for key, value in item.items() if key != "sectionContext"}
+        if self.prompt_version == "source-fr-proposal-v4-section-context":
+            user = {"sourceText": item["sourceText"], "sourceItemID": item["sourceItemID"],
+                    "sectionContext": item["sectionContext"]}
         body = {"model": self.model, "temperature": 0, "max_tokens": 300,
                 "chat_template_kwargs": {"enable_thinking": False},
-                "messages": [{"role": "system", "content": PROMPT},
-                             {"role": "user", "content": canonical(item)}]}
+                "messages": [{"role": "system", "content": PROMPTS[self.prompt_version]},
+                             {"role": "user", "content": canonical(user)}]}
         request = urllib.request.Request(self.endpoint, data=canonical(body).encode(),
                                          headers={"Content-Type": "application/json"})
         with urllib.request.urlopen(request, timeout=self.timeout) as response:
@@ -307,6 +343,7 @@ def main():
     submit.add_argument("--catalog", required=True)
     submit.add_argument("--lesson", required=True)
     submit.add_argument("--model-identity", required=True)
+    submit.add_argument("--prompt-version", choices=sorted(PROMPTS), default=PROMPT_VERSION)
     for name in ("status", "export", "one"):
         sub = commands.add_parser(name)
         sub.add_argument("--job", required=True)
@@ -317,13 +354,14 @@ def main():
     store = Store(args.db)
     if args.command == "submit-day":
         result = {"jobID": store.submit_day(json.loads(Path(args.catalog).read_text()),
-                                             args.lesson, args.model_identity)}
+                                             args.lesson, args.model_identity, args.prompt_version)}
     elif args.command == "status":
         result = store.status(args.job)
     elif args.command == "export":
         result = store.export_day(args.job)
     else:
-        result = process_one(store, args.job, ModelClient(args.endpoint, args.model))
+        result = process_one(store, args.job, ModelClient(args.endpoint, args.model,
+                                                          prompt_version=store.prompt_version(args.job)))
     print(json.dumps(result, ensure_ascii=False, indent=2))
 
 

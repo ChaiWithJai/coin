@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / 'outputs/coin/server'))
 sys.path.insert(0, '/Users/jaibhagat/code/prismml/outputs/ale-browser-latency/queue')
 import gpu_queue
-from source_translation_batch import Store, ModelClient, process_one
+from source_translation_batch import PROMPT_VERSION, PROMPTS, Store, ModelClient, process_one
 from telemetry import Outbox
 from mlflow_sink import MLflowSink
 
@@ -44,6 +44,7 @@ def main():
     parser.add_argument('--folder', type=Path)
     parser.add_argument('--lesson', default='basic-w2-d1')
     parser.add_argument('--limit', type=int, default=4)
+    parser.add_argument('--prompt-version', choices=sorted(PROMPTS), default=PROMPT_VERSION)
     args = parser.parse_args()
     if not 1 <= args.limit <= 30:
         parser.error('limit must be 1..30')
@@ -53,7 +54,7 @@ def main():
     catalog = json.loads(catalog_path.read_text())
     model_identity = f'gb10:8712/{MODEL_NAME}@sha256:{MODEL_SHA}'
     store = Store(folder / 'batch.sqlite')
-    job = store.submit_day(catalog, args.lesson, model_identity)
+    job = store.submit_day(catalog, args.lesson, model_identity, args.prompt_version)
     manifest_path = folder / 'manifest.json'
     manifest = {'jobID': job, 'lessonID': args.lesson,
                 'catalogSHA256': hashlib.sha256(catalog_path.read_bytes()).hexdigest(),
@@ -100,7 +101,8 @@ def main():
                 time.sleep(.2)
         else:
             raise RuntimeError('Model endpoint unavailable')
-        client = ModelClient(endpoint + '/v1/chat/completions', ids[0])
+        client = ModelClient(endpoint + '/v1/chat/completions', ids[0],
+                             prompt_version=args.prompt_version)
         processed = []
         for _ in range(args.limit):
             busy, latest = live_marker()
