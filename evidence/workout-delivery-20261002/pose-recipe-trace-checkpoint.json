@@ -1,0 +1,51 @@
+{
+  "checkpoint": "pose-recipe-trace-v1",
+  "recorded_at": "2026-10-02T23:09:00-04:00",
+  "change": {
+    "ios": "Each eligible aggregate pose record snapshots activity key, measurement ID, version and capability beside the activity-instance ID.",
+    "server": "The private coordinator validates complete recipe tuples and known squat, lunge, exchange and elapsed-only combinations before durable enqueue.",
+    "mlflow": "The visual_perception span carries the activity and recipe tuple; model_versions carries the joined activity measurement version.",
+    "backward_compatibility": "Previously queued pose records without recipe metadata remain valid."
+  },
+  "verification": {
+    "server_tests": {"passed": 72, "failed": 0},
+    "ios_unit_tests": {"passed": 89, "failed": 0},
+    "preceding_full_ios_suite_before_telemetry_only_change": {"passed": 99, "failed": 0},
+    "signed_generic_device_build": {
+      "bundle_id": "com.coinboxing.prototype",
+      "codesign_verified": true,
+      "executable_sha256": "92cd584942629d92083c216faeb7c4250126eace6d3f996b2ada8d794097c2b2"
+    },
+    "gb10": {
+      "service_sha256": "1821f8491afcd803859f443fe0556dd98ff9e13480b2a51e05a8de3a1edc963f",
+      "service_pid": 3073834,
+      "backup": "20261003T030648Z-activity-recipe-auth",
+      "outbox_delivered_after_smoke": 54
+    },
+    "synthetic_pose": {
+      "request_id": "e5449326-47f3-47e7-bc01-f13d708e8094",
+      "activity_instance_id": "abad6046-ac30-4a84-8685-e9caf0168da6",
+      "activity_key": "squats",
+      "measurement": "mediapipe-squat-angle-v1",
+      "capability": "rep_candidate",
+      "mlflow_trace_id": "tr-1c944e756f9b0be246975d45b7f6c93f",
+      "origin": "synthetic",
+      "decision": "silence"
+    }
+  },
+  "failed_attempts": [
+    "The first narrow restart used an unauthenticated health request. The new process started, the probe received 401, and the rollback restored the prior service. The authenticated retry deployed and verified the intended file."
+  ],
+  "limits": [
+    "The smoke event is synthetic and does not establish physical-camera recognition accuracy.",
+    "The recipe says which candidate detector owned the aggregate; it is not a verified exercise label.",
+    "Lakshmi remained unavailable, so this iOS build was not installed."
+  ],
+  "cost": {
+    "actual_billed_usd": null,
+    "model_inference_executed": false,
+    "status": "unknown",
+    "development_usage_run_id": "3f672021da49401a96d9b1dafd424ea1",
+    "coverage": "observed per-response usage only; no hidden reasoning or full inference payload capture"
+  }
+}

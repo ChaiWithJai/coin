@@ -683,6 +683,10 @@ struct PoseSampleRecord: Codable, Identifiable {
     let blockID: UUID
     let sampledAt: Date
     var activityInstanceID: UUID? = nil
+    var activityKey: String? = nil
+    var measurementID: String? = nil
+    var measurementVersion: String? = nil
+    var measurementCapability: String? = nil
     let landmarkCount: Int
     let sourceVersion: String
     var visibleLandmarkCount: Int? = nil

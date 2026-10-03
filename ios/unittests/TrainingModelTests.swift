@@ -476,6 +476,10 @@ private final class PoseWindowURLProtocol: URLProtocol {
                                       framingReady: false, captureToPoseMs: 38.5,
                                       wristTravelBodyWidths: 0.42, lowerBodyVisible: true)
         sample.activityInstanceID = activityID
+        sample.activityKey = "mobility"
+        sample.measurementID = "session-clock"
+        sample.measurementVersion = "v1"
+        sample.measurementCapability = "elapsed_only"
         sample.uploadLanguage = "fr"
         store.recordPoseWindows(sessionID: sessionID, windows: [sample])
         let configuration = URLSessionConfiguration.ephemeral
@@ -492,6 +496,10 @@ private final class PoseWindowURLProtocol: URLProtocol {
         XCTAssertEqual(store.data.sessions.first?.poseWindows?.first?.remoteEventID, sample.id.uuidString)
         XCTAssertEqual(PoseWindowURLProtocol.lastPayload?["session_id"] as? String, sessionID.uuidString)
         XCTAssertEqual(PoseWindowURLProtocol.lastPayload?["activity_instance_id"] as? String, activityID.uuidString)
+        XCTAssertEqual(PoseWindowURLProtocol.lastPayload?["activity_key"] as? String, "mobility")
+        XCTAssertEqual(PoseWindowURLProtocol.lastPayload?["measurement_id"] as? String, "session-clock")
+        XCTAssertEqual(PoseWindowURLProtocol.lastPayload?["measurement_version"] as? String, "v1")
+        XCTAssertEqual(PoseWindowURLProtocol.lastPayload?["measurement_capability"] as? String, "elapsed_only")
         XCTAssertEqual(PoseWindowURLProtocol.lastPayload?["runtime_origin"] as? String, "simulator")
         XCTAssertEqual(PoseWindowURLProtocol.lastPayload?["visible_landmark_count"] as? Int, 12)
         XCTAssertEqual(PoseWindowURLProtocol.lastPayload?["language"] as? String, "fr")

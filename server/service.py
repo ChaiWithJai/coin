@@ -3,7 +3,7 @@ import os,json,time,secrets,threading,urllib.request,sqlite3,uuid
 from pathlib import Path
 from contextlib import asynccontextmanager,closing
 from fastapi import FastAPI,Header,HTTPException,Depends
-from pydantic import BaseModel,Field,model_serializer
+from pydantic import BaseModel,Field,model_serializer,model_validator
 from typing import Literal
 from telemetry import Outbox
 from drills import eligible,render_selection,VERSION
@@ -40,6 +40,10 @@ class PoseWindow(BaseModel):
     session_id:uuid.UUID
     block_id:uuid.UUID
     activity_instance_id:uuid.UUID|None=None
+    activity_key:str|None=Field(default=None,min_length=1,max_length=100,pattern=r'^[a-z0-9_]+$')
+    measurement_id:Literal['session-clock','mediapipe-squat-angle','mediapipe-lunge-angle','coin-exchange-tracker']|None=None
+    measurement_version:Literal['v1']|None=None
+    measurement_capability:Literal['elapsed_only','rep_candidate','exchange_candidate']|None=None
     runtime_origin:Literal['physical_device','simulator','synthetic','replay','unknown']='unknown'
     sequence:int=Field(ge=0)
     sampled_at_ms:int=Field(ge=0)
@@ -52,6 +56,24 @@ class PoseWindow(BaseModel):
     wrist_travel_body_widths:float|None=Field(default=None,ge=0,le=10)
     lower_body_visible:bool|None=None
     source_version:Literal['mediapipe-pose-full-v1']
+
+    @model_validator(mode='after')
+    def valid_activity_recipe(self):
+        recipe=(self.activity_key,self.measurement_id,self.measurement_version,self.measurement_capability)
+        if any(value is not None for value in recipe):
+            if self.activity_instance_id is None or any(value is None for value in recipe):
+                raise ValueError('Activity recipe requires an activity instance and all recipe fields')
+            expected={
+                'mediapipe-squat-angle':('squats','rep_candidate'),
+                'mediapipe-lunge-angle':('lunges','rep_candidate'),
+            }
+            if self.measurement_id in expected and (self.activity_key,self.measurement_capability)!=expected[self.measurement_id]:
+                raise ValueError('Rep recipe does not match activity')
+            if self.measurement_id=='coin-exchange-tracker' and (self.activity_key not in {'boxing','shadowboxing'} or self.measurement_capability!='exchange_candidate'):
+                raise ValueError('Exchange recipe does not match activity')
+            if self.measurement_id=='session-clock' and self.measurement_capability!='elapsed_only':
+                raise ValueError('Clock recipe must be elapsed-only')
+        return self
 
 class CompletionSegment(BaseModel):
     segment_id:uuid.UUID
@@ -446,13 +468,19 @@ def pose_window(body:PoseWindow):
             'source':'pose_window_observation_only','sequence':body.sequence}
     payload={'session_id':str(body.session_id),'window_id':str(body.request_id),
              'activity_instance_id':str(body.activity_instance_id) if body.activity_instance_id else None,
+             'activity_key':body.activity_key,
              'origin':body.runtime_origin,
              'received_at':time.time(),'model_versions':{'pose':body.source_version,
+                                                         'activity_measurement':f'{body.measurement_id}-{body.measurement_version}' if body.measurement_id else None,
                                                          'motion_feature':'wrist-travel-v1' if body.wrist_travel_body_widths is not None else None},
              'decision':result,
              'stages':[{'name':'visual_perception','span_type':'TOOL',
                         'inputs':{'block_id':str(body.block_id),
                                   'activity_instance_id':str(body.activity_instance_id) if body.activity_instance_id else None,
+                                  'activity_key':body.activity_key,
+                                  'measurement_id':body.measurement_id,
+                                  'measurement_version':body.measurement_version,
+                                  'measurement_capability':body.measurement_capability,
                                   'runtime_origin':body.runtime_origin,
                                   'sequence':body.sequence,
                                   'sampled_at_ms':body.sampled_at_ms,'language':body.language,

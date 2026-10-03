@@ -73,7 +73,9 @@ class WorkoutCompletionTests(unittest.TestCase):
         import json
         activity_id=uuid.uuid4()
         body=self.service.PoseWindow(request_id=uuid.uuid4(),session_id=self.session_id,
-            block_id=self.block_id,activity_instance_id=activity_id,runtime_origin='synthetic',sequence=1,sampled_at_ms=1000,
+            block_id=self.block_id,activity_instance_id=activity_id,activity_key='squats',
+            measurement_id='mediapipe-squat-angle',measurement_version='v1',measurement_capability='rep_candidate',
+            runtime_origin='synthetic',sequence=1,sampled_at_ms=1000,
             language='fr',landmark_count=33,visible_landmark_count=20,
             framing_ready=False,source_version='mediapipe-pose-full-v1')
         self.service.pose_window(body)
@@ -82,7 +84,22 @@ class WorkoutCompletionTests(unittest.TestCase):
         self.assertEqual(payload['activity_instance_id'],str(activity_id))
         self.assertEqual(payload['origin'],'synthetic')
         self.assertEqual(payload['stages'][0]['inputs']['activity_instance_id'],str(activity_id))
+        self.assertEqual(payload['stages'][0]['inputs']['activity_key'],'squats')
+        self.assertEqual(payload['stages'][0]['inputs']['measurement_id'],'mediapipe-squat-angle')
+        self.assertEqual(payload['model_versions']['activity_measurement'],'mediapipe-squat-angle-v1')
         self.assertEqual(payload['decision']['action'],'silence')
+
+    def test_pose_window_rejects_partial_or_mismatched_activity_recipe(self):
+        from pydantic import ValidationError
+        base=dict(request_id=uuid.uuid4(),session_id=self.session_id,block_id=self.block_id,
+                  activity_instance_id=uuid.uuid4(),runtime_origin='synthetic',sequence=1,sampled_at_ms=1000,
+                  language='en',landmark_count=33,visible_landmark_count=20,framing_ready=True,
+                  source_version='mediapipe-pose-full-v1')
+        with self.assertRaises(ValidationError):
+            self.service.PoseWindow(**base,activity_key='squats')
+        with self.assertRaises(ValidationError):
+            self.service.PoseWindow(**base,activity_key='lunges',measurement_id='mediapipe-squat-angle',
+                                    measurement_version='v1',measurement_capability='rep_candidate')
 
     def test_activity_lineage_is_kept_without_claiming_recognition(self):
         selected=dict(instance_id=uuid.uuid4(),block_id=self.block_id,source_block_id='basic-w1-d6-p8-s1-1',

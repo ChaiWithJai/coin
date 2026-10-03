@@ -546,6 +546,10 @@ struct WorkoutCameraView: UIViewRepresentable {
             "runtime_origin": origin.rawValue,
         ]
         if let activityID = sample.activityInstanceID { body["activity_instance_id"] = activityID.uuidString }
+        if let activityKey = sample.activityKey { body["activity_key"] = activityKey }
+        if let measurementID = sample.measurementID { body["measurement_id"] = measurementID }
+        if let measurementVersion = sample.measurementVersion { body["measurement_version"] = measurementVersion }
+        if let capability = sample.measurementCapability { body["measurement_capability"] = capability }
         if let facing = sample.cameraFacing { body["camera_facing"] = facing }
         if let latency = sample.captureToPoseMs { body["capture_to_pose_ms"] = latency }
         if let travel = sample.wristTravelBodyWidths { body["wrist_travel_body_widths"] = travel }
@@ -1027,8 +1031,15 @@ struct LiveWorkoutView: View {
             }
             if let last = lastPoseRecordAt, sample.sampledAt.timeIntervalSince(last) < 2 { return }
             lastPoseRecordAt = sample.sampledAt
+            let currentInstance = activityInstance(for: current)
+            let ownerID = WorkoutActivityRouting.poseOwner(currentInstance, sampledAt: sample.sampledAt)
+            let ownedInstance = ownerID == currentInstance?.id ? currentInstance : nil
             pendingPoseWindows.append(PoseSampleRecord(blockID: current.block.id, sampledAt: sample.sampledAt,
-                                                  activityInstanceID: WorkoutActivityRouting.poseOwner(activityInstance(for: current), sampledAt: sample.sampledAt),
+                                                  activityInstanceID: ownerID,
+                                                  activityKey: ownedInstance?.exerciseKey,
+                                                  measurementID: ownedInstance?.measurement.id,
+                                                  measurementVersion: ownedInstance?.measurement.version,
+                                                  measurementCapability: ownedInstance?.measurement.capability.rawValue,
                                                   landmarkCount: sample.landmarkCount, sourceVersion: "mediapipe-pose-full-v1",
                                                   visibleLandmarkCount: sample.visibleLandmarkCount, framingReady: sample.framingReady,
                                                   captureToPoseMs: sample.captureToPoseMs,
