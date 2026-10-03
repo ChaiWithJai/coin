@@ -8,7 +8,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from batch_jobs import Store, digest, normalize_day_six_items
+from batch_jobs import Store, catalog_source_item_manifest, digest, normalize_day_six_items
 
 
 class SourceItemBatchTests(unittest.TestCase):
@@ -83,7 +83,18 @@ class SourceItemBatchTests(unittest.TestCase):
         changed['catalogVersion'] += '-candidate'
         self.assertNotEqual(p['proposal_id'], normalize_day_six_items(changed)[0]['proposal_id'])
 
-    def test_separate_idempotent_job_preserves_baseline_and_calls_no_model(self):
+    def test_catalog_manifest_pins_all_source_items_and_stable_ids(self):
+        manifest, proposals = catalog_source_item_manifest(self.catalog)
+        self.assertEqual(manifest['source_item_count'], 1773)
+        self.assertEqual(len(proposals), 1773)
+        self.assertEqual(len({p['proposal_id'] for p in proposals}), 1773)
+        self.assertEqual(manifest['catalog_sha256'], digest(self.catalog))
+        self.assertEqual(manifest['source_sha256'], sorted({w['sourceSHA256'] for w in self.catalog['workouts']}))
+        self.assertTrue(all(p['catalog_sha256'] == manifest['catalog_sha256'] for p in proposals))
+        self.assertTrue(all(p['runtime_eligible'] is False for p in proposals))
+        self.assertEqual(catalog_source_item_manifest(self.catalog), (manifest, proposals))
+
+    def test_separate_idempotent_job_is_atomic_and_queues_only_fallbacks(self):
         with tempfile.TemporaryDirectory() as folder:
             store = Store(Path(folder) / 'batch.sqlite')
             baseline_id = store.submit_catalog(self.catalog)
@@ -94,34 +105,99 @@ class SourceItemBatchTests(unittest.TestCase):
             self.assertNotEqual(job_id, baseline_id)
             self.assertEqual(store.inspect(baseline_id), baseline)
             job = store.inspect(job_id)[0]
-            self.assertEqual(job['state'], 'complete')
-            self.assertEqual(len(job['items']), 10)
-            for item in job['items']:
+            self.assertEqual(job['state'], 'pending')
+            self.assertEqual(len(job['items']), 1773)
+            complete = [item for item in job['items'] if item['state'] == 'complete']
+            pending = [item for item in job['items'] if item['state'] == 'pending']
+            self.assertGreater(len(complete), 0)
+            self.assertGreater(len(pending), 0)
+            for item in complete:
                 output = json.loads(item['output'])
                 self.assertEqual(item['attempts'], 1)
                 self.assertFalse(output['inference_performed'])
                 self.assertEqual(output['usage']['total_tokens'], 0)
                 self.assertIsNone(output['actual_cost_usd'])
                 self.assertNotIn('raw_response', output)
+            self.assertTrue(all(item['attempts'] == 0 and item['output'] is None for item in pending))
+
+            malformed = copy.deepcopy(self.catalog)
+            malformed['workouts'][-1]['blocks'][-1]['sourceItems'][-1]['text'] = ''
+            before = store.inspect()
+            with self.assertRaises(ValueError):
+                store.submit_source_items(malformed)
+            self.assertEqual(store.inspect(), before)
 
     def test_export_records_tool_proposals_once_without_promoting_to_activity_evidence(self):
         with tempfile.TemporaryDirectory() as folder:
             store = Store(Path(folder) / 'batch.sqlite')
-            store.submit_source_items(self.catalog)
+            job_id = store.submit_source_items(self.catalog)
             outbox = Path(folder) / 'outbox.sqlite'
-            self.assertEqual(store.export(outbox), 10)
+            completed = sum(i['state'] == 'complete' for i in store.inspect(job_id)[0]['items'])
+            self.assertEqual(store.export(outbox), completed)
             # Existing export API counts exportable attempts, including already queued ones.
-            self.assertEqual(store.export(outbox), 10)
+            self.assertEqual(store.export(outbox), completed)
             with sqlite3.connect(outbox) as db:
                 rows = db.execute('SELECT payload FROM events').fetchall()
-            self.assertEqual(len(rows), 10)
+            self.assertEqual(len(rows), completed)
             for row in rows:
                 event = json.loads(row[0])
                 self.assertEqual(event['provenance']['origin'], 'source_curriculum')
-                stage = event['stages'][0]
-                self.assertEqual(stage['name'], 'batch.source_item')
-                self.assertEqual(stage['span_type'], 'TOOL')
-                self.assertEqual(stage['outputs']['result']['evidence_status'], 'prescription_only_not_observed_activity')
+                stages = {stage['name']: stage for stage in event['stages']}
+                self.assertEqual(list(stages), [
+                    'source_item.normalization', 'source_item.gate_decision',
+                    'source_item.human_review', 'source_item.promotion_decision'])
+                self.assertNotIn('source_item.model_inference', stages)
+                self.assertEqual(stages['source_item.normalization']['span_type'], 'TOOL')
+                gate = stages['source_item.gate_decision']['outputs']
+                self.assertEqual(gate['decision'], 'requires_human_review')
+                self.assertEqual(gate['evidence_status'], 'source_prescription_not_observed_activity')
+                self.assertEqual(stages['source_item.human_review']['outputs']['state'], 'not_performed')
+                self.assertEqual(stages['source_item.promotion_decision']['outputs'], {
+                    'decision': 'not_promoted', 'reason': 'human_review_not_performed'})
+
+    def test_source_item_export_adds_model_span_only_when_inference_was_recorded(self):
+        from batch_jobs import source_item_export_stages
+        base = {'result': {'source_item_id': 'one', 'normalization_status': 'candidate',
+                           'evidence_status': 'source_only', 'review_state': 'model_proposal'},
+                'duration_ms': 12, 'usage': {'total_tokens': 7}}
+        without = source_item_export_stages(dict(base, inference_performed=False), 'job', 'item', {})
+        self.assertNotIn('source_item.model_inference', [stage['name'] for stage in without])
+        with_model = source_item_export_stages(dict(base, inference_performed=True), 'job', 'item', {'model': 'fixture'})
+        inference = next(stage for stage in with_model if stage['name'] == 'source_item.model_inference')
+        self.assertEqual(inference['span_type'], 'LLM')
+        self.assertTrue(inference['outputs']['inference_performed'])
+        self.assertEqual(inference['outputs']['model_versions'], {'model': 'fixture'})
+
+    def test_export_writes_each_lifecycle_stage_from_a_stored_attempt(self):
+        with tempfile.TemporaryDirectory() as folder:
+            store = Store(Path(folder) / 'batch.sqlite')
+            proposal = {'proposal_id': 'proposal', 'source_item_id': 'source',
+                        'normalization_version': 'fixture-v1',
+                        'normalization_status': 'candidate',
+                        'evidence_status': 'source_only',
+                        'review_state': 'model_proposal_not_promoted'}
+            output = {'result': proposal, 'inference_performed': True,
+                      'usage': {'total_tokens': 3}, 'duration_ms': 8}
+            with store.db() as db:
+                db.execute('INSERT INTO jobs VALUES(?,?,?,?,?)',
+                           ('job', '{}', json.dumps({'origin': 'source_curriculum',
+                                                    'source_id': 'fixture'}), 'complete', 0))
+                db.execute('INSERT INTO items(job_id,item_id,kind,input,state,attempts,output) VALUES(?,?,?,?,?,?,?)',
+                           ('job', 'source-item:proposal', 'source_item', '{}', 'complete', 1,
+                            json.dumps(output)))
+                db.execute('INSERT INTO attempts VALUES(?,?,?,?,?,?,?)',
+                           ('job', 'source-item:proposal', 1, 'complete', json.dumps(output), None,
+                            json.dumps({'model': 'fixture'})))
+            outbox = Path(folder) / 'outbox.sqlite'
+            self.assertEqual(store.export(outbox), 1)
+            with sqlite3.connect(outbox) as db:
+                event = json.loads(db.execute('SELECT payload FROM events').fetchone()[0])
+            names = [stage['name'] for stage in event['stages']]
+            self.assertEqual(names, ['source_item.normalization', 'source_item.model_inference',
+                                     'source_item.gate_decision', 'source_item.human_review',
+                                     'source_item.promotion_decision'])
+            self.assertEqual(event['stages'][-2]['outputs']['state'], 'not_performed')
+            self.assertEqual(event['stages'][-1]['outputs']['decision'], 'not_promoted')
 
 
 if __name__ == '__main__':

@@ -1,0 +1,62 @@
+{
+  "recorded_at": "2026-10-03T00:09:32-04:00",
+  "checkpoint": "atomic-source-item-batch-and-review-queue",
+  "atomic_job": {
+    "job_id": "1de524c77fca935e0cff5054e26df8e9a4bbb4b65faea1cd9e664545a816c5f7",
+    "catalog_source_items": 1773,
+    "catalog_workouts": 70,
+    "deterministic_complete_at_submission": 441,
+    "model_fallback_queued_at_submission": 1332,
+    "state_at_recording": "running",
+    "complete_at_last_usage_probe": 680,
+    "pending_at_last_usage_probe": 1093,
+    "observed_model_calls_at_last_usage_probe": 196,
+    "observed_cache_hits_at_last_usage_probe": 43,
+    "observed_total_tokens_at_last_usage_probe": 17959,
+    "unknown_proposals_at_last_usage_probe": 144,
+    "worker_pid": 3261091,
+    "runtime_eligible": false,
+    "promoted_proposals": 0
+  },
+  "lineage": {
+    "catalog_hash_pinned": true,
+    "source_hashes_pinned": 70,
+    "source_text_hashes_pinned": true,
+    "stable_proposal_ids": true,
+    "atomic_idempotent_submission": true
+  },
+  "mlflow_stage_contract": [
+    "source_item.normalization",
+    "source_item.model_inference_when_performed",
+    "source_item.gate_decision",
+    "source_item.human_review",
+    "source_item.promotion_decision"
+  ],
+  "review_queue": {
+    "source_job_id": "350987a377fb33498544d2ff4e5d47fc946262b989236b9129a6f32ed40c6bcb",
+    "timed_unknown_count": 43,
+    "artifact": "timed-unknown-review-queue-current.json",
+    "artifact_sha256": "1501ec7b47b5a1773a32eeeb74a5b93b0bad9acd8ec9e726ed5a86386e18d1ca",
+    "ordering": ["basic_program_first", "prescribed_seconds_descending", "stable_source_ids"],
+    "contains_invented_labels": false
+  },
+  "verification": {
+    "batch_and_source_item_tests": "33/33 passed",
+    "server_root_tests": "14/14 passed",
+    "server_package_tests": "78/78 passed",
+    "python_compile": "passed",
+    "diff_check": "passed"
+  },
+  "development_usage": {
+    "mlflow_run_id": "5ac4c258c1134e03b0b925153cb5efe1",
+    "observed_total_tokens": 490853451,
+    "actual_billed_usd": null,
+    "scope": "Observed per-response records only; no hidden reasoning or full inference payload capture."
+  },
+  "limits": [
+    "The atomic GB10 job was still running at checkpoint time; later results are not represented by the recorded counts.",
+    "All atomic classifications remain proposals and cannot alter live runtime behavior.",
+    "Human review and generated runtime overlay remain unfinished.",
+    "Actual billed USD is unavailable and therefore unknown, not zero."
+  ]
+}

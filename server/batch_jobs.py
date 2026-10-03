@@ -19,7 +19,7 @@ from contextlib import contextmanager
 
 VERSION = 'completed-round-batch-v2.1'
 CURRICULUM_VERSION = 'source-annotation-atomic-v2.1'
-SOURCE_ITEM_VERSION = 'source-item-normalization-v1'
+SOURCE_ITEM_VERSION = 'source-item-normalization-v2'
 MAX_EXCHANGES = 200
 MAX_INPUT_BYTES = 2_000_000
 
@@ -39,6 +39,49 @@ def encoded(value):
 
 def digest(value):
     return hashlib.sha256(encoded(value).encode()).hexdigest()
+
+
+def source_item_export_stages(output, job_id, item_id, model_versions):
+    """Describe source-item lifecycle steps without inventing approvals."""
+    result = output.get('result') if isinstance(output.get('result'), dict) else {}
+    common = {'job_id': job_id, 'item_id': item_id}
+    stages = [{
+        'name': 'source_item.normalization', 'span_type': 'TOOL',
+        'inputs': common,
+        'outputs': {
+            key: result.get(key) for key in (
+                'proposal_id', 'source_item_id', 'normalization_version',
+                'normalization_status', 'exercise_key', 'measurement')
+            if key in result
+        },
+        'duration_ms': output.get('duration_ms'),
+    }]
+    if output.get('inference_performed') is True:
+        stages.append({
+            'name': 'source_item.model_inference', 'span_type': 'LLM',
+            'inputs': common,
+            'outputs': {'inference_performed': True,
+                        'model_versions': model_versions,
+                        'usage': output.get('usage', {})},
+            'duration_ms': output.get('duration_ms'),
+        })
+    stages.extend([{
+        'name': 'source_item.gate_decision', 'span_type': 'TOOL',
+        'inputs': common,
+        'outputs': {'decision': 'requires_human_review',
+                    'normalization_status': result.get('normalization_status', 'not_evaluated'),
+                    'evidence_status': result.get('evidence_status', 'not_evaluated')},
+    }, {
+        'name': 'source_item.human_review', 'span_type': 'TOOL',
+        'inputs': common,
+        'outputs': {'state': 'not_performed',
+                    'proposal_review_state': result.get('review_state', 'unreviewed')},
+    }, {
+        'name': 'source_item.promotion_decision', 'span_type': 'TOOL',
+        'inputs': common,
+        'outputs': {'decision': 'not_promoted', 'reason': 'human_review_not_performed'},
+    }])
+    return stages
 
 
 def normalize_day_six_items(catalog):
@@ -113,6 +156,76 @@ def normalize_day_six_items(catalog):
                           'review_state': 'source_rule_proposal_not_promoted',
                           'evidence_status': 'prescription_only_not_observed_activity'})
     return proposals
+
+
+def catalog_source_item_manifest(catalog):
+    """Pin every source item before any inference or database mutation."""
+    if not isinstance(catalog, dict) or not isinstance(catalog.get('workouts'), list):
+        raise ValueError('Catalog must contain workouts')
+    catalog_sha = digest(catalog)
+    proposals, identities, source_hashes = [], set(), set()
+    for workout in catalog['workouts']:
+        workout_id = workout.get('id')
+        source_sha = workout.get('sourceSHA256')
+        if not isinstance(workout_id, str) or not workout_id:
+            raise ValueError('Source item workout needs an id')
+        if not isinstance(source_sha, str) or not re.fullmatch(r'[0-9a-fA-F]{64}', source_sha):
+            raise ValueError('Source item workout needs an immutable SHA-256 source hash')
+        source_hashes.add(source_sha.lower())
+        for block in workout.get('blocks', []):
+            block_id = block.get('id')
+            items = block.get('sourceItems', [])
+            if not isinstance(items, list):
+                raise ValueError('sourceItems must be a list')
+            seen = set()
+            for item in items:
+                item_id, text = item.get('id'), item.get('text')
+                if not isinstance(block_id, str) or not block_id or not isinstance(item_id, str) or not item_id:
+                    raise ValueError('Source item needs block and item IDs')
+                if item_id in seen:
+                    raise ValueError('Duplicate source item ID within block')
+                seen.add(item_id)
+                if not isinstance(text, str) or not text.strip() or len(text) > 2000:
+                    raise ValueError('Invalid bounded source item text')
+                identity = (workout_id, block_id, item_id)
+                if identity in identities:
+                    raise ValueError('Duplicate source item identity')
+                identities.add(identity)
+                source_text_sha = digest(text)
+                activity = explicit_activity(text, block.get('kind'))
+                proposal_id = digest({'catalog_sha256': catalog_sha, 'source_sha256': source_sha.lower(),
+                                      'workout_id': workout_id, 'source_block_id': block_id,
+                                      'source_item_id': item_id, 'source_text_sha256': source_text_sha,
+                                      'normalization_version': SOURCE_ITEM_VERSION})
+                proposal = {
+                    'proposal_id': proposal_id, 'workout_id': workout_id,
+                    'catalog_sha256': catalog_sha, 'source_sha256': source_sha.lower(),
+                    'source_block_id': block_id, 'source_item_id': item_id,
+                    'source_text': text, 'source_text_sha256': source_text_sha,
+                    'source_url': block.get('sourceURL', workout.get('sourceURL')),
+                    'reference_urls': item.get('referenceURLs', []),
+                    'demo_urls': item.get('demoURLs', []), 'source_kind': block.get('kind'),
+                    'normalization_version': SOURCE_ITEM_VERSION, 'runtime_eligible': False,
+                    'evidence_status': 'source_prescription_not_observed_activity',
+                }
+                if activity:
+                    value, quote = activity
+                    proposal.update({'activity': value, 'evidence_quote': quote,
+                                     'annotation_origin': 'explicit_source_rule',
+                                     'review_state': 'source_rule_proposal_not_promoted'})
+                else:
+                    proposal.update({'activity': 'unknown', 'evidence_quote': None,
+                                     'annotation_origin': 'model_fallback_pending',
+                                     'review_state': 'model_proposal_not_promoted'})
+                proposals.append(proposal)
+    if not proposals:
+        raise ValueError('Catalog contains no source items')
+    manifest = {'catalog_sha256': catalog_sha, 'catalog_version': catalog.get('catalogVersion'),
+                'normalization_version': SOURCE_ITEM_VERSION, 'source_item_count': len(proposals),
+                'source_sha256': sorted(source_hashes),
+                'proposal_ids': [p['proposal_id'] for p in proposals]}
+    manifest['manifest_sha256'] = digest(manifest)
+    return manifest, proposals
 
 
 def validate_round(record):
@@ -243,26 +356,42 @@ class Store:
         return job_id
 
     def submit_source_items(self, catalog):
-        """Create a separate completed deterministic job; section-level jobs stay intact."""
-        proposals = normalize_day_six_items(catalog)
-        provenance = {'origin': 'source_curriculum', 'source_id': 'basic-w1-d6',
-                      'catalog_sha256': digest(catalog), 'annotation_version': SOURCE_ITEM_VERSION}
-        job_id = digest({'provenance': provenance, 'proposal_ids': [p['proposal_id'] for p in proposals]})
+        """Atomically create a resumable job for the catalog's complete source-item manifest."""
+        manifest, proposals = catalog_source_item_manifest(catalog)
+        provenance = {'origin': 'source_curriculum', 'source_id': catalog.get('sourceURL'),
+                      'catalog_sha256': manifest['catalog_sha256'],
+                      'source_sha256': manifest['source_sha256'],
+                      'source_item_manifest_sha256': manifest['manifest_sha256'],
+                      'source_item_count': manifest['source_item_count'],
+                      'annotation_version': SOURCE_ITEM_VERSION,
+                      'runtime_promotion': False}
+        job_id = digest({'provenance': provenance, 'manifest_sha256': manifest['manifest_sha256']})
         with self.db() as db:
-            if db.execute('SELECT 1 FROM jobs WHERE id=?', (job_id,)).fetchone():
+            row = db.execute('SELECT input,provenance FROM jobs WHERE id=?', (job_id,)).fetchone()
+            if row:
+                if row['input'] != encoded(catalog) or row['provenance'] != encoded(provenance):
+                    raise ValueError('Source-item job ID reused with different pinned input')
                 return job_id
             db.execute('INSERT INTO jobs VALUES(?,?,?,?,?)',
-                       (job_id, encoded(catalog), encoded(provenance), 'complete', time.time()))
+                       (job_id, encoded(catalog), encoded(provenance), 'pending', time.time()))
             for proposal in proposals:
                 item_id = 'source-item:' + proposal['proposal_id']
-                output = encoded({'result': proposal, 'prompt_version': SOURCE_ITEM_VERSION,
-                                  'inference_performed': False, 'cache_hit': False,
-                                  'usage': {'prompt_tokens': 0, 'completion_tokens': 0, 'total_tokens': 0},
-                                  'actual_cost_usd': None, 'estimated_cost_usd': None, 'duration_ms': 0})
-                db.execute('INSERT INTO items(job_id,item_id,kind,input,state,attempts,output) VALUES(?,?,?,?,?,?,?)',
-                           (job_id, item_id, 'source_item', encoded(proposal), 'complete', 1, output))
-                db.execute('INSERT INTO attempts VALUES(?,?,?,?,?,?,?)',
-                           (job_id, item_id, 1, 'complete', output, None, '{}'))
+                deterministic = proposal['annotation_origin'] == 'explicit_source_rule'
+                if deterministic:
+                    output = encoded({'result': proposal, 'prompt_version': SOURCE_ITEM_VERSION,
+                                      'inference_performed': False, 'cache_hit': False,
+                                      'usage': {'prompt_tokens': 0, 'completion_tokens': 0, 'total_tokens': 0},
+                                      'actual_cost_usd': None, 'estimated_cost_usd': None, 'duration_ms': 0})
+                    db.execute('INSERT INTO items(job_id,item_id,kind,input,state,attempts,output) VALUES(?,?,?,?,?,?,?)',
+                               (job_id, item_id, 'source_item', encoded(proposal), 'complete', 1, output))
+                    db.execute('INSERT INTO attempts VALUES(?,?,?,?,?,?,?)',
+                               (job_id, item_id, 1, 'complete', output, None, '{}'))
+                else:
+                    db.execute('INSERT INTO items(job_id,item_id,kind,input) VALUES(?,?,?,?)',
+                               (job_id, item_id, 'source_item', encoded(proposal)))
+            pending = db.execute("SELECT count(*) FROM items WHERE job_id=? AND state='pending'", (job_id,)).fetchone()[0]
+            if not pending:
+                db.execute("UPDATE jobs SET state='complete' WHERE id=?", (job_id,))
         return job_id
 
     def control(self, job_id, action):
@@ -319,6 +448,71 @@ class Store:
                 'report_prompt_version': output.get('prompt_version') if output else None,
                 'evidence_status': 'offline_candidate_not_validated_coaching'}
 
+    def review_queue(self, job_id):
+        """Return timed unknown catalog proposals in a stable review order.
+
+        The queue only reflects stored, completed proposal outputs. It does not
+        classify pending/failed items or turn an unknown proposal into a label.
+        """
+        with self.db() as db:
+            job = db.execute('SELECT provenance FROM jobs WHERE id=?', (job_id,)).fetchone()
+            if not job:
+                raise ValueError('Unknown job')
+            provenance = json.loads(job['provenance'])
+            if provenance.get('origin') != 'source_curriculum':
+                raise ValueError('Review queue requires a source-curriculum job')
+            rows = db.execute("""SELECT item_id,input,output FROM items
+                WHERE job_id=? AND kind='workout' AND state='complete' AND output IS NOT NULL""",
+                              (job_id,)).fetchall()
+        queue = []
+        for row in rows:
+            source = json.loads(row['input'])
+            output = json.loads(row['output'])
+            result = output.get('result') or {}
+            block = source.get('block') or {}
+            seconds, rounds = block.get('durationSeconds'), block.get('rounds')
+            if (result.get('activity') != 'unknown' or block.get('completion') != 'timed'
+                    or not isinstance(seconds, int) or seconds <= 0
+                    or not isinstance(rounds, int) or rounds <= 0):
+                continue
+            source_items = block.get('sourceItems') or []
+            queue.append({
+                'job_id': job_id,
+                'catalog_sha256': provenance.get('catalog_sha256'),
+                'catalog_version': provenance.get('catalog_version'),
+                'annotation_version': provenance.get('annotation_version'),
+                'workout_id': source.get('workout_id'),
+                'workout_source_sha256': source.get('source_sha256'),
+                'source_block_id': block.get('id'),
+                'source_section_id': block.get('sourceSectionID'),
+                'source_item_ids': [item.get('id') for item in source_items],
+                'source_items': [{'id': item.get('id'), 'text': item.get('text')}
+                                 for item in source_items],
+                'source_text': block.get('sourceText'),
+                'source_text_sha256': source.get('source_text_sha256'),
+                'source_url': block.get('sourceURL'),
+                'seconds_per_round': seconds,
+                'rounds': rounds,
+                'prescribed_seconds': seconds * rounds,
+                'proposal_activity': 'unknown',
+                'review_state': result.get('review_state'),
+                'annotation_origin': result.get('annotation_origin'),
+            })
+        queue.sort(key=lambda item: (
+            0 if (item['workout_id'] or '').startswith('basic-') else 1,
+            -item['prescribed_seconds'], item['workout_id'] or '', item['source_block_id'] or ''))
+        for rank, item in enumerate(queue, 1):
+            item['rank'] = rank
+        return {
+            'schema_version': 1,
+            'job_id': job_id,
+            'count': len(queue),
+            'priority': ['basic_program_first', 'prescribed_seconds_descending',
+                         'workout_id_ascending', 'source_block_id_ascending'],
+            'evidence_status': 'stored_model_proposals_for_review_not_labels',
+            'items': queue,
+        }
+
     def _claim(self, owner, now, job_id=None):
         with self.db() as db:
             db.execute('BEGIN IMMEDIATE')
@@ -361,8 +555,11 @@ class Store:
             if row['kind'] == 'report':
                 data = report_context(data, self.inspect(row['job_id'])[0]['items'])
             cache_input = ({'sourceText': data['block']['sourceText'], 'kind': data['block'].get('kind')}
-                           if row['kind'] == 'workout' else data)
-            prompt_version = CURRICULUM_VERSION if row['kind'] == 'workout' else VERSION
+                           if row['kind'] == 'workout' else
+                           {'source_text': data['source_text'], 'source_kind': data.get('source_kind')}
+                           if row['kind'] == 'source_item' else data)
+            prompt_version = (CURRICULUM_VERSION if row['kind'] == 'workout' else
+                              SOURCE_ITEM_VERSION if row['kind'] == 'source_item' else VERSION)
             key = digest({'version': prompt_version, 'kind': row['kind'], 'input': cache_input, 'model': model})
             with self.db() as db:
                 cached = db.execute('SELECT output FROM cache WHERE key=?', (key,)).fetchone()
@@ -417,14 +614,18 @@ class Store:
                 # Attempt ID keeps failures and later successful retries as separate evidence.
                 event_id = str(uuid.uuid5(uuid.NAMESPACE_URL, f'coin-batch:{job["id"]}:{item["item_id"]}:{item["attempt"]}'))
                 output = json.loads(item['output']) if item['output'] else {'error': json.loads(item['error'])}
+                model_versions = json.loads(item['model'] or '{}')
+                stages = (source_item_export_stages(output, job['id'], item['item_id'], model_versions)
+                          if item['kind'] == 'source_item' else
+                          [{'name': 'batch.' + item['kind'],
+                            'span_type': 'TOOL' if output.get('cache_hit') or output.get('inference_performed') is False else 'LLM',
+                            'inputs': {'job_id': job['id'], 'item_id': item['item_id']},
+                            'outputs': output, 'duration_ms': output.get('duration_ms')}])
                 payload = {'session_id': job['provenance'].get('session_id', job['provenance']['source_id']),
                            'window_id': item['item_id'], 'provenance': job['provenance'],
-                           'model_versions': json.loads(item['model'] or '{}'),
+                           'model_versions': model_versions,
                            'decision': {'status': item['state'], 'batch_job_id': job['id']},
-                           'stages': [{'name': 'batch.' + item['kind'],
-                                       'span_type': 'TOOL' if output.get('cache_hit') or output.get('inference_performed') is False else 'LLM',
-                                       'inputs': {'job_id': job['id'], 'item_id': item['item_id']},
-                                       'outputs': output, 'duration_ms': output.get('duration_ms')}]}
+                           'stages': stages}
                 # Already exported attempts are immutable, even when exporter code improves.
                 with outbox.connect() as existing:
                     prior = existing.execute('SELECT 1 FROM events WHERE id=?', (event_id,)).fetchone()
@@ -545,7 +746,18 @@ class ModelClient:
 
     def run(self, kind, data):
         output_gate = None
-        if kind == 'workout':
+        if kind == 'source_item':
+            # Only unresolved single-item text reaches the model. The immutable
+            # lineage and proposal ID remain in data and are never model-authored.
+            system = ('Classify only the activity explicitly written in one boxing workout source item. '
+                      'A = solo boxing practice, punches, or defense without a partner. '
+                      'B = footwork, steps, or agility without punches. '
+                      'C = physical conditioning or strength. D = unclear, a heading, or a prescription. '
+                      'Return one letter only.')
+            body = {'messages': [{'role': 'system', 'content': system},
+                                 {'role': 'user', 'content': data['source_text']}],
+                    'max_tokens': 1, 'temperature': 0, 'logprobs': True, 'top_logprobs': 10}
+        elif kind == 'workout':
             block = data['block']
             explicit = explicit_activity(block['sourceText'], block.get('kind'))
             if explicit:
@@ -597,7 +809,22 @@ class ModelClient:
         with urllib.request.urlopen(req, timeout=60) as response:
             raw = json.load(response)
         content = raw['choices'][0]['message'].get('content') or ''
-        if kind == 'exchange':
+        if kind == 'source_item':
+            letter = content.strip()
+            choices = {'A': ('shadowboxing', r'punch|jab|hook|uppercut|shadow|slip|roll|defen[cs]'),
+                       'B': ('footwork', r'move|step|footwork|agility|direction'),
+                       'C': ('conditioning', r'condition|cardio|running|jump|rope|squat|push[ -]?up|burpee|climber|tuck')}
+            selection = choices.get(letter)
+            support = re.search(selection[1], data['source_text'], re.I) if selection else None
+            result = dict(data)
+            result.update({'activity': selection[0] if support else 'unknown',
+                           'evidence_quote': support.group(0) if support else None,
+                           'annotation_origin': 'model_choice_with_source_support' if support else 'model_choice_without_source_support',
+                           'review_state': 'model_proposal_not_promoted', 'runtime_eligible': False})
+            output_gate = {'valid_choice': letter in ('A', 'B', 'C', 'D'),
+                           'source_support_passed': bool(support),
+                           'runtime_promotion': False}
+        elif kind == 'exchange':
             letter = content.strip()
             labels = {'A': 'cue', 'B': 'quiet', 'C': 'review'}
             scores = {key: 0.0 for key in labels}
@@ -651,11 +878,17 @@ def main():
     submit.add_argument('file', help='JSON object with round and provenance keys')
     submit.add_argument('--job-id')
     sub.add_parser('submit-catalog').add_argument('file', help='Immutable compiled workout catalog JSON')
-    sub.add_parser('submit-source-items').add_argument('file', help='Normalize only the ten basic-w1-d6 source items, without inference')
+    sub.add_parser('submit-source-items').add_argument(
+        'file', help='Atomically submit every pinned catalog source item; deterministic rules complete before model fallback')
     for cmd in ('pause', 'resume', 'retry'):
         sub.add_parser(cmd).add_argument('job_id')
     sub.add_parser('status').add_argument('--job-id')
     sub.add_parser('result').add_argument('job_id')
+    review = sub.add_parser('review-queue')
+    review.add_argument('job_id')
+    review.add_argument('--output', help='Write the same deterministic JSON to this path')
+    review.add_argument('--expect-count', type=int,
+                        help='Fail without writing when the queue count differs')
     worker = sub.add_parser('work')
     worker.add_argument('--url', default='http://127.0.0.1:8712')
     worker.add_argument('--max-items', type=int, default=1)
@@ -677,6 +910,14 @@ def main():
         print(encoded(store.inspect(args.job_id)))
     elif args.command == 'result':
         print(encoded(store.result(args.job_id)))
+    elif args.command == 'review-queue':
+        review_queue = store.review_queue(args.job_id)
+        if args.expect_count is not None and review_queue['count'] != args.expect_count:
+            parser.error(f"review queue count {review_queue['count']} != expected {args.expect_count}")
+        payload = encoded(review_queue) + '\n'
+        if args.output:
+            Path(args.output).write_text(payload, encoding='utf-8')
+        print(payload, end='')
     elif args.command == 'export':
         print(encoded({'exported_items': store.export(args.outbox)}))
     else:

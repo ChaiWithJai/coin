@@ -323,6 +323,48 @@ class BatchTests(unittest.TestCase):
         self.assertEqual(result['result']['phase'], 'unspecified')
         self.assertEqual(result['result']['cue_id'], 'follow_source')
 
+    def test_review_queue_is_timed_unknown_source_lineage_in_stable_priority_order(self):
+        blocks = [
+            {'id': 'competitive-long', 'sourceText': 'COMPETITIVE UNKNOWN', 'completion': 'timed',
+             'durationSeconds': 180, 'rounds': 2, 'sourceSectionID': 'c-section',
+             'sourceURL': 'https://source/c', 'sourceItems': [{'id': 'c1', 'text': 'COMPETITIVE UNKNOWN'}]},
+            {'id': 'basic-short', 'sourceText': 'BASIC UNKNOWN', 'completion': 'timed',
+             'durationSeconds': 60, 'rounds': 1, 'sourceSectionID': 'b-section',
+             'sourceURL': 'https://source/b', 'sourceItems': [{'id': 'b1', 'text': 'BASIC UNKNOWN'}]},
+            {'id': 'basic-long', 'sourceText': 'BASIC LONG UNKNOWN', 'completion': 'timed',
+             'durationSeconds': 120, 'rounds': 3, 'sourceSectionID': 'b2-section',
+             'sourceURL': 'https://source/b2', 'sourceItems': [{'id': 'b2', 'text': 'BASIC LONG UNKNOWN'}]},
+            {'id': 'basic-manual', 'sourceText': 'MANUAL UNKNOWN', 'completion': 'manual',
+             'durationSeconds': None, 'rounds': None, 'sourceItems': []},
+        ]
+        catalog = {'sourceURL': 'https://source', 'catalogVersion': 'queue-fixture', 'workouts': [
+            {'id': 'competitive-w1-d1', 'sourceSHA256': 'competitive-sha', 'blocks': [blocks[0]]},
+            {'id': 'basic-w1-d1', 'sourceSHA256': 'basic-sha', 'blocks': blocks[1:]},
+        ]}
+        job = self.store.submit_catalog(catalog)
+        with self.store.db() as db:
+            for item in db.execute("SELECT item_id,input FROM items WHERE job_id=?", (job,)).fetchall():
+                source = json.loads(item['input'])
+                result = {'activity': 'unknown', 'review_state': 'model_proposal',
+                          'annotation_origin': 'model_choice_with_source_support'}
+                db.execute("UPDATE items SET state='complete',output=? WHERE job_id=? AND item_id=?",
+                           (json.dumps({'result': result}), job, item['item_id']))
+            db.execute("UPDATE jobs SET state='complete' WHERE id=?", (job,))
+        queue = self.store.review_queue(job)
+        self.assertEqual(queue['count'], 3)
+        self.assertEqual([item['source_block_id'] for item in queue['items']],
+                         ['basic-long', 'basic-short', 'competitive-long'])
+        self.assertEqual([item['prescribed_seconds'] for item in queue['items']], [360, 60, 360])
+        self.assertEqual(queue['items'][0]['source_items'],
+                         [{'id': 'b2', 'text': 'BASIC LONG UNKNOWN'}])
+        self.assertEqual(queue['items'][0]['workout_source_sha256'], 'basic-sha')
+        self.assertEqual(queue['items'][0]['proposal_activity'], 'unknown')
+
+    def test_review_queue_rejects_round_jobs(self):
+        job = self.store.submit(sample(), self.provenance)
+        with self.assertRaisesRegex(ValueError, 'source-curriculum'):
+            self.store.review_queue(job)
+
     def test_source_typo_preserved_in_supported_model_annotation(self):
         raw = {'choices': [{'message': {'content': 'A'}}]}
         class Response:
