@@ -93,8 +93,9 @@ struct WorkoutLesson: Decodable, Identifiable {
                                     sourceInstructions: roundItem.map { source.title + "\n" + $0.text } ?? source.instructions,
                                     sourceURL: source.sourceURL ?? sourceURL,
                                     sourceDemoURLs: roundItem.map { source.padRoundDemoURLs(for: $0) } ?? source.demoURLs,
-                                    sourceActivityKey: source.activityKey,
-                                    sourceBlockID: source.id, sourceItemID: roundItem?.id,
+                                    sourceActivityKey: source.reviewedWholeBlockActivityKey,
+                                    sourceBlockID: source.id,
+                                    sourceItemID: roundItem?.id ?? source.reviewedWholeBlockItemID,
                                     repetitionText: prescription.isEmpty ? nil : prescription,
                                     completionMode: source.completion,
                                     activityChoiceFamily: source.reviewedChoiceFamily)
@@ -134,6 +135,34 @@ struct WorkoutSourceItem: Decodable {
 }
 
 private extension WorkoutSourceBlock {
+    var reviewedWholeBlockItemID: String? {
+        activityKey == nil && reviewedWholeBlockActivityKey == "squat_jumps" ? sourceItems?.first?.id : nil
+    }
+
+    /// A complete one-line source prescription can identify the movement without
+    /// implying that a repetition was seen. This mapping is tied to exact items;
+    /// mixed conditioning sections must remain unassigned.
+    var reviewedWholeBlockActivityKey: String? {
+        if let activityKey { return activityKey }
+        let exact: [String: (item: String, text: String)] = [
+            "basic-w1-d1-p3-s6-2": ("p3-b18", "12 JUMP SQUATS"),
+            "basic-w2-d1-p10-s5-2": ("p10-b15", "12 JUMP SQUATS"),
+            "basic-w2-d5-p14-s3-2": ("p14-b7", "10 JUMP SQUATS"),
+            "basic-w3-d1-p17-s5-2": ("p17-b17", "12 JUMP SQUATS"),
+            "basic-w3-d5-p21-s3-2": ("p21-b6", "10 JUMP SQUATS"),
+            "basic-w4-d1-p24-s5-2": ("p24-b17", "12 JUMP SQUATS"),
+            "basic-w4-d5-p28-s3-2": ("p28-b6", "10 JUMP SQUATS"),
+            "basic-w5-d1-p31-s5-2": ("p31-b17", "12 JUMP SQUATS"),
+        ]
+        guard let match = exact[id], completion == .manual,
+              title == match.text, instructions == match.text,
+              sourceText == match.text,
+              sourceItems?.count == 1,
+              sourceItems?.first?.id == match.item,
+              sourceItems?.first?.text == match.text else { return nil }
+        return "squat_jumps"
+    }
+
     /// These source sections name a conditioning slot but no movement. Runtime
     /// choice is product metadata, not an edit to the source prescription.
     var reviewedChoiceFamily: String? {

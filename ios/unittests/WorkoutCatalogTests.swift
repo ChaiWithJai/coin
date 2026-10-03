@@ -96,6 +96,40 @@ import XCTest
         XCTAssertEqual(frontal.map(\.effectiveRestSeconds), [30, 30, 30, 0])
     }
 
+    func testExactJumpSquatPrescriptionsGetClockOnlyMovementLineage() throws {
+        let ids: Set<String> = ["basic-w1-d1-p3-s6-2", "basic-w2-d1-p10-s5-2",
+            "basic-w2-d5-p14-s3-2", "basic-w3-d1-p17-s5-2", "basic-w3-d5-p21-s3-2",
+            "basic-w4-d1-p24-s5-2", "basic-w4-d5-p28-s3-2", "basic-w5-d1-p31-s5-2"]
+        let blocks = WorkoutCatalog.shared.lessons.flatMap { $0.template().blocks }
+            .filter { ids.contains($0.sourceBlockID ?? "") }
+        XCTAssertEqual(blocks.count, ids.count)
+        for block in blocks {
+            XCTAssertEqual(block.sourceActivityKey, "squat_jumps")
+            XCTAssertNotNil(block.sourceItemID)
+            XCTAssertTrue(block.isManual)
+            XCTAssertEqual(block.effectiveSeconds, 0)
+            XCTAssertTrue(["10 JUMP SQUATS", "12 JUMP SQUATS"].contains(block.sourceInstructions ?? ""))
+            let instance = try XCTUnwrap(WorkoutActivityInstance.initial(for: block, at: Date()).first)
+            XCTAssertEqual(instance.selectionProvenance, .sourceSpecified)
+            XCTAssertEqual(instance.measurement.capability, .elapsedOnly)
+            XCTAssertEqual(instance.sourceBlockID, block.sourceBlockID)
+        }
+
+        var raw = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf:
+            try XCTUnwrap(Bundle.main.url(forResource: "WorkoutCatalog", withExtension: "json")))) as? [String: Any])
+        var lessons = try XCTUnwrap(raw["workouts"] as? [[String: Any]])
+        let lessonIndex = try XCTUnwrap(lessons.firstIndex { $0["id"] as? String == "basic-w1-d1" })
+        var sourceBlocks = try XCTUnwrap(lessons[lessonIndex]["blocks"] as? [[String: Any]])
+        let blockIndex = try XCTUnwrap(sourceBlocks.firstIndex { $0["id"] as? String == "basic-w1-d1-p3-s6-2" })
+        sourceBlocks[blockIndex]["instructions"] = "12 JUMP SQUATS AND BURPEES"
+        lessons[lessonIndex]["blocks"] = sourceBlocks
+        raw["workouts"] = lessons
+        let changed = try WorkoutCatalog.load(JSONSerialization.data(withJSONObject: raw))
+        let changedBlock = try XCTUnwrap(changed.lessons.first { $0.id == "basic-w1-d1" }?
+            .template().blocks.first { $0.sourceBlockID == "basic-w1-d1-p3-s6-2" })
+        XCTAssertNil(changedBlock.sourceActivityKey)
+    }
+
     func testExplicitStrengthItemsKeepTheirOwnPrescriptionAndProvenance() throws {
         let lesson = try XCTUnwrap(WorkoutCatalog.shared.lessons.first { $0.id == "basic-w1-d6" })
         let source = try XCTUnwrap(lesson.blocks.first)
@@ -179,7 +213,10 @@ import XCTest
             let blocks = lesson.template().blocks
             for source in lesson.blocks {
                 let mapped = blocks.filter { $0.sourceBlockID == source.id }
-                if mapped.contains(where: { $0.sourceItemID != nil }) {
+                if mapped.count == 1, mapped.first?.sourceActivityKey == "squat_jumps" {
+                    XCTAssertEqual(mapped.first?.sourceItemID, source.sourceItems?.first?.id)
+                    XCTAssertEqual(mapped.first?.sourceInstructions, source.instructions)
+                } else if mapped.contains(where: { $0.sourceItemID != nil }) {
                     if source.completion == .manual {
                         expandedSections += 1
                         expandedItems += mapped.count
@@ -210,7 +247,8 @@ import XCTest
         let active = WorkoutCatalog.shared.lessons.flatMap { $0.template().blocks }
             .compactMap { block -> (String, String)? in
                 guard let section = block.sourceBlockID, let item = block.sourceItemID,
-                      let key = block.sourceActivityKey else { return nil }
+                      let key = block.sourceActivityKey,
+                      ActivityMeasurementRecipe.forExercise(key).capability == .repCandidate else { return nil }
                 return (section + ":" + item, key)
             }
         XCTAssertEqual(Dictionary(uniqueKeysWithValues: active), expected)
@@ -219,7 +257,8 @@ import XCTest
         let jump = try XCTUnwrap(excluded.blocks.first { $0.id == "basic-w1-d1-p3-s6-2" })
         XCTAssertTrue(try XCTUnwrap(jump.sourceItems).contains { $0.text == "12 JUMP SQUATS" })
         XCTAssertTrue(excluded.template().blocks.filter { $0.sourceBlockID == jump.id }
-            .allSatisfy { $0.sourceActivityKey == nil })
+            .allSatisfy { $0.sourceActivityKey == "squat_jumps" &&
+                ActivityMeasurementRecipe.forExercise($0.sourceActivityKey).capability == .elapsedOnly })
     }
 
     func testOnlyGenericConditioningSectionsOfferRuntimeMovementChoice() throws {

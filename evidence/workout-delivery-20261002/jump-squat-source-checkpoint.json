@@ -1,0 +1,38 @@
+{
+  "checkpoint": "exact-jump-squat-source-lineage",
+  "source_blocks": 8,
+  "source_prescription": [
+    "10 JUMP SQUATS",
+    "12 JUMP SQUATS"
+  ],
+  "movement_key": "squat_jumps",
+  "measurement": {
+    "id": "session-clock",
+    "capability": "elapsed_only",
+    "validation_status": "not_applicable"
+  },
+  "guard": "exact source block ID, item ID, title, instructions, source text, manual completion and singleton item",
+  "validation": {
+    "focused_coin_tests_passed": 30,
+    "focused_coin_tests_failed": 0,
+    "xcresult": "/tmp/coin-workout-derived/Logs/Test/Test-Coin-2026.10.02_21-37-19--0400.xcresult",
+    "signed_device_build_sha256": "fac4c1b3e1974e2ce8c1ffd7c2c143d16755f0341b572d9253bf129f89844cc7",
+    "phone_install": "not attempted; Lakshmi unavailable to CoreDevice"
+  },
+  "clip_triage": {
+    "candidate": "T7 archive/media/IMG_0595.MOV",
+    "result": "not a workout; laptop presentation with lower body occluded",
+    "use_for_pose_evaluation": false,
+    "privacy": "local inspection only; temporary copy and frames deleted; no upload or MLflow images"
+  },
+  "mlflow": {
+    "development_usage_run_id": "0ccba2a315c7494bb4d4c6a9974f62b7",
+    "new_product_inference_calls": 0,
+    "actual_billed_usd": null
+  },
+  "limits": [
+    "No jump-squat rep recognition or physical workout validation.",
+    "Mixed conditioning sections remain unassigned.",
+    "Source language for these instructions remains English."
+  ]
+}
