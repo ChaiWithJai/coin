@@ -152,12 +152,139 @@ import XCTest
             }
         }
         XCTAssertEqual(lessons.count, 70)
-        XCTAssertEqual(workSegments, 1_204)
-        XCTAssertEqual(restSegments, 196)
-        XCTAssertEqual(timedWork, 714)
-        XCTAssertEqual(manualWork, 490)
+        XCTAssertEqual(workSegments, 1_236)
+        XCTAssertEqual(restSegments, 205)
+        XCTAssertEqual(timedWork, 734)
+        XCTAssertEqual(manualWork, 502)
         XCTAssertEqual(requiredChoices, 77)
-        XCTAssertEqual(timedSeconds, 97_755)
+        XCTAssertEqual(timedSeconds, 100_935)
+    }
+
+    func testBasicWeekOneDayThreeMixedBlockExpandsExactPrescriptions() throws {
+        let lesson = try XCTUnwrap(WorkoutCatalog.shared.lessons.first { $0.id == "basic-w1-d3" })
+        let source = try XCTUnwrap(lesson.blocks.first { $0.id == "basic-w1-d3-p5-s6-1" })
+        let blocks = lesson.template().blocks.filter { $0.sourceBlockID == source.id }
+        XCTAssertEqual(blocks.count, 15)
+
+        let bag = Array(blocks.prefix(7))
+        XCTAssertEqual(bag.map(\.sourceItemID), ["p5-b27", "p5-b29", "p5-b31", "p5-b32",
+            "p5-b34", "p5-b36", "p5-b38"].map(Optional.some))
+        XCTAssertEqual(bag.map(\.effectiveSeconds), Array(repeating: 180, count: 7))
+        XCTAssertEqual(bag.map(\.effectiveRestSeconds), Array(repeating: 60, count: 6) + [0])
+        XCTAssertEqual(bag.last?.sourceDemoURLs, ["https://youtu.be/oYG9JVu3k38?si=e81bxKdTvx3vyWoD&t=17"])
+
+        let tennis = Array(blocks[7..<10])
+        XCTAssertEqual(tennis.map(\.sourceItemID), Array(repeating: Optional("p5-b41"), count: 3))
+        XCTAssertEqual(tennis.map(\.effectiveSeconds), [60, 60, 60])
+        XCTAssertEqual(tennis.map(\.effectiveRestSeconds), [0, 0, 0])
+        XCTAssertTrue(tennis.allSatisfy { $0.sourceInstructions == source.sourceItems?[10].text })
+
+        let dumbbells = blocks[10]
+        XCTAssertEqual(dumbbells.sourceItemID, "p5-b43")
+        XCTAssertTrue(dumbbells.isManual)
+        XCTAssertEqual(dumbbells.effectiveSeconds, 0)
+        XCTAssertEqual(dumbbells.sourceDemoURLs, ["https://www.youtube.com/shorts/-NkpM5DYF2Y"])
+
+        let strength = Array(blocks.suffix(4))
+        XCTAssertEqual(strength.map(\.sourceItemID), Array(repeating: Optional("p5-b45"), count: 4))
+        XCTAssertEqual(strength.map(\.sourceTitle), ["parallel bar dips", "pull-ups",
+            "jumping squat lunges", "hanging leg raises"].map(Optional.some))
+        XCTAssertTrue(strength.allSatisfy { $0.isManual && $0.effectiveSeconds == 0
+            && $0.repetitionText == "1 set of max" && $0.sourceInstructions == source.sourceItems?[12].text })
+        XCTAssertEqual(strength.map(\.effectiveRestSeconds), [60, 60, 60, 0])
+        XCTAssertEqual(strength.map(\.sourceDemoURLs), source.sourceItems?[12].demoURLs?.map { [$0] })
+    }
+
+    func testBasicWeekOneDayThreeMixedBlockFailsClosedWhenExactSourceChanges() throws {
+        let changes: [(inout [String: Any]) -> Void] = [
+            { block in
+                var items = block["sourceItems"] as! [[String: Any]]
+                items[10]["text"] = "Changed tennis prescription"
+                block["sourceItems"] = items
+                let text = items.map { $0["text"] as! String }.joined(separator: "\n")
+                block["instructions"] = text
+                block["sourceText"] = text
+            },
+            { block in
+                var items = block["sourceItems"] as! [[String: Any]]
+                items[12]["demoURLs"] = ["https://example.org/changed"]
+                block["sourceItems"] = items
+            },
+        ]
+        for change in changes {
+            let lesson = try roundSequenceFixture("basic-w1-d3-p5-s6-1", change)
+            let source = try XCTUnwrap(lesson.blocks.first)
+            XCTAssertNil(source.reviewedMixedDaySteps)
+            let blocks = lesson.template().blocks
+            XCTAssertEqual(blocks.count, 1)
+            XCTAssertTrue(try XCTUnwrap(blocks.first).isManual)
+            XCTAssertEqual(blocks.first?.effectiveSeconds, 0)
+            XCTAssertNil(blocks.first?.sourceItemID)
+        }
+    }
+
+    func testReviewedBagIntervalsKeepExactFocusAndManualUntimedExercises() throws {
+        let lesson = try XCTUnwrap(WorkoutCatalog.shared.lessons.first { $0.id == "competitive-w4-d3" })
+        let source = try XCTUnwrap(lesson.blocks.first { $0.id == "competitive-w4-d3-p31-s4-1" })
+        let steps = try XCTUnwrap(source.reviewedBagExerciseIntervals)
+        let blocks = lesson.template().blocks.filter { $0.sourceBlockID == source.id }
+        let rounds = blocks.filter { !$0.isManual }
+        let exercises = blocks.filter(\.isManual)
+
+        XCTAssertEqual(steps.count, 10)
+        XCTAssertEqual(blocks.count, 19)
+        XCTAssertEqual(rounds.count, 10)
+        XCTAssertEqual(exercises.count, 9)
+        XCTAssertEqual(rounds.map(\.effectiveSeconds), Array(repeating: 120, count: 10))
+        XCTAssertEqual(rounds.map(\.effectiveRestSeconds), Array(repeating: 0, count: 10))
+        XCTAssertEqual(rounds.map(\.sourceItemID),
+            ["p31-b17", "p31-b18", "p31-b19", "p31-b20", "p31-b21",
+             "p31-b22", "p31-b24", "p31-b27", "p31-b29", "p31-b31"].map(Optional.some))
+        XCTAssertEqual(rounds.map(\.sourceTitle), steps.map { Optional($0.focusText) })
+        XCTAssertEqual(rounds[6].sourceTitle,
+            "HOOK BODY - HOOK BODY - HOOK HEAD — HOOK BODY -HOOK BODY - UPPERCUT\nHEAD")
+        XCTAssertEqual(rounds[6].sourceDemoURLs, ["https://youtube.com/shorts/KLT_62jjjqs"])
+        XCTAssertTrue(rounds.allSatisfy { $0.kind == .boxing && $0.sourceActivityKey == "bag_work" })
+        XCTAssertTrue(exercises.allSatisfy {
+            $0.kind == .exercise && $0.effectiveSeconds == 0 && $0.effectiveRestSeconds == 0 &&
+            $0.sourceItemID == "p31-b16" &&
+            $0.sourceTitle == "(add 10 push-ups and 10 squats during rest periods)" &&
+            $0.repetitionText == "10 push-ups + 10 squats"
+        })
+        XCTAssertEqual(blocks.last?.sourceItemID, "p31-b31")
+        XCTAssertFalse(try XCTUnwrap(blocks.last).isManual)
+        XCTAssertEqual(templateCounts(blocks).pushups, 90)
+        XCTAssertEqual(templateCounts(blocks).squats, 90)
+        XCTAssertEqual(blocks.reduce(0) { $0 + $1.effectiveSeconds + $1.effectiveRestSeconds }, 1_200)
+    }
+
+    func testReviewedBagIntervalsFailClosedOnAnyExactSourceDrift() throws {
+        let changes: [(inout [String: Any]) -> Void] = [
+            { block in
+                var items = block["sourceItems"] as! [[String: Any]]
+                items[9]["text"] = "CHANGED WRAPPED LINE"
+                block["sourceItems"] = items
+                let text = items.map { $0["text"] as! String }.joined(separator: "\n")
+                block["instructions"] = text
+                block["sourceText"] = text
+            },
+            { $0["title"] = "BAG WORK (10 ROUNDS)" },
+            { $0["kind"] = "boxing" },
+        ]
+        for change in changes {
+            let lesson = try roundSequenceFixture("competitive-w4-d3-p31-s4-1", change)
+            let source = try XCTUnwrap(lesson.blocks.first)
+            XCTAssertNil(source.reviewedBagExerciseIntervals)
+            let blocks = lesson.template().blocks
+            XCTAssertEqual(blocks.count, 1)
+            XCTAssertTrue(try XCTUnwrap(blocks.first).isManual)
+            XCTAssertNil(blocks.first?.sourceItemID)
+        }
+    }
+
+    private func templateCounts(_ blocks: [SessionBlock]) -> (pushups: Int, squats: Int) {
+        let intervals = blocks.filter { $0.isManual && $0.sourceItemID == "p31-b16" }.count
+        return (intervals * 10, intervals * 10)
     }
 
     func testReviewedEnduranceDaysExpandIntoExactThreeCircuitClock() throws {
@@ -421,8 +548,8 @@ import XCTest
                 }
             }
         }
-        XCTAssertEqual(expandedSections, 28)
-        XCTAssertEqual(expandedItems, 244)
+        XCTAssertEqual(expandedSections, 30)
+        XCTAssertEqual(expandedItems, 278)
         XCTAssertEqual(roundSections, 5)
         XCTAssertEqual(roundItems, 25)
         XCTAssertEqual(circuitSections, 2)

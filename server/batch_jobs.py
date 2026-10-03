@@ -19,7 +19,7 @@ from contextlib import contextmanager
 
 VERSION = 'completed-round-batch-v2.1'
 CURRICULUM_VERSION = 'source-annotation-atomic-v2.1'
-SOURCE_ITEM_VERSION = 'source-item-normalization-v2.2'
+SOURCE_ITEM_VERSION = 'source-item-normalization-v2.7'
 MAX_EXCHANGES = 200
 MAX_INPUT_BYTES = 2_000_000
 
@@ -190,6 +190,11 @@ def catalog_source_item_manifest(catalog):
         source_hashes.add(source_sha.lower())
         for block in workout.get('blocks', []):
             block_id = block.get('id')
+            block_text = block.get('sourceText')
+            if not isinstance(block_text, str) or not block_text.strip() or len(block_text) > 12000:
+                raise ValueError('Source item parent block needs bounded source text')
+            block_text_sha = digest(block_text)
+            parent = explicit_parent_activity(block_text)
             items = block.get('sourceItems', [])
             if not isinstance(items, list):
                 raise ValueError('sourceItems must be a list')
@@ -208,16 +213,19 @@ def catalog_source_item_manifest(catalog):
                     raise ValueError('Duplicate source item identity')
                 identities.add(identity)
                 source_text_sha = digest(text)
-                activity = explicit_activity(text, block.get('kind'), allow_kind_fallback=False)
+                item_activity = explicit_activity(text, block.get('kind'), allow_kind_fallback=False)
+                activity = parent or item_activity
                 proposal_id = digest({'catalog_sha256': catalog_sha, 'source_sha256': source_sha.lower(),
                                       'workout_id': workout_id, 'source_block_id': block_id,
                                       'source_item_id': item_id, 'source_text_sha256': source_text_sha,
+                                      'source_block_text_sha256': block_text_sha,
                                       'normalization_version': SOURCE_ITEM_VERSION})
                 proposal = {
                     'proposal_id': proposal_id, 'workout_id': workout_id,
                     'catalog_sha256': catalog_sha, 'source_sha256': source_sha.lower(),
                     'source_block_id': block_id, 'source_item_id': item_id,
                     'source_text': text, 'source_text_sha256': source_text_sha,
+                    'source_block_text': block_text, 'source_block_text_sha256': block_text_sha,
                     'source_url': block.get('sourceURL', workout.get('sourceURL')),
                     'reference_urls': item.get('referenceURLs', []),
                     'demo_urls': item.get('demoURLs', []), 'source_kind': block.get('kind'),
@@ -226,11 +234,15 @@ def catalog_source_item_manifest(catalog):
                 }
                 if activity:
                     value, quote = activity
-                    proposal.update({'activity': value, 'evidence_quote': quote,
-                                     'annotation_origin': 'explicit_source_rule',
+                    proposal.update({'activity': value,
+                                     'evidence_quote': text if parent else quote,
+                                     'activity_context_quote': quote if parent else None,
+                                     'annotation_origin': ('explicit_parent_source_rule' if parent
+                                                           else 'explicit_source_rule'),
                                      'review_state': 'source_rule_proposal_not_promoted'})
                 else:
                     proposal.update({'activity': 'unknown', 'evidence_quote': None,
+                                     'activity_context_quote': None,
                                      'annotation_origin': 'model_fallback_pending',
                                      'review_state': 'model_proposal_not_promoted'})
                 proposals.append(proposal)
@@ -392,7 +404,7 @@ class Store:
                        (job_id, encoded(catalog), encoded(provenance), 'pending', time.time()))
             for proposal in proposals:
                 item_id = 'source-item:' + proposal['proposal_id']
-                deterministic = proposal['annotation_origin'] == 'explicit_source_rule'
+                deterministic = proposal['annotation_origin'].startswith('explicit_')
                 if deterministic:
                     output = encoded({'result': proposal, 'prompt_version': SOURCE_ITEM_VERSION,
                                       'inference_performed': False, 'cache_hit': False,
@@ -572,7 +584,8 @@ class Store:
                 data = report_context(data, self.inspect(row['job_id'])[0]['items'])
             cache_input = ({'sourceText': data['block']['sourceText'], 'kind': data['block'].get('kind')}
                            if row['kind'] == 'workout' else
-                           {'source_text': data['source_text'], 'source_kind': data.get('source_kind')}
+                           {'source_text': data['source_text'], 'source_kind': data.get('source_kind'),
+                            'source_block_text_sha256': data.get('source_block_text_sha256')}
                            if row['kind'] == 'source_item' else data)
             prompt_version = (CURRICULUM_VERSION if row['kind'] == 'workout' else
                               SOURCE_ITEM_VERSION if row['kind'] == 'source_item' else VERSION)
@@ -746,6 +759,24 @@ def explicit_activity(text, kind, allow_kind_fallback=True):
     return None
 
 
+def explicit_parent_activity(text):
+    """Resolve only a parent's explicit section heading.
+
+    Child exercises may contain strength or punch words that should never
+    override a clear BAG WORK or PARTNER WORK heading. This intentionally does
+    not infer any other parent category.
+    """
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    heading = ' '.join(lines[:2])
+    for activity, pattern in (
+            ('bag_work', r'\bBAG WORK\b'),
+            ('partner_work', r'\b(?:PARTNER WORK|SPARRING)\b')):
+        match = re.search(pattern, heading, re.I)
+        if match:
+            return activity, match.group(0).strip()
+    return None
+
+
 def curriculum_result(activity, quote, kind, origin):
     cue_id = 'recover' if kind == 'recovery' else 'follow_source'
     return {'activity': activity, 'phase': 'unspecified', 'cue_id': cue_id,
@@ -778,13 +809,15 @@ class ModelClient:
         if kind == 'source_item':
             # Only unresolved single-item text reaches the model. The immutable
             # lineage and proposal ID remain in data and are never model-authored.
-            system = ('Classify only the activity explicitly written in one boxing workout source item. '
+            system = ('Classify one boxing workout source item using its immutable parent section only as context. '
                       'A = solo boxing practice, punches, or defense without a partner. '
                       'B = footwork, steps, or agility without punches. '
                       'C = physical conditioning or strength. D = unclear, a heading, or a prescription. '
-                      'Return one letter only.')
+                      'E = heavy-bag work. F = partner work or sparring. Return one letter only.')
             body = {'messages': [{'role': 'system', 'content': system},
-                                 {'role': 'user', 'content': data['source_text']}],
+                                 {'role': 'user', 'content': encoded({
+                                     'item': data['source_text'],
+                                     'parent_section': data['source_block_text']})}],
                     'max_tokens': 1, 'temperature': 0, 'logprobs': True, 'top_logprobs': 10}
         elif kind == 'workout':
             block = data['block']
@@ -842,16 +875,24 @@ class ModelClient:
             letter = content.strip()
             choices = {'A': ('shadowboxing', r'punch|jab|hook|uppercut|shadow|slip|roll|defen[cs]'),
                        'B': ('footwork', r'move|step|footwork|agility|direction'),
-                       'C': ('conditioning', r'condition|cardio|running|jump|rope|squat|push[ -]?up|burpee|climber|tuck')}
+                       'C': ('conditioning', r'condition|endurance|cardio|running|jump|rope|squat|push[ -]?up|burpee|climber|tuck'),
+                       'E': ('bag_work', r'bag work|heavy bag'),
+                       'F': ('partner_work', r'partner work|sparring|switch roles|n1:|n2:')}
             selection = choices.get(letter)
-            support = re.search(selection[1], data['source_text'], re.I) if selection else None
+            item_support = re.search(selection[1], data['source_text'], re.I) if selection else None
+            context_support = re.search(selection[1], data['source_block_text'], re.I) if selection else None
+            support = item_support or context_support
             result = dict(data)
             result.update({'activity': selection[0] if support else 'unknown',
-                           'evidence_quote': support.group(0) if support else None,
-                           'annotation_origin': 'model_choice_with_source_support' if support else 'model_choice_without_source_support',
+                           'evidence_quote': (item_support.group(0) if item_support else data['source_text']) if support else None,
+                           'activity_context_quote': context_support.group(0) if context_support else None,
+                           'annotation_origin': ('model_choice_with_item_support' if item_support else
+                                                 'model_choice_with_parent_context' if context_support else
+                                                 'model_choice_without_source_support'),
                            'review_state': 'model_proposal_not_promoted', 'runtime_eligible': False})
-            output_gate = {'valid_choice': letter in ('A', 'B', 'C', 'D'),
-                           'source_support_passed': bool(support),
+            output_gate = {'valid_choice': letter in ('A', 'B', 'C', 'D', 'E', 'F'),
+                           'item_support_passed': bool(item_support),
+                           'parent_context_support_passed': bool(context_support),
                            'runtime_promotion': False}
         elif kind == 'exchange':
             letter = content.strip()

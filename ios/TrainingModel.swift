@@ -399,6 +399,10 @@ struct WorkoutMovementDefinition {
     let observablePhases: [String]
     let targetUnit: String
 
+    /// A versioned specification for the evidence this movement needs. This is
+    /// carried at runtime even when the corresponding counter is not shipped.
+    var poseContract: PoseObservationContract { .forMovement(key) }
+
     static let all: [Self] = [
         .init(key: "jumping_jacks", family: "conditioning", equipment: "none", version: "v1", requiredView: "full_body", observablePhases: ["closed", "open", "closed"], targetUnit: "rep"),
         .init(key: "burpees", family: "conditioning", equipment: "none", version: "v1", requiredView: "full_body_and_floor", observablePhases: ["standing", "floor", "standing"], targetUnit: "rep"),
@@ -429,6 +433,66 @@ struct WorkoutMovementDefinition {
         }
         return preferred.compactMap(forKey)
     }
+}
+
+struct PoseObservationContract: Equatable {
+    enum Support: String { case implementedCandidate = "implemented_candidate", specifiedOnly = "specified_only" }
+    let id: String
+    let version: String
+    let landmarkGroups: [[String]]
+    let orderedStates: [String]
+    let completionTransition: String
+    let qualityGates: [String]
+    let support: Support
+
+    static func forMovement(_ key: String) -> Self {
+        let legs = [["left_hip", "left_knee", "left_ankle"], ["right_hip", "right_knee", "right_ankle"]]
+        switch key {
+        case "squats": return .init(id: "mediapipe-squat-angle", version: "v1", landmarkGroups: legs,
+            orderedStates: ["standing", "lowering", "bottom", "standing"], completionTransition: "bottom_to_standing",
+            qualityGates: ["one_complete_leg", "stable_track"], support: .implementedCandidate)
+        case "lunges": return .init(id: "mediapipe-lunge-angle", version: "v1", landmarkGroups: legs,
+            orderedStates: ["standing", "split_stance", "standing"], completionTransition: "split_stance_to_standing",
+            qualityGates: ["one_complete_leg", "stable_track"], support: .implementedCandidate)
+        case "boxing", "shadowboxing": return .init(id: "coin-exchange-tracker", version: "v1",
+            landmarkGroups: [["left_shoulder", "right_shoulder", "left_wrist", "right_wrist", "left_hip", "right_hip"]],
+            orderedStates: ["probe", "exchange", "reset"], completionTransition: "exchange_to_reset",
+            qualityGates: ["upper_body_visible", "stable_track"], support: .implementedCandidate)
+        case "jumping_jacks": return .init(id: "mediapipe-jumping-jack", version: "v1",
+            landmarkGroups: [["left_wrist", "right_wrist", "left_ankle", "right_ankle"]],
+            orderedStates: ["closed", "open", "closed"], completionTransition: "open_to_closed",
+            qualityGates: ["full_body_visible", "stable_track"], support: .specifiedOnly)
+        case "burpees": return .init(id: "mediapipe-burpee", version: "v1",
+            landmarkGroups: [["left_shoulder", "left_hip", "left_knee", "left_ankle"], ["right_shoulder", "right_hip", "right_knee", "right_ankle"]],
+            orderedStates: ["standing", "floor", "standing"], completionTransition: "floor_to_standing",
+            qualityGates: ["full_body_and_floor_visible", "stable_track"], support: .specifiedOnly)
+        case "box_jumps": return .init(id: "mediapipe-box-jump", version: "v1", landmarkGroups: legs,
+            orderedStates: ["floor", "flight", "box_landing", "reset"], completionTransition: "box_landing_to_reset",
+            qualityGates: ["full_body_and_box_visible", "stable_track"], support: .specifiedOnly)
+        case "squat_jumps": return .init(id: "mediapipe-squat-jump", version: "v1", landmarkGroups: legs,
+            orderedStates: ["squat", "flight", "landing"], completionTransition: "flight_to_landing",
+            qualityGates: ["full_body_and_floor_visible", "stable_track"], support: .specifiedOnly)
+        case "frontal_stance": return .init(id: "mediapipe-frontal-stance", version: "v1",
+            landmarkGroups: [["left_shoulder", "right_shoulder", "left_hip", "right_hip", "left_ankle", "right_ankle"]],
+            orderedStates: ["stance", "movement", "stance"], completionTransition: "movement_to_stance",
+            qualityGates: ["full_body_visible", "stable_track"], support: .specifiedOnly)
+        case "shoulder_circles": return .init(id: "mediapipe-shoulder-circle", version: "v1",
+            landmarkGroups: [["left_shoulder", "right_shoulder", "left_elbow", "right_elbow", "left_wrist", "right_wrist"]],
+            orderedStates: ["neutral", "circle", "neutral"], completionTransition: "circle_to_neutral",
+            qualityGates: ["upper_body_visible", "stable_track"], support: .specifiedOnly)
+        case "hip_circles", "thoracic_rotations", "hamstring_sweeps":
+            return .init(id: "mediapipe-\(key.replacingOccurrences(of: "_", with: "-"))", version: "v1",
+                landmarkGroups: [["left_shoulder", "right_shoulder", "left_hip", "right_hip", "left_knee", "right_knee"]],
+                orderedStates: WorkoutMovementDefinition.forKey(key)?.observablePhases ?? [], completionTransition: "cycle_complete",
+                qualityGates: ["required_landmarks_visible", "stable_track"], support: .specifiedOnly)
+        default: return .init(id: "elapsed-only", version: "v1", landmarkGroups: [], orderedStates: [],
+            completionTransition: "none", qualityGates: [], support: .specifiedOnly)
+        }
+    }
+
+    var payload: [String: Any] { ["id": id, "version": version, "landmark_groups": landmarkGroups,
+        "ordered_states": orderedStates, "completion_transition": completionTransition,
+        "quality_gates": qualityGates, "support": support.rawValue] }
 }
 
 struct ActivityMeasurementRecipe: Codable, Equatable {
@@ -508,7 +572,7 @@ struct WorkoutActivityInstance: Codable, Identifiable, Equatable {
             value["movement_definition"] = ["key": definition.key, "family": definition.family,
                 "equipment": definition.equipment, "version": definition.version,
                 "required_view": definition.requiredView, "observable_phases": definition.observablePhases,
-                "target_unit": definition.targetUnit] as [String: Any]
+                "target_unit": definition.targetUnit, "pose_contract": definition.poseContract.payload] as [String: Any]
         } else if exerciseKey == "custom" {
             value["movement_definition"] = ["key": "custom", "family": "user_defined",
                 "equipment": "unknown", "version": "v1"]

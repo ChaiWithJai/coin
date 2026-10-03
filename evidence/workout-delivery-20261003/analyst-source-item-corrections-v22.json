@@ -1,0 +1,163 @@
+{
+  "schema_version": 1,
+  "status": "analyst_not_coach_gold",
+  "runtimeEligible": false,
+  "source_review": "source-item-review-v22.json",
+  "catalog_source": "outputs/coin/ios/WorkoutCatalog.json",
+  "review_scope": {
+    "sample_count": 40,
+    "high_confidence_correction_count": 8,
+    "ambiguity_count": 5,
+    "unchallenged_count": 27
+  },
+  "promotion": {
+    "performed": false,
+    "runtime_or_app_changes": false
+  },
+  "corrections": [
+    {
+      "proposal_id": "b8efe04f5f134103a1b8252b14fae26ee20f6bf6d2c58524c4131c5da9f22b19",
+      "source_block_id": "competitive-w3-d2-p22-s4-1",
+      "source_item_id": "p22-b19",
+      "exact_source_text": "CATCH - ANY STRAIGHT PUNCH",
+      "current_activity": "shadowboxing",
+      "proposed_activity": "partner_work",
+      "exact_catalog_context": "PARTNER WORK (6 ROUNDS OF 4 MINUTES)\n(switch roles after each attack)\nN1: THROW DOUBLE JAB. N2: DEFEND THE DOUBLE JAB\nN1: JAB - ANY SINGLE SIMULTANEOUS COUNTER. N2:\nCATCH - ANY STRAIGHT PUNCH",
+      "analyst_reason": "The block explicitly assigns N1/N2 roles and tells the athletes to switch roles after each attack."
+    },
+    {
+      "proposal_id": "022cd60e785167ca0990c5386841fc29b1d739ccd744710b255cd8f0db587519",
+      "source_block_id": "competitive-w1-d1-p5-s4-1",
+      "source_item_id": "p5-b19",
+      "exact_source_text": "ONLY COMBOS",
+      "current_activity": "shadowboxing",
+      "proposed_activity": "bag_work",
+      "exact_catalog_context": "BAG WORK. 6 ROUNDS OF 3 MINUTES\nMOVEMENT DRILL WITH A BAG\nALL SINGLE PUNCHES\nONLY DOUBLED-UP PUNCHES\nONLY COMBOS",
+      "analyst_reason": "The item is a round prescription inside an explicitly named bag-work block."
+    },
+    {
+      "proposal_id": "8b49a4215014c601519159fbdfa6205b4e527b015115cc958f991042e5a9b993",
+      "source_block_id": "competitive-w2-d3-p15-s4-1",
+      "source_item_id": "p15-b27",
+      "exact_source_text": "STEP BACK - JAB - JAB - CROSS BODY",
+      "current_activity": "shadowboxing",
+      "proposed_activity": "bag_work",
+      "exact_catalog_context": "BAG WORK (10 ROUNDS OF 2 MINUTES)\nSLIP - JAB - CROSS - HOOK\nSTEP BACK - JAB - CROSS - SLIP - CROSS\nSLIP - CROSS - LEAD HOOK BODY\nSTEP BACK - LEAD HOOK - CROSS - LEAD HOOK\nSLIP - LEAD HOOK BODY - LEAD HOOK - CROSS\nSTEP BACK - CROSS - LEAD HOOK - CROSS\nSLIP - REAR HOOK BODY - LEAD HOOK - CROSS\nSTEP BACK - JAB - JAB - CROSS BODY",
+      "analyst_reason": "The combination is one round in an explicitly named ten-round bag-work block."
+    },
+    {
+      "proposal_id": "295bbc3b9237b0fd147b83c2826be1327d79368041a329f898ea64ed82d09f99",
+      "source_block_id": "competitive-w2-d1-p13-s4-1",
+      "source_item_id": "p13-b21",
+      "exact_source_text": "FREESTYLE WITH FOCUS ON 3-4 PUNCH COMBOS",
+      "current_activity": "shadowboxing",
+      "proposed_activity": "bag_work",
+      "exact_catalog_context": "BAG WORK. 6 ROUNDS OF 3 MINUTES\nONLY LEAD HAND\nONLY REAR HAND\nONLY PENDULUM STEP ATTACKS\nCLOSE RANGE\nFREESTYLE WITH FOCUS ON 3-4 PUNCH COMBOS",
+      "analyst_reason": "Freestyle describes the round constraint; the enclosing activity is explicitly bag work."
+    },
+    {
+      "proposal_id": "32ec94826373a2eb297c6e27906e73d120b140acb5e6530c0efe5b6e90e6d53c",
+      "source_block_id": "competitive-w4-d3-p31-s4-1",
+      "source_item_id": "p31-b24",
+      "exact_source_text": "HOOK BODY - HOOK BODY - HOOK HEAD — HOOK BODY -HOOK BODY - UPPERCUT",
+      "current_activity": "shadowboxing",
+      "proposed_activity": "bag_work",
+      "exact_catalog_context": "BAG WORK (10 ROUNDS OF 2 MINUTES)\n(add 10 push-ups and 10 squats during rest periods)\nJAB BODY — FAKE JAB - OVERHAND\nJAB — LONG LEAD UPPERCUT - CROSS\nJAB-CROSS — JAB-FEINT CROSS-HOOK\nJAB-JAB-CROSS — SPINNING JAB-JAB-REAR HOOK\nJAB — FOOT AND HAND FEINT - JAB-CROSS\nJAB — STOP WITH THE HIGHT GUARD — PULL BACK COUNTER\nHOOK BODY - HOOK BODY - HOOK HEAD — HOOK BODY -HOOK BODY - UPPERCUT",
+      "analyst_reason": "The combination is one round in an explicitly named ten-round bag-work block."
+    },
+    {
+      "proposal_id": "2b240dc5b7aa843bc6f795fffaa17df33c0e72786babb4a58bf123e127de0fb8",
+      "source_block_id": "basic-w4-d3-p26-s7-1",
+      "source_item_id": "p26-b38",
+      "exact_source_text": "VOICE CONTROLED BOXING. I SAY COMBO - YOU THROW IT ROUND 4 OF THE",
+      "current_activity": "shadowboxing",
+      "proposed_activity": "bag_work",
+      "exact_catalog_context": "7 ROUNDS OF 3 MINUTES WITH 1 MINUTE OF REST IN\nBETWEEN OF BAG WORK\n1 AND 2 COMBOS\n7 AND 8 COMBOS\n3 AND 4 COMBOS\n9 AND 10 COMBOS\n5 AND 6 COMBOS\n11 AND 12 COMBOS\nVOICE CONTROLED BOXING. I SAY COMBO - YOU THROW IT ROUND 4 OF THE",
+      "analyst_reason": "The voice-controlled round remains part of the explicitly named seven-round bag-work block."
+    },
+    {
+      "proposal_id": "d3f87c04457c8ef24a6cfc3392cbb18c82139cd485e63a7d2716f947820d4183",
+      "source_block_id": "basic-w5-d3-p33-s6-1",
+      "source_item_id": "p33-b33",
+      "exact_source_text": "9 AND 10 COMBOS",
+      "current_activity": "shadowboxing",
+      "proposed_activity": "bag_work",
+      "exact_catalog_context": "7 ROUNDS OF 3 MINUTES WITH 1 MINUTE OF REST IN\nBETWEEN OF BAG WORK\n1 AND 2 COMBOS\n7 AND 8 COMBOS\n3 AND 4 COMBOS\n9 AND 10 COMBOS",
+      "analyst_reason": "The numbered combinations are round content inside an explicitly named bag-work block."
+    },
+    {
+      "proposal_id": "5840deebec13ab06778a2d3c8c321eac13b229cec94512eb923a452d3743b7b1",
+      "source_block_id": "basic-w5-d3-p33-s6-1",
+      "source_item_id": "p33-b36",
+      "exact_source_text": "11 AND 12 COMBOS",
+      "current_activity": "shadowboxing",
+      "proposed_activity": "bag_work",
+      "exact_catalog_context": "7 ROUNDS OF 3 MINUTES WITH 1 MINUTE OF REST IN\nBETWEEN OF BAG WORK\n1 AND 2 COMBOS\n7 AND 8 COMBOS\n3 AND 4 COMBOS\n9 AND 10 COMBOS\n5 AND 6 COMBOS\n11 AND 12 COMBOS",
+      "analyst_reason": "The numbered combinations are round content inside an explicitly named bag-work block."
+    }
+  ],
+  "ambiguities": [
+    {
+      "proposal_id": "9f1f165240df29180997d9835bd0d3f0de90f4ceeb487156d7f4d82218df80f0",
+      "source_block_id": "competitive-w2-d3-p15-s5-1",
+      "exact_source_text": "HOOK HOLD. 4 ROUNDS OF 5 SECONDS (EACH HAND)",
+      "current_activity": "shadowboxing",
+      "candidate_activities": ["strength", "shadowboxing"],
+      "exact_catalog_context": "ISOMETRIC HOLDS\nJAB HOLD. 4 ROUNDS OF 5 SECONDS\nCROSS HOLD. 4 ROUNDS OF 5 SECONDS\nHOOK HOLD. 4 ROUNDS OF 5 SECONDS (EACH HAND)",
+      "analyst_reason": "The explicit isometric-hold modality supports strength, while the boxing positions support the current boxing-derived class. Taxonomy precedence is needed."
+    },
+    {
+      "proposal_id": "5ccaff5f93cb87501717d29ffd1ca4d8905caa51b736de5e4f6c13033fbd890d",
+      "source_block_id": "competitive-w4-d6-p34-s1-1",
+      "exact_source_text": "Rolls",
+      "current_activity": "shadowboxing",
+      "candidate_activities": ["conditioning", "mobility"],
+      "exact_catalog_context": "ENDURANCE WORKOUT #4 WARM UP:\n3 CIRCUITS, 10 EXERCISES EACH. WORK FOR 1 MINUTE, REST FOR\n30 SECONDS. TAKE 2 MINUTES OF REST BETWEEN CIRCUITS\nPush-Up Shuttle\nSquat With Med Ball Throws\nRolls",
+      "analyst_reason": "The circuit context does not support shadowboxing, but 'Rolls' alone does not distinguish a conditioning roll from a mobility roll."
+    },
+    {
+      "proposal_id": "f8795cac558962b1eec0d4c62ceea444ce52bd88d67fddc448d7c4282a755b89",
+      "source_block_id": "basic-w2-d4-p13-s5-1",
+      "exact_source_text": "DEFENSIVE DRILL.",
+      "current_activity": "shadowboxing",
+      "candidate_activities": ["shadowboxing", "footwork"],
+      "exact_catalog_context": "DEFENSIVE DRILL.\n1 ROUND OF 3 MINUTES. 1-HEAD MOVEMENT 2-ADD FOOTWORK\n3-HANDS",
+      "analyst_reason": "The item is only a heading; the block deliberately progresses through head movement, footwork, and hands."
+    },
+    {
+      "proposal_id": "f2e9a60257afe5bc9bce4685693f5379ee0597015a5d77c0a0788d1b173dfe89",
+      "source_block_id": "basic-w2-d5-p14-s3-1",
+      "exact_source_text": "4 ROUNDS OF 1 MINUTE. SQUAT AND THROW PUNCH 2 PUNCHES WITH",
+      "current_activity": "shadowboxing",
+      "candidate_activities": ["shadowboxing", "conditioning"],
+      "exact_catalog_context": "FRONTAL STANCE DRILL\n4 ROUNDS OF 1 MINUTE. SQUAT AND THROW PUNCH 2 PUNCHES WITH\nSTEPS FORWARD OR BACKWARD",
+      "analyst_reason": "The prescription mixes repeated squats, punches, and stepping, so its primary activity depends on mixed-drill taxonomy policy."
+    },
+    {
+      "proposal_id": "f618a461da8b3bbe2ceab576adf3fc1fcf9438553b5a757cd0549db7299b06a7",
+      "source_block_id": "basic-w3-d2-p18-s9-1",
+      "exact_source_text": "Squat Rocks",
+      "current_activity": "strength",
+      "candidate_activities": ["strength", "mobility", "footwork"],
+      "exact_catalog_context": "FIGHTING STANCE\n1 ROUND OF 3 MINUTES MOVE WITH YOUR HANDS DOWN AND\nSquat Rocks\nPRACTICE DEFENCIVE MOVES",
+      "analyst_reason": "The exercise name suggests strength or mobility, but it is embedded between instructions for stance movement and defensive practice."
+    }
+  ],
+  "correction_proposal_ids": [
+    "b8efe04f5f134103a1b8252b14fae26ee20f6bf6d2c58524c4131c5da9f22b19",
+    "022cd60e785167ca0990c5386841fc29b1d739ccd744710b255cd8f0db587519",
+    "8b49a4215014c601519159fbdfa6205b4e527b015115cc958f991042e5a9b993",
+    "295bbc3b9237b0fd147b83c2826be1327d79368041a329f898ea64ed82d09f99",
+    "32ec94826373a2eb297c6e27906e73d120b140acb5e6530c0efe5b6e90e6d53c",
+    "2b240dc5b7aa843bc6f795fffaa17df33c0e72786babb4a58bf123e127de0fb8",
+    "d3f87c04457c8ef24a6cfc3392cbb18c82139cd485e63a7d2716f947820d4183",
+    "5840deebec13ab06778a2d3c8c321eac13b229cec94512eb923a452d3743b7b1"
+  ],
+  "ambiguity_proposal_ids": [
+    "9f1f165240df29180997d9835bd0d3f0de90f4ceeb487156d7f4d82218df80f0",
+    "5ccaff5f93cb87501717d29ffd1ca4d8905caa51b736de5e4f6c13033fbd890d",
+    "f8795cac558962b1eec0d4c62ceea444ce52bd88d67fddc448d7c4282a755b89",
+    "f2e9a60257afe5bc9bce4685693f5379ee0597015a5d77c0a0788d1b173dfe89",
+    "f618a461da8b3bbe2ceab576adf3fc1fcf9438553b5a757cd0549db7299b06a7"
+  ]
+}

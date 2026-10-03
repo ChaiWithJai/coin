@@ -1,0 +1,42 @@
+{
+  "checkpoint": "runtime-specific-drill-contract",
+  "recorded_at": "2026-10-03T01:16:00-04:00",
+  "runtime_behavior": {
+    "generic_slots": ["conditioning", "mobility"],
+    "requires_concrete_selection_before_start": true,
+    "custom_choice_supported": true,
+    "source_copy_mutated": false,
+    "pose_contract_fields": ["id", "version", "landmark_groups", "ordered_states", "completion_transition", "quality_gates", "support"],
+    "implemented_candidate_counters": ["squats", "lunges", "boxing", "shadowboxing"],
+    "specified_not_implemented": ["jumping_jacks", "burpees", "box_jumps", "squat_jumps", "frontal_stance", "shoulder_circles", "hip_circles", "thoracic_rotations", "hamstring_sweeps"]
+  },
+  "catalog_batch": {
+    "normalization_version": "source-item-normalization-v2.7",
+    "job_id": "67e168cefcdde2fb2effa1ecef463f822999b2b4a2871c23ec00f74be5c46d9c",
+    "total": 1773,
+    "deterministic_complete_at_submit": 938,
+    "model_fallback_pending_at_submit": 835,
+    "runtime_eligible": false,
+    "note": "Explicit bag-work and partner/sparring parent headings win over mixed child strength or punch terms. No model output is promoted."
+  },
+  "verification": {
+    "ios_units": {"passed": 111, "failed": 0},
+    "focused_server_source_audit_tests": {"passed": 16, "failed": 0},
+    "signed_device_build": "succeeded",
+    "signed_app_tree_sha256": "adf5664e15e7f680f5e29812b8ecc56f2e09e8250a7623c1eca389d8df102f52",
+    "physical_install": "not_attempted_device_unavailable"
+  },
+  "telemetry": {
+    "development_usage_run": "5c7e42798fdc4742b937f220d0f8a76a",
+    "observed_response_count": 3891,
+    "observed_total_tokens": 532581544,
+    "actual_billed_usd": null,
+    "gb10_outbox_at_readback": {"delivered": 1304, "leased": 1, "pending": 1988}
+  },
+  "limitations": [
+    "A pose contract specifies evidence requirements; it is not validation that a counter works.",
+    "No physical iPhone workout was completed for this checkpoint.",
+    "The MLflow outbox drain is still incomplete.",
+    "Actual billed cost remains unknown."
+  ]
+}

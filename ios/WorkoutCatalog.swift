@@ -65,6 +65,42 @@ struct WorkoutLesson: Decodable, Identifiable {
     func sourceTemplate() -> TrainingTemplate {
         var roundNumber = 0
         var sessionBlocks = blocks.flatMap { source -> [SessionBlock] in
+            if let steps = source.reviewedMixedDaySteps {
+                return steps.map { step in
+                    if step.kind == .boxing { roundNumber += 1 }
+                    return SessionBlock(kind: step.kind, minutes: step.durationSeconds / 60,
+                        roundNumber: step.kind == .boxing ? roundNumber : nil,
+                        drillID: nil, restAfterMinutes: step.restSeconds / 60,
+                        durationSeconds: step.durationSeconds, restAfterSeconds: step.restSeconds,
+                        sourceTitle: step.title, sourceInstructions: step.instructions,
+                        sourceURL: source.sourceURL ?? sourceURL, sourceDemoURLs: step.demoURLs,
+                        sourceBlockID: source.id, sourceItemID: step.sourceItemID,
+                        repetitionText: step.prescription, completionMode: step.completion)
+                }
+            }
+            if let intervals = source.reviewedBagExerciseIntervals {
+                return intervals.flatMap { interval -> [SessionBlock] in
+                    roundNumber += 1
+                    let round = SessionBlock(kind: .boxing, minutes: 2, roundNumber: roundNumber,
+                        drillID: source.drillID, restAfterMinutes: 0,
+                        durationSeconds: 120, restAfterSeconds: 0,
+                        sourceTitle: interval.focusText,
+                        sourceInstructions: source.title + "\n" + interval.focusText,
+                        sourceURL: source.sourceURL ?? sourceURL,
+                        sourceDemoURLs: source.roundSequenceDemoURLs(for: interval.sourceItemIDs),
+                        sourceActivityKey: "bag_work", sourceBlockID: source.id,
+                        sourceItemID: interval.sourceItemIDs.first, completionMode: .timed)
+                    guard interval.hasExerciseInterstitial else { return [round] }
+                    let exercise = SessionBlock(kind: .exercise, minutes: 0, roundNumber: nil,
+                        drillID: nil, restAfterMinutes: 0, durationSeconds: 0, restAfterSeconds: 0,
+                        sourceTitle: interval.exerciseText, sourceInstructions: interval.exerciseText,
+                        sourceURL: source.sourceURL ?? sourceURL,
+                        sourceDemoURLs: source.roundSequenceDemoURLs(for: [interval.exerciseItemID]),
+                        sourceBlockID: source.id, sourceItemID: interval.exerciseItemID,
+                        repetitionText: "10 push-ups + 10 squats", completionMode: .manual)
+                    return [round, exercise]
+                }
+            }
             if let sequence = source.reviewedRoundSequence {
                 return sequence.map { step in
                     if source.kind == .boxing { roundNumber += 1 }
@@ -179,6 +215,133 @@ struct WorkoutSourceItem: Decodable {
 }
 
 extension WorkoutSourceBlock {
+    struct ReviewedMixedDayStep {
+        let sourceItemID: String
+        let title: String
+        let instructions: String
+        let demoURLs: [String]
+        let kind: SessionBlockKind
+        let durationSeconds: Int
+        let restSeconds: Int
+        let prescription: String?
+        let completion: BlockCompletionMode
+    }
+
+    /// This source section combines several independent prescriptions. Expand
+    /// only the reviewed snapshot, preserving each source item's wording and
+    /// links. In particular, the dumbbell line has no duration and stays manual.
+    var reviewedMixedDaySteps: [ReviewedMixedDayStep]? {
+        guard id == "basic-w1-d3-p5-s6-1", completion == .manual, kind == .exercise,
+              drillID == nil, activityKey == nil, rounds == nil, durationSeconds == nil,
+              restSeconds == nil, sets == 1, reps == nil,
+              title == "7 ROUNDS OF 3 MINUTES WITH 1 MINUTE OF REST IN",
+              let items = sourceItems,
+              items.map(\.id) == ["p5-b22", "p5-b24", "p5-b27", "p5-b29", "p5-b31", "p5-b32",
+                  "p5-b34", "p5-b36", "p5-b38", "p5-b40", "p5-b41", "p5-b43", "p5-b45", "p5-b47"],
+              items.map(\.text) == [
+                  "7 ROUNDS OF 3 MINUTES WITH 1 MINUTE OF REST IN", "BETWEEN OF BAG WORK",
+                  "1 AND 2 COMBOS", "7 AND 8 COMBOS", "3 AND 4 COMBOS", "9 AND 10 COMBOS",
+                  "5 AND 6 COMBOS", "11 AND 12 COMBOS",
+                  "VOICE CONTROLED BOXING. I SAY COMBO - YOU THROW IT", "(ROUND 1 OF THE LINKED VIDEO)",
+                  "Practice punches with a tennis ball. 3 rounds of 1 minute",
+                  "Shadow boxing with dumbbells",
+                  "1 set of max: parallel bar dips, pull-ups, jumping squat lunges and hanging leg raises.",
+                  "Rest for 1 minute between exercises.",
+              ],
+              items.map(\.text).joined(separator: "\n") == instructions,
+              sourceText == instructions,
+              items[8].demoURLs == ["https://youtu.be/oYG9JVu3k38?si=e81bxKdTvx3vyWoD&t=17"],
+              items[10].demoURLs == ["https://www.youtube.com/shorts/-QbhRExILuw"],
+              items[11].demoURLs == ["https://www.youtube.com/shorts/-NkpM5DYF2Y"],
+              items[12].demoURLs == [
+                  "https://www.youtube.com/shorts/vK-XgduCGS8",
+                  "https://www.youtube.com/shorts/ZPG8OsHKXLw",
+                  "https://www.youtube.com/watch?v=IlVleQhEANA&ab_channel=EPICIntervalTraining",
+                  "https://www.youtube.com/shorts/7DoFMV1Dnow",
+              ] else { return nil }
+
+        let bagHeading = items[0].text + "\n" + items[1].text
+        var steps = items[2...7].map { item in
+            ReviewedMixedDayStep(sourceItemID: item.id, title: item.text,
+                instructions: bagHeading + "\n" + item.text, demoURLs: item.demoURLs ?? [],
+                kind: .boxing, durationSeconds: 180, restSeconds: 60,
+                prescription: nil, completion: .timed)
+        }
+        steps.append(ReviewedMixedDayStep(sourceItemID: items[8].id, title: items[8].text,
+            instructions: bagHeading + "\n" + items[8].text + "\n" + items[9].text,
+            demoURLs: items[8].demoURLs ?? [], kind: .boxing, durationSeconds: 180,
+            restSeconds: 0, prescription: nil, completion: .timed))
+        for _ in 0..<3 {
+            steps.append(ReviewedMixedDayStep(sourceItemID: items[10].id, title: items[10].text,
+                instructions: items[10].text, demoURLs: items[10].demoURLs ?? [], kind: .boxing,
+                durationSeconds: 60, restSeconds: 0, prescription: nil, completion: .timed))
+        }
+        steps.append(ReviewedMixedDayStep(sourceItemID: items[11].id, title: items[11].text,
+            instructions: items[11].text, demoURLs: items[11].demoURLs ?? [], kind: .boxing,
+            durationSeconds: 0, restSeconds: 0, prescription: nil, completion: .manual))
+        let strengthNames = ["parallel bar dips", "pull-ups", "jumping squat lunges", "hanging leg raises"]
+        for (index, name) in strengthNames.enumerated() {
+            steps.append(ReviewedMixedDayStep(sourceItemID: items[12].id, title: name,
+                instructions: items[12].text, demoURLs: [items[12].demoURLs![index]], kind: .exercise,
+                durationSeconds: 0, restSeconds: index < strengthNames.count - 1 ? 60 : 0,
+                prescription: "1 set of max", completion: .manual))
+        }
+        return steps
+    }
+
+    struct ReviewedBagExerciseInterval {
+        let sourceItemIDs: [String]
+        let focusText: String
+        let exerciseItemID: String
+        let exerciseText: String
+        let hasExerciseInterstitial: Bool
+    }
+
+    /// This source prescribes ten two-minute bag rounds and exercises "during
+    /// rest periods", but gives no rest duration. Keep the bag clocks exact and
+    /// expose the exercises as manual interstitials between rounds only.
+    var reviewedBagExerciseIntervals: [ReviewedBagExerciseInterval]? {
+        guard id == "competitive-w4-d3-p31-s4-1", completion == .manual,
+              kind == .exercise, drillID == nil, activityKey == nil,
+              rounds == nil, durationSeconds == nil, restSeconds == nil,
+              title == "BAG WORK (10 ROUNDS OF 2 MINUTES)",
+              let items = sourceItems,
+              items.map(\.id) == ["p31-b15", "p31-b16", "p31-b17", "p31-b18", "p31-b19",
+                                  "p31-b20", "p31-b21", "p31-b22", "p31-b24", "p31-b25",
+                                  "p31-b27", "p31-b29", "p31-b31"],
+              items.map(\.text) == [
+                "BAG WORK (10 ROUNDS OF 2 MINUTES)",
+                "(add 10 push-ups and 10 squats during rest periods)",
+                "JAB BODY — FAKE JAB - OVERHAND",
+                "JAB — LONG LEAD UPPERCUT - CROSS",
+                "JAB-CROSS — JAB-FEINT CROSS-HOOK",
+                "JAB-JAB-CROSS — SPINNING JAB-JAB-REAR HOOK",
+                "JAB — FOOT AND HAND FEINT - JAB-CROSS",
+                "JAB — STOP WITH THE HIGHT GUARD — PULL BACK COUNTER",
+                "HOOK BODY - HOOK BODY - HOOK HEAD — HOOK BODY -HOOK BODY - UPPERCUT",
+                "HEAD",
+                "JAB - SLIP - LONG LEAD UPPERCUT — JAB - STEP IN SLIP - LIVER HOOK - OVERHAND",
+                "JAB-CROSS-LIVER HOOK — JAB-CROSS-NARROW SOLAR PLEXUS UPPERCUT",
+                "FREESTYLE USING THE SET UPS",
+              ],
+              items.map(\.text).joined(separator: "\n") == instructions,
+              sourceText == instructions else { return nil }
+        let exercise = items[1]
+        let focuses: [([String], String)] = [
+            (["p31-b17"], items[2].text), (["p31-b18"], items[3].text),
+            (["p31-b19"], items[4].text), (["p31-b20"], items[5].text),
+            (["p31-b21"], items[6].text), (["p31-b22"], items[7].text),
+            (["p31-b24", "p31-b25"], items[8].text + "\n" + items[9].text),
+            (["p31-b27"], items[10].text), (["p31-b29"], items[11].text),
+            (["p31-b31"], items[12].text),
+        ]
+        return focuses.enumerated().map { index, focus in
+            ReviewedBagExerciseInterval(sourceItemIDs: focus.0, focusText: focus.1,
+                exerciseItemID: exercise.id, exerciseText: exercise.text,
+                hasExerciseInterstitial: index < focuses.count - 1)
+        }
+    }
+
     struct ReviewedRoundStep {
         let sourceItemIDs: [String]
         let focusText: String

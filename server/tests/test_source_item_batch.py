@@ -9,7 +9,7 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from batch_jobs import (Store, catalog_source_item_manifest, digest, explicit_activity,
-                        materialize_cached_output, normalize_day_six_items)
+                        explicit_parent_activity, materialize_cached_output, normalize_day_six_items)
 
 
 class SourceItemBatchTests(unittest.TestCase):
@@ -110,6 +110,45 @@ class SourceItemBatchTests(unittest.TestCase):
             "FRONTAL STANCE: SQUAT AND ATTACK. 4 ROUNDS OF 1 MINUTE WITH",
             "boxing", allow_kind_fallback=False)[0], "shadowboxing")
 
+    def test_atomic_items_inherit_only_explicit_bag_and_partner_parent_context(self):
+        _, proposals = catalog_source_item_manifest(self.catalog)
+        by_id = {p["proposal_id"]: p for p in proposals}
+        cases = {
+            "competitive-w1-d1-p5-s4-1": "bag_work",
+            "competitive-w2-d3-p15-s4-1": "bag_work",
+            "competitive-w3-d2-p22-s4-1": "partner_work",
+        }
+        for block_id, activity in cases.items():
+            selected = [p for p in by_id.values() if p["source_block_id"] == block_id]
+            self.assertGreater(len(selected), 1)
+            for proposal in selected:
+                with self.subTest(block=block_id, item=proposal["source_item_id"]):
+                    self.assertEqual(proposal["activity"], activity)
+                    self.assertEqual(proposal["annotation_origin"], "explicit_parent_source_rule")
+                    self.assertEqual(proposal["evidence_quote"], proposal["source_text"])
+                    self.assertIn(proposal["activity_context_quote"].lower(),
+                                  proposal["source_block_text"].lower())
+                    self.assertEqual(proposal["source_block_text_sha256"],
+                                     digest(proposal["source_block_text"]))
+
+        unrelated = next(p for p in proposals if p["source_item_id"] == "p34-b7")
+        self.assertEqual(unrelated["source_text"], "Rolls")
+        self.assertNotEqual(unrelated["annotation_origin"], "explicit_parent_source_rule")
+
+    def test_parent_heading_wins_over_child_strength_and_punch_language(self):
+        self.assertEqual(explicit_parent_activity(
+            "BAG WORK (10 ROUNDS)\nadd push-ups and squats during rest\nHOOK BODY"),
+            ("bag_work", "BAG WORK"))
+        _, proposals = catalog_source_item_manifest(self.catalog)
+        for block_id, item_id in [
+                ("competitive-w2-d1-p13-s4-1", "p13-b21"),
+                ("competitive-w4-d3-p31-s4-1", "p31-b24")]:
+            proposal = next(p for p in proposals if p["source_block_id"] == block_id
+                            and p["source_item_id"] == item_id)
+            self.assertEqual(proposal["activity"], "bag_work")
+            self.assertEqual(proposal["annotation_origin"], "explicit_parent_source_rule")
+            self.assertEqual(proposal["activity_context_quote"], "BAG WORK")
+
     def test_cached_decision_is_rebound_to_current_source_identity(self):
         donor = {"result": {"proposal_id": "donor", "source_block_id": "old",
                             "activity": "footwork", "evidence_quote": "step",
@@ -144,6 +183,11 @@ class SourceItemBatchTests(unittest.TestCase):
             pending = [item for item in job['items'] if item['state'] == 'pending']
             self.assertGreater(len(complete), 0)
             self.assertGreater(len(pending), 0)
+            parent_ids = {p['proposal_id'] for p in catalog_source_item_manifest(self.catalog)[1]
+                          if p['annotation_origin'] == 'explicit_parent_source_rule'}
+            self.assertTrue(parent_ids)
+            self.assertTrue(all(any(item['item_id'] == 'source-item:' + proposal_id
+                                    for item in complete) for proposal_id in parent_ids))
             for item in complete:
                 output = json.loads(item['output'])
                 self.assertEqual(item['attempts'], 1)

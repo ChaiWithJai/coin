@@ -17,6 +17,7 @@ from batch_jobs import SOURCE_ITEM_VERSION, catalog_source_item_manifest
 IDENTITY_FIELDS = (
     'proposal_id', 'workout_id', 'catalog_sha256', 'source_sha256',
     'source_block_id', 'source_item_id', 'source_text', 'source_text_sha256',
+    'source_block_text', 'source_block_text_sha256',
     'source_url', 'reference_urls', 'demo_urls', 'source_kind',
     'normalization_version', 'evidence_status',
 )

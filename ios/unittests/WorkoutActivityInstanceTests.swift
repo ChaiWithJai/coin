@@ -102,6 +102,32 @@ import XCTest
         XCTAssertEqual(WorkoutMovementDefinition.forKey("mobility")?.requiredView, "depends_on_selected_movement")
         XCTAssertEqual(WorkoutMovementDefinition.forKey("burpees")?.observablePhases, ["standing", "floor", "standing"])
     }
+    func testEveryRuntimeChoiceHasVersionedPoseEvidenceAndNoGenericPlaceholder() {
+        for family in ["conditioning", "mobility"] {
+            let choices = WorkoutMovementDefinition.choices(for: family)
+            XCTAssertFalse(choices.isEmpty)
+            XCTAssertFalse(choices.contains { $0.key == family })
+            for movement in choices {
+                XCTAssertFalse(movement.poseContract.id.isEmpty, movement.key)
+                XCTAssertFalse(movement.poseContract.version.isEmpty, movement.key)
+                XCTAssertFalse(movement.poseContract.orderedStates.isEmpty, movement.key)
+                XCTAssertFalse(movement.poseContract.completionTransition.isEmpty, movement.key)
+            }
+        }
+    }
+    func testPoseContractsSeparateSpecificationFromImplementedCandidateCounters() {
+        XCTAssertEqual(WorkoutMovementDefinition.forKey("jumping_jacks")?.poseContract.support, .specifiedOnly)
+        XCTAssertEqual(WorkoutMovementDefinition.forKey("burpees")?.poseContract.support, .specifiedOnly)
+        XCTAssertEqual(WorkoutMovementDefinition.forKey("squats")?.poseContract.support, .implementedCandidate)
+        XCTAssertEqual(WorkoutMovementDefinition.forKey("shadowboxing")?.poseContract.support, .implementedCandidate)
+        let instance = WorkoutActivityInstance(blockID: UUID(), preparationIndex: nil,
+            sourceBlockID: "conditioning", sourceItemID: nil, exerciseKey: "burpees",
+            selectionProvenance: .userSelected, measurement: .forExercise("burpees"), selectedAt: Date())
+        let movement = instance.payload["movement_definition"] as? [String: Any]
+        let contract = movement?["pose_contract"] as? [String: Any]
+        XCTAssertEqual(contract?["id"] as? String, "mediapipe-burpee")
+        XCTAssertEqual(contract?["support"] as? String, "specified_only")
+    }
     func testOpenConditioningStartsUnchosenDespiteBroadSourceBoxingTag() throws {
         let lesson = try XCTUnwrap(WorkoutCatalog.shared.lessons.first { $0.id == "basic-w2-d1" })
         let block = try XCTUnwrap(lesson.template().blocks.first { $0.activityChoiceFamily == "conditioning" })
