@@ -69,4 +69,32 @@ import XCTest
         XCTAssertTrue(other.template().blocks.allSatisfy { $0.localizedSourceTitleFR == nil &&
             $0.sourceSpeechLanguage(displayLanguage: "fr") == "en" })
     }
+
+    func testFutureDayRequiresReviewedStatusAndCompletePinnedSource() throws {
+        let original = try lesson
+        let futureID = "basic-w1-d70"
+        let futureSHA = String(repeating: "a", count: 64)
+        let sourceURL = try XCTUnwrap(Bundle.main.url(forResource: "WorkoutCatalog", withExtension: "json"))
+        let catalog = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: sourceURL)) as? [String: Any])
+        let workouts = try XCTUnwrap(catalog["workouts"] as? [[String: Any]])
+        var lessonJSON = try XCTUnwrap(workouts.first { ($0["id"] as? String) == original.id })
+        lessonJSON["id"] = futureID
+        lessonJSON["sourceSHA256"] = futureSHA
+        let future = try JSONDecoder().decode(WorkoutLesson.self,
+            from: JSONSerialization.data(withJSONObject: lessonJSON))
+        let provisional = try changedOverlay { raw in
+            raw["lessonID"] = futureID
+            raw["sourceSHA256"] = futureSHA
+        }
+        XCTAssertNil(provisional.validated(for: future))
+        let reviewed = try changedOverlay { raw in
+            raw["lessonID"] = futureID
+            raw["sourceSHA256"] = futureSHA
+            raw["status"] = "reviewed"
+        }
+        XCTAssertEqual(reviewed.validated(for: future)?.count, original.blocks.count)
+        XCTAssertNil(reviewed.validated(for: original))
+        XCTAssertNil(SourceWorkoutFrenchOverlay.bundled(for: futureID))
+        XCTAssertNil(SourceWorkoutFrenchOverlay.bundled(for: "../BasicW1D1French"))
+    }
 }

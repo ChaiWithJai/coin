@@ -102,7 +102,7 @@ struct WorkoutLesson: Decodable, Identifiable {
             }
         }
         var localizedTitleFR: String?
-        if let overlay = SourceWorkoutFrenchOverlay.bundled,
+        if let overlay = SourceWorkoutFrenchOverlay.bundled(for: id),
            let copyByID = overlay.validated(for: self),
            sessionBlocks.allSatisfy({ block in
                guard let sourceID = block.sourceBlockID,

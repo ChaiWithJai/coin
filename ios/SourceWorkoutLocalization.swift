@@ -30,16 +30,28 @@ struct SourceWorkoutFrenchOverlay: Decodable {
     let reviewFlags: [String: String]
     let blocks: [Block]
 
-    static let bundled: Self? = {
-        guard let url = Bundle.main.url(forResource: "BasicW1D1French", withExtension: "json"),
-              let data = try? Data(contentsOf: url) else { return nil }
-        return try? JSONDecoder().decode(Self.self, from: data)
-    }()
+    /// Each future day has one explicitly bundled file named
+    /// SourceFrench-<lesson-id>.json. Nothing under the proposal or batch
+    /// directories is scanned at runtime.
+    static func bundled(for lessonID: String) -> Self? {
+        guard !lessonID.isEmpty,
+              lessonID.range(of: "^[a-z0-9-]+$", options: .regularExpression) != nil else { return nil }
+        let name = lessonID == "basic-w1-d1" ? "BasicW1D1French" : "SourceFrench-\(lessonID)"
+        guard let url = Bundle.main.url(forResource: name, withExtension: "json"),
+              let data = try? Data(contentsOf: url),
+              let overlay = try? JSONDecoder().decode(Self.self, from: data),
+              overlay.lessonID == lessonID else { return nil }
+        return overlay
+    }
 
-    /// Only this one complete, source-pinned day is eligible. Candidate text
-    /// cannot enter a workout, and a partial overlay never mixes languages.
+    // Kept for existing day-one checks; new call sites select by lesson ID.
+    static var bundled: Self? { bundled(for: "basic-w1-d1") }
+
+    /// Candidate text cannot enter a workout, and a partial overlay never
+    /// mixes languages. Day one retains its explicit provisional exception.
     func validated(for lesson: WorkoutLesson) -> [String: Block]? {
-        guard schemaVersion == 1, status == "provisional", lessonID == "basic-w1-d1",
+        guard schemaVersion == 1,
+              (status == "reviewed" || (lessonID == "basic-w1-d1" && status == "provisional")),
               lesson.id == lessonID, lesson.sourceSHA256 == sourceSHA256,
               !sourceTitleFR.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
               blocks.count == lesson.blocks.count,
