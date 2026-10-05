@@ -1,0 +1,47 @@
+{
+  "evidence_kind": "public_huggingface_release",
+  "published_at": "2026-10-05T19:08:00.509332+00:00",
+  "source_job_id": "2782f0b73d2d7e96a2796598b17e4578ba0be6b468876f4bf5061126aba75492",
+  "normalization_version": "source-item-normalization-v2.8",
+  "dataset": {
+    "url": "https://huggingface.co/datasets/lacommedia/coin-boxing-workout-source-items",
+    "repo_id": "lacommedia/coin-boxing-workout-source-items",
+    "commit_sha": "ad50664ec3d80999ad4ad56e950b3a1498859e83",
+    "private": false,
+    "rows_verified_by_remote_download": 1773,
+    "data_sha256": "262bad3c9242ca0c2900fc5526a3ef475a098f1a9080e85f4320bedd1f0d07fe"
+  },
+  "classifier": {
+    "url": "https://huggingface.co/lacommedia/coin-boxing-source-classifier",
+    "repo_id": "lacommedia/coin-boxing-source-classifier",
+    "commit_sha": "79c80dcd9fe36739c2b833c5c2b7e462af16a33d",
+    "private": false,
+    "weights_included": false,
+    "classifier_kind": "directed inference pipeline with deterministic rules and one-token model routing"
+  },
+  "release_boundary": {
+    "private_footage_included": false,
+    "personal_data_included": false,
+    "credentials_included": false,
+    "local_endpoints_included": false,
+    "third_party_weights_included": false
+  },
+  "integrity": {
+    "rows": 1773,
+    "unique_proposal_ids": 1773,
+    "deterministic_results": 893,
+    "model_calls": 699,
+    "cache_materializations": 181,
+    "runtime_eligible_rows": 0,
+    "human_reviewed_rows": 0,
+    "mlflow_finished_traces": 1773,
+    "mlflow_missing_traces": 0,
+    "mlflow_duplicate_traces": 0
+  },
+  "costs": {
+    "actual_usd": null,
+    "estimated_usd": null,
+    "status": "unknown"
+  },
+  "license_note": "No explicit open-data license was found for source text. Dataset card uses license: other and preserves source attribution and rights caveat."
+}
