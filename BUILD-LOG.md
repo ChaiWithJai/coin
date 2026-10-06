@@ -152,3 +152,4 @@ The atomic source classifier is now v2.7. Explicit bag-work and partner/sparring
 - 2026-10-06 01:12 · Step 7 live; 9B ok / Coin ready / rounds since restart: 1 1 0 ; one transient Tailscale SSH failure (GB10 reachable on LAN, Coin answering). Waiting on Jai.
 - 2026-10-06 01:58 · Step 7 live; 9B ok / Coin ready / rounds since restart: 1 1 0 ; recent commits c534b23 30d9236 38ea5ba ; 0 uncommitted. Waiting on Jai.
 - 2026-10-06 02:47 · Step 7 live; 9B ok / Coin ready / rounds since restart: ; recent commits d11d429 c534b23 30d9236 ; 0 uncommitted. Waiting on Jai.
+- 2026-10-06 02:48 · Step 7 live; 9B ok / Coin ready / rounds since restart: 1 1 0  (checked over LAN; Tailscale SSH flaky). Waiting on Jai.
