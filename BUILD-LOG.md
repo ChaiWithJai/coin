@@ -176,3 +176,4 @@ The atomic source classifier is now v2.7. Explicit bag-work and partner/sparring
 - 2026-10-07 00:33 · Step 7 live; 9B ok / Coin ready / rounds since restart: 0 1 0 ; recent commits fe5940f 0ef0864 2824f60 ; 0 uncommitted. Waiting on Jai.
 - 2026-10-07 00:33 · 9B :8712 stopped again (clean exit ~5 min after a restart; a Codex session on the GB10 is active and restarted the Coin service). Harness still needs the 9B; restarted it and verified a round. Asked Jai to have the other agent leave :8712 running.
 - 2026-10-07 01:33 · Step 7 live; 9B ok / Coin ready: 0 1 ; recent commits 10848ea 1c30f7f fe5940f ; 0 uncommitted. Waiting on Jai.
+- 2026-10-07 02:33 · Step 7 live; 9B ok / Coin ready: 1 1 ; recent commits 6ce9579 10848ea 1c30f7f ; 0 uncommitted. 9B contention with the Civitas LoRA Codex session on the GB10 flagged to Jai. Waiting on Jai.
