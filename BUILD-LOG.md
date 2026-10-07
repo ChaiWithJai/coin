@@ -183,3 +183,4 @@ The atomic source classifier is now v2.7. Explicit bag-work and partner/sparring
 - 2026-10-07 06:33 · Step 7 live; 9B ok / Coin ready: 0 1 ; recent commits eb6351d b3d1f65 585ab48 ; 0 uncommitted. Waiting on Jai.
 - 2026-10-07 06:33 · 9B stopped again (Civitas contention); restarted.
 - 2026-10-07 07:33 · Step 7 live; 9B / Coin ready: 1 1 ; recent commits 02ee1ae b7b57bf eb6351d ; 0 uncommitted. Waiting on Jai.
+- 2026-10-07 08:33 · Step 7 live; 9B / Coin ready: 0 1 ; recent commits d49f270 02ee1ae b7b57bf ; 0 uncommitted. 9B was down; restarted. Waiting on Jai.
