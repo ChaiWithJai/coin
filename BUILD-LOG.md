@@ -205,3 +205,4 @@ The atomic source classifier is now v2.7. Explicit bag-work and partner/sparring
 - 2026-10-08 03:45 · Step 7 live; 9B / Coin ready: 1 1 ; recent commits 23359c5 fe9ad7b ec116b3 ; 0 uncommitted. Waiting on Jai.
 - 2026-10-08 04:32 · Step 7 live; 9B / Coin ready: 1 1 ; recent commits 67f6545 23359c5 fe9ad7b ; 0 uncommitted. Waiting on Jai.
 - 2026-10-08 09:07 check-in: step 5 (live rounds). Since last: no code commits (6e06d56 log only). Up: 9B :8712 200, Coin :5290 up (uvicorn since 10-03, 401 = auth on all routes), LAN forwarder up; 27B intentionally off (9B is the cap). Broke: nothing. Next: Jai boxes a round -> verify reset abstain (885c9d7) and hand labels from traces.
+- 2026-10-08 09:08 check-in: step 5 (live rounds). Since last: none (a5704fa log only). Up: 9B :8712 200, Coin :5290 401 (auth, up), forwarder up; 27B off by design. Broke: nothing. Stalled on a live round from Jai. Next: verify reset abstain (885c9d7) and hand labels from the next round traces.
